@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CreateBlogDomainDto } from './dto/CreateBlogDomainDto';
 import { HydratedDocument, Model } from 'mongoose';
+import { UpdateBlogDto } from '../dto/update-blog.dto';
 
 export type BlogDocument = HydratedDocument<Blog>;
 
@@ -28,6 +29,12 @@ export class Blog {
     blog.websiteUrl = dto.websiteUrl;
 
     return blog as BlogDocument;
+  }
+
+  update(dto: UpdateBlogDto) {
+    this.name = dto.name;
+    this.description = dto.description;
+    this.websiteUrl = dto.websiteUrl;
   }
 }
 
