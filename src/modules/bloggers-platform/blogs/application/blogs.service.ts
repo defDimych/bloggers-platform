@@ -31,4 +31,16 @@ export class BlogsService {
 
     await this.blogsRepository.save(blog);
   }
+
+  async deleteBlog(id: string): Promise<void> {
+    const blog = await this.blogsRepository.findById(id);
+
+    if (!blog) {
+      throw new NotFoundException('Blog not found');
+    }
+
+    blog.makeDeleted();
+
+    await this.blogsRepository.save(blog);
+  }
 }

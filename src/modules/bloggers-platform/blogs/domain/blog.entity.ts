@@ -22,6 +22,9 @@ export class Blog {
   createdAt: Date;
   updatedAt: Date;
 
+  @Prop({ type: Date, default: null })
+  deletedAt: Date | null;
+
   static createInstance(dto: CreateBlogDomainDto): BlogDocument {
     const blog = new this();
     blog.name = dto.name;
@@ -35,6 +38,13 @@ export class Blog {
     this.name = dto.name;
     this.description = dto.description;
     this.websiteUrl = dto.websiteUrl;
+  }
+
+  makeDeleted() {
+    if (this.deletedAt !== null) {
+      throw new Error('Entity already deleted');
+    }
+    this.deletedAt = new Date();
   }
 }
 

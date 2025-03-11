@@ -7,7 +7,10 @@ export class BlogsRepository {
   constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) {}
 
   async findById(id: string): Promise<BlogDocument | null> {
-    return this.BlogModel.findOne({ _id: id });
+    return this.BlogModel.findOne({
+      _id: id,
+      deletedAt: null,
+    });
   }
 
   async save(blog: BlogDocument) {
