@@ -8,12 +8,15 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { BlogViewDto } from './view-dto/blogs.view-dto';
 import { BlogsService } from '../application/blogs.service';
 import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
 import { CreateBlogDto } from '../dto/create-blog.dto';
 import { UpdateBlogDto } from '../dto/update-blog.dto';
+import { getBlogsQueryParams } from './input-dto/get-blogs-query-params.input-dto';
+import { PaginatedViewDto } from '../../../../core/base.paginated.view-dto';
 
 @Controller('blogs')
 export class BlogsController {
@@ -21,6 +24,13 @@ export class BlogsController {
     private blogsService: BlogsService,
     private blogsQueryRepository: BlogsQueryRepository,
   ) {}
+
+  @Get()
+  async getAllBlogs(
+    @Query() query: getBlogsQueryParams,
+  ): Promise<PaginatedViewDto<BlogViewDto[]>> {
+    return this.blogsQueryRepository.getAll(query);
+  }
 
   @Get(':id')
   async getBlog(@Param('id') id: string): Promise<BlogViewDto> {
