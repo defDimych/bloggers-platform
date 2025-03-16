@@ -1,7 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostModelType } from '../../domain/post.entity';
 import { PostViewDto } from '../../api/view-dto/posts.view-dto';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { getPostsQueryParams } from '../../api/input-dto/get-posts-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../../core/base.paginated.view-dto';
 
@@ -61,18 +61,22 @@ export class PostsQueryRepository {
     }
   }
 
-  async findById(id: string): Promise<PostViewDto> {
+  async findByIdOrNotFoundFail(id: string): Promise<PostViewDto> {
     const post = await this.PostModel.findOne({ _id: id });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
 
     // TODO: Move to static method view-dto. Used default value
     return {
-      id: post!._id.toString(),
-      title: post!.title,
-      shortDescription: post!.shortDescription,
-      content: post!.content,
-      blogId: post!.blogId,
-      blogName: post!.blogName,
-      createdAt: post!.createdAt.toISOString(),
+      id: post._id.toString(),
+      title: post.title,
+      shortDescription: post.shortDescription,
+      content: post.content,
+      blogId: post.blogId,
+      blogName: post.blogName,
+      createdAt: post.createdAt.toISOString(),
       extendedLikesInfo: {
         likesCount: 0,
         dislikesCount: 0,

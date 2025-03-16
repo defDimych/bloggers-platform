@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CreatePostDomainDto } from './dto/create-post.domain-dto';
 import { HydratedDocument, Model } from 'mongoose';
+import { UpdatePostDto } from '../dto/update-post.dto';
 
 export type PostDocument = HydratedDocument<Post>;
 
@@ -36,6 +37,20 @@ export class Post {
     post.blogName = dto.blogName;
 
     return post as PostDocument;
+  }
+
+  update(dto: UpdatePostDto) {
+    this.blogId = dto.blogId;
+    this.content = dto.content;
+    this.shortDescription = dto.shortDescription;
+    this.title = dto.title;
+  }
+
+  makeDeleted() {
+    if (this.deletedAt !== null) {
+      throw new Error('Entity already deleted');
+    }
+    this.deletedAt = new Date();
   }
 }
 

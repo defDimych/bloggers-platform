@@ -71,7 +71,7 @@ export class BlogsController {
       blogId,
     });
 
-    return this.postsQueryRepository.findById(postId);
+    return this.postsQueryRepository.findByIdOrNotFoundFail(postId);
   }
 
   @Put(':id')
