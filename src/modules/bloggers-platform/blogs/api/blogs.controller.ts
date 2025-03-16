@@ -66,7 +66,7 @@ export class BlogsController {
     @Param('blogId') blogId: string,
     @Body() body: CreatePostForBlogInputDto,
   ): Promise<PostViewDto> {
-    const postId = await this.postsService.createPostForBlog({
+    const postId = await this.postsService.createPost({
       ...body,
       blogId,
     });
