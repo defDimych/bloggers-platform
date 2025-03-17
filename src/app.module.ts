@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
+import { TestingModule } from './modules/testing/testing.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-pla
       dbName: 'blogs-and-posts-nest',
     }),
     BloggersPlatformModule,
+    TestingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
