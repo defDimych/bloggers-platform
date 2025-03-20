@@ -1,10 +1,11 @@
 import { Type } from 'class-transformer';
 
-class PaginationParams {
+export class BaseQueryParams {
   @Type(() => Number)
   pageNumber: number = 1;
   @Type(() => Number)
   pageSize: number = 10;
+  sortDirection: SortDirection = SortDirection.Desc;
 
   calculateSkip() {
     return (this.pageNumber - 1) * this.pageSize;
@@ -16,7 +17,7 @@ export enum SortDirection {
   Desc = 'desc',
 }
 
-export abstract class baseSortablePaginationParams<T> extends PaginationParams {
-  sortDirection: SortDirection = SortDirection.Desc;
-  abstract sortBy: T;
-}
+// export abstract class baseSortablePaginationParams<T> extends PaginationParams {
+//   sortDirection: SortDirection = SortDirection.Desc;
+//   abstract sortBy: T;
+// }
