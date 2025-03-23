@@ -6,7 +6,7 @@ export class UsersViewDto {
   email: string;
   createdAt: string;
 
-  static mapToView(user: UserDocument): UsersViewDto {
+  static mapToView = (user: UserDocument): UsersViewDto => {
     const dto = new UsersViewDto();
 
     dto.id = user._id.toString();
@@ -15,5 +15,5 @@ export class UsersViewDto {
     dto.createdAt = user.accountData.createdAt.toISOString();
 
     return dto;
-  }
+  };
 }
