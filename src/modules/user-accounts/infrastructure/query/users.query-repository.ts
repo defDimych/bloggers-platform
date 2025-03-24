@@ -13,6 +13,7 @@ export class UsersQueryRepository {
     query: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<UsersViewDto[]>> {
     const filter = {
+      'accountData.deletedAt': null,
       $or: [
         {
           'accountData.login': {

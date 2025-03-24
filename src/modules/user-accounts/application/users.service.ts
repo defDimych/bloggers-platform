@@ -3,7 +3,11 @@ import { BcryptService } from './bcrypt.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../domain/user.entity';
 import { UsersRepository } from '../infrastructure/users.repository';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 @Injectable()
 export class UsersService {
@@ -35,5 +39,17 @@ export class UsersService {
     await this.usersRepository.save(user);
 
     return user._id.toString();
+  }
+
+  async deleteUser(id: string) {
+    const user = await this.usersRepository.findById(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.makeDeleted();
+
+    await this.usersRepository.save(user);
   }
 }

@@ -29,6 +29,7 @@ export class User {
       email: dto.email,
       passwordHash: dto.passwordHash,
       createdAt: new Date(),
+      deletedAt: null,
     };
 
     user.emailConfirmation = {
@@ -47,6 +48,13 @@ export class User {
 
   confirmEmail() {
     this.emailConfirmation.isConfirmed = true;
+  }
+
+  makeDeleted() {
+    if (this.accountData.deletedAt !== null) {
+      throw new Error('Entity already deleted');
+    }
+    this.accountData.deletedAt = new Date();
   }
 }
 

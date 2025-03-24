@@ -11,6 +11,9 @@ export class AccountData {
   @Prop({ type: String, required: true })
   passwordHash: string;
 
+  @Prop({ type: Date, nullable: true })
+  deletedAt: Date | null;
+
   createdAt: Date;
 }
 
