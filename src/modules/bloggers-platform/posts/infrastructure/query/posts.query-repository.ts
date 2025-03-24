@@ -23,29 +23,7 @@ export class PostsQueryRepository {
 
       const totalCount = await this.PostModel.countDocuments(filter);
 
-      const items = posts.map((post) => {
-        return {
-          id: post._id.toString(),
-          title: post.title,
-          shortDescription: post.shortDescription,
-          content: post.content,
-          blogId: post.blogId,
-          blogName: post.blogName,
-          createdAt: post.createdAt.toISOString(),
-          extendedLikesInfo: {
-            likesCount: 0,
-            dislikesCount: 0,
-            myStatus: 'None',
-            newestLikes: [
-              {
-                addedAt: new Date().toISOString(),
-                userId: '123',
-                login: 'Backend777',
-              },
-            ],
-          },
-        };
-      });
+      const items = posts.map(PostViewDto.mapToView);
 
       return PaginatedViewDto.mapToView({
         items,
@@ -62,33 +40,12 @@ export class PostsQueryRepository {
   }
 
   async findByIdOrNotFoundFail(id: string): Promise<PostViewDto> {
-    const post = await this.PostModel.findOne({ _id: id });
+    const post = await this.PostModel.findOne({ _id: id, deletedAt: null });
 
     if (!post) {
       throw new NotFoundException('Post not found');
     }
 
-    // TODO: Move to static method view-dto. Used default value
-    return {
-      id: post._id.toString(),
-      title: post.title,
-      shortDescription: post.shortDescription,
-      content: post.content,
-      blogId: post.blogId,
-      blogName: post.blogName,
-      createdAt: post.createdAt.toISOString(),
-      extendedLikesInfo: {
-        likesCount: 0,
-        dislikesCount: 0,
-        myStatus: 'None',
-        newestLikes: [
-          {
-            addedAt: new Date().toISOString(),
-            userId: '123',
-            login: 'Backend777',
-          },
-        ],
-      },
-    };
+    return PostViewDto.mapToView(post);
   }
 }
