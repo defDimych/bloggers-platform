@@ -1,3 +1,4 @@
+import { configModule } from './dynamic-config.module';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,9 +9,8 @@ import { UserAccountsModule } from './modules/user-accounts/user-accounts.module
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://0.0.0.0:27017', {
-      dbName: 'blogs-and-posts-nest',
-    }),
+    configModule,
+    MongooseModule.forRoot(process.env.MONGODB_URI as string),
     BloggersPlatformModule,
     TestingModule,
     UserAccountsModule,
