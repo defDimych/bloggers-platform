@@ -1,4 +1,4 @@
-import { BaseQueryParams } from '../../../../../core/base.query-params.input-dto';
+import { BaseQueryParams } from '../../../../../core/dto/base.query-params.input-dto';
 
 enum BlogsSortBy {
   Name = 'name',

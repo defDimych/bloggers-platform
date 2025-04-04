@@ -3,7 +3,7 @@ import { User, UserModelType } from '../../domain/user.entity';
 import { UsersViewDto } from '../../api/view-dto/users.view-dto';
 import { Injectable } from '@nestjs/common';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
-import { PaginatedViewDto } from '../../../../core/base.paginated.view-dto';
+import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 
 @Injectable()
 export class UsersQueryRepository {

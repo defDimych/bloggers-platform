@@ -15,7 +15,7 @@ import { PostsService } from '../application/posts.service';
 import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
 import { PostViewDto } from './view-dto/posts.view-dto';
 import { getPostsQueryParams } from './input-dto/get-posts-query-params.input-dto';
-import { PaginatedViewDto } from '../../../../core/base.paginated.view-dto';
+import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 
 @Controller('posts')

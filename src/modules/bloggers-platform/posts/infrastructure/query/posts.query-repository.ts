@@ -3,7 +3,7 @@ import { Post, PostModelType } from '../../domain/post.entity';
 import { PostViewDto } from '../../api/view-dto/posts.view-dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { getPostsQueryParams } from '../../api/input-dto/get-posts-query-params.input-dto';
-import { PaginatedViewDto } from '../../../../../core/base.paginated.view-dto';
+import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 
 @Injectable()
 export class PostsQueryRepository {
