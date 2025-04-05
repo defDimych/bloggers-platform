@@ -9,15 +9,29 @@ export class UsersRepository {
     return this.UserModel.findOne({ _id: id, 'accountData.deletedAt': null });
   }
 
-  async findUserByLoginOrEmail(
-    login: string,
-    email: string,
-  ): Promise<UserDocument | null> {
+  async findByLogin(login: string): Promise<UserDocument | null> {
     return this.UserModel.findOne({
       'accountData.deletedAt': null,
-      $or: [{ 'accountData.login': login }, { 'accountData.email': email }],
+      'accountData.login': login,
     });
   }
+
+  async findByEmail(email: string): Promise<UserDocument | null> {
+    return this.UserModel.findOne({
+      'accountData.deletedAt': null,
+      'accountData.email': email,
+    });
+  }
+
+  // async findUserByLoginOrEmail(
+  //   login: string,
+  //   email: string,
+  // ): Promise<UserDocument | null> {
+  //   return this.UserModel.findOne({
+  //     'accountData.deletedAt': null,
+  //     $or: [{ 'accountData.login': login }, { 'accountData.email': email }],
+  //   });
+  // }
 
   async save(user: UserDocument) {
     await user.save();

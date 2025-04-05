@@ -23,6 +23,7 @@ export class DomainHttpExceptionsFilter implements ExceptionFilter {
 
   private mapToHttpStatus(code: DomainExceptionCode): number {
     switch (code) {
+      case DomainExceptionCode.BadRequest:
       case DomainExceptionCode.ValidationError:
         return HttpStatus.BAD_REQUEST;
 
