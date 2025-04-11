@@ -23,15 +23,15 @@ export class UsersRepository {
     });
   }
 
-  // async findUserByLoginOrEmail(
-  //   login: string,
-  //   email: string,
-  // ): Promise<UserDocument | null> {
-  //   return this.UserModel.findOne({
-  //     'accountData.deletedAt': null,
-  //     $or: [{ 'accountData.login': login }, { 'accountData.email': email }],
-  //   });
-  // }
+  async findByLoginOrEmail(loginOrEmail: string): Promise<UserDocument | null> {
+    return this.UserModel.findOne({
+      'accountData.deletedAt': null,
+      $or: [
+        { 'accountData.login': loginOrEmail },
+        { 'accountData.email': loginOrEmail },
+      ],
+    });
+  }
 
   async save(user: UserDocument) {
     await user.save();
