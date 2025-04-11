@@ -1,5 +1,5 @@
 import { CreateUserDto } from '../dto/create-user.dto';
-import { BcryptService } from './bcrypt.service';
+import { CryptoService } from './crypto.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../domain/user.entity';
 import { UsersRepository } from '../infrastructure/users.repository';
@@ -11,7 +11,7 @@ import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-c
 export class UsersService {
   constructor(
     @InjectModel(User.name) private UserModel: UserModelType,
-    private bcryptService: BcryptService,
+    private bcryptService: CryptoService,
     private usersRepository: UsersRepository,
   ) {}
   private async checkUniqueOrThrow(
