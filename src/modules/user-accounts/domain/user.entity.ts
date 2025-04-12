@@ -10,6 +10,7 @@ import {
 } from './password-recovery.schema';
 import { CreateUserDomainDto } from './dto/CreateUserDomainDto';
 import { HydratedDocument, Model } from 'mongoose';
+import { add } from 'date-fns';
 
 @Schema()
 export class User {
@@ -55,6 +56,13 @@ export class User {
       throw new Error('Entity already deleted');
     }
     this.accountData.deletedAt = new Date();
+  }
+
+  setConfirmationCode(confirmCode: string) {
+    this.emailConfirmation.confirmationCode = confirmCode;
+    this.emailConfirmation.expirationDate = add(new Date(), {
+      minutes: 5,
+    });
   }
 }
 

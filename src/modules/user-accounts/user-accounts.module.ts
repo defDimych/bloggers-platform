@@ -10,6 +10,7 @@ import { AuthController } from './api/auth.controller';
 import { LocalStrategy } from './guards/local/local.strategy';
 import { AuthService } from './application/auth.service';
 import { JwtModule } from '@nestjs/jwt';
+import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { JwtModule } from '@nestjs/jwt';
       signOptions: { expiresIn: '5m' },
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    NotificationModule,
   ],
   controllers: [UsersController, AuthController],
   providers: [

@@ -1,11 +1,12 @@
 import { CreateUserDto } from '../dto/create-user.dto';
 import { CryptoService } from './crypto.service';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../domain/user.entity';
+import { User, UserDocument, UserModelType } from '../domain/user.entity';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
+import { EmailService } from '../../notifications/email.service';
 
 @Injectable()
 export class UsersService {
@@ -13,6 +14,7 @@ export class UsersService {
     @InjectModel(User.name) private UserModel: UserModelType,
     private bcryptService: CryptoService,
     private usersRepository: UsersRepository,
+    private emailService: EmailService,
   ) {}
   private async checkUniqueOrThrow(
     login: string,
@@ -43,22 +45,39 @@ export class UsersService {
     }
   }
 
-  async createUser(dto: CreateUserDto): Promise<string> {
+  private async createUserInstance(dto: CreateUserDto): Promise<UserDocument> {
     await this.checkUniqueOrThrow(dto.login, dto.email);
 
     const passwordHash = await this.bcryptService.generateHash(dto.password);
 
-    const user = this.UserModel.createInstance({
+    return this.UserModel.createInstance({
       login: dto.login,
       email: dto.email,
       passwordHash,
     });
+  }
 
-    user.confirmEmail();
+  async createUser(dto: CreateUserDto): Promise<string> {
+    const user = await this.createUserInstance(dto);
+
+    user.confirmEmail(); // Подтверждаем почту при создании user супер-админом
 
     await this.usersRepository.save(user);
 
     return user._id.toString();
+  }
+
+  async registerUser(dto: CreateUserDto): Promise<void> {
+    const user = await this.createUserInstance(dto);
+
+    const confirmationCode = crypto.randomUUID();
+
+    user.setConfirmationCode(confirmationCode);
+    await this.usersRepository.save(user);
+
+    this.emailService
+      .sendConfirmationEmail(user.accountData.email, confirmationCode)
+      .catch(console.error);
   }
 
   async deleteUser(id: string) {
