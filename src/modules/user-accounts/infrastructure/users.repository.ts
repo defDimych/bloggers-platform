@@ -33,6 +33,13 @@ export class UsersRepository {
     });
   }
 
+  async findByConfirmationCode(code: string): Promise<UserDocument | null> {
+    return this.UserModel.findOne({
+      'accountData.deletedAt': null,
+      'emailConfirmation.confirmationCode': code,
+    });
+  }
+
   async save(user: UserDocument) {
     await user.save();
   }

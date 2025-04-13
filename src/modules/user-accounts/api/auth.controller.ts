@@ -30,7 +30,15 @@ export class AuthController {
 
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async registration(@Body() body: CreateUserDto) {
+  async registration(@Body() body: CreateUserDto): Promise<void> {
     return this.usersService.registerUser(body);
+  }
+
+  @Post('registration-confirmation')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registrationConfirmation(
+    @Body() body: { code: string },
+  ): Promise<void> {
+    return this.authService.emailConfirmation(body);
   }
 }
