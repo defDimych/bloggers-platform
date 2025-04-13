@@ -8,7 +8,7 @@ import { UserContextDto } from '../dto/user-context.dto';
 import { LoginInputDto } from '../../api/input-dto/login.input-dto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { errorFormatter } from '../../../../setup/pipes.setup';
+import { throwFormattedErrors } from '../../../../setup/pipes.setup';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -28,13 +28,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     const errors = await validate(instance);
 
     if (errors.length > 0) {
-      const formattedErrors = errorFormatter(errors);
-
-      throw new DomainException({
-        message: 'Validation failed',
-        code: DomainExceptionCode.ValidationError,
-        extensions: formattedErrors,
-      });
+      throwFormattedErrors(errors);
     }
 
     const user = await this.authService.validateUser(

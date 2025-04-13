@@ -6,7 +6,7 @@ import {
 import { DomainExceptionCode } from '../core/exceptions/domain-exception-codes';
 import { ValidationError } from 'class-validator';
 
-export const errorFormatter = (
+export const throwFormattedErrors = (
   errors: ValidationError[],
   errorMessage?: Extension[] | [],
 ): Extension[] => {
@@ -14,7 +14,7 @@ export const errorFormatter = (
 
   for (const error of errors) {
     if (!error?.constraints && error?.children?.length) {
-      errorFormatter(error.children, errorsForResponse);
+      throwFormattedErrors(error.children, errorsForResponse);
     } else if (error?.constraints) {
       const constraintKeys = Object.keys(error.constraints);
 
@@ -29,7 +29,11 @@ export const errorFormatter = (
     }
   }
 
-  return errorsForResponse;
+  throw new DomainException({
+    message: 'Validation failed',
+    code: DomainExceptionCode.ValidationError,
+    extensions: errorsForResponse,
+  });
 };
 
 export function pipesSetup(app: INestApplication) {
@@ -39,13 +43,7 @@ export function pipesSetup(app: INestApplication) {
       stopAtFirstError: true,
       //Для преобразования ошибок класс валидатора в необходимый вид
       exceptionFactory: (errors) => {
-        const formattedErrors = errorFormatter(errors);
-
-        throw new DomainException({
-          message: 'Validation failed',
-          code: DomainExceptionCode.ValidationError,
-          extensions: formattedErrors,
-        });
+        throwFormattedErrors(errors);
       },
     }),
   );
