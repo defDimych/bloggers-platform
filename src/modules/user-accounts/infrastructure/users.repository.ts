@@ -40,6 +40,13 @@ export class UsersRepository {
     });
   }
 
+  async findByPasswordRecoveryCode(code: string): Promise<UserDocument | null> {
+    return this.UserModel.findOne({
+      'accountData.deletedAt': null,
+      'passwordRecovery.recoveryCode': code,
+    });
+  }
+
   async save(user: UserDocument) {
     await user.save();
   }

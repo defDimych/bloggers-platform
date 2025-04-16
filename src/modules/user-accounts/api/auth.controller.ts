@@ -12,6 +12,8 @@ import { UserContextDto } from '../guards/dto/user-context.dto';
 import { AuthService } from '../application/auth.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UsersService } from '../application/users.service';
+import { EmailDto } from '../dto/email.dto';
+import { ConfirmPassRecoveryDto } from '../dto/confirm-pass-recovery.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -40,5 +42,25 @@ export class AuthController {
     @Body() body: { code: string },
   ): Promise<void> {
     return this.authService.emailConfirmation(body);
+  }
+
+  @Post('registration-email-resending')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registrationEmailResending(@Body() body: EmailDto): Promise<void> {
+    return this.authService.registrationEmailResending(body);
+  }
+
+  @Post('password-recovery')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async passwordRecovery(@Body() body: EmailDto): Promise<void> {
+    return this.authService.passwordRecovery(body);
+  }
+
+  @Post('new-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async passwordRecoveryConfirmation(
+    @Body() body: ConfirmPassRecoveryDto,
+  ): Promise<void> {
+    return this.authService.confirmPasswordRecovery(body);
   }
 }

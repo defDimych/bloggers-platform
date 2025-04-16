@@ -64,6 +64,17 @@ export class User {
       minutes: 5,
     });
   }
+
+  setConfirmationCodeForPasswordRecovery(confirmCode: string) {
+    this.passwordRecovery.recoveryCode = confirmCode;
+    this.passwordRecovery.expirationDate = add(new Date(), {
+      minutes: 5,
+    });
+  }
+
+  setNewPassword(passwordHash: string) {
+    this.accountData.passwordHash = passwordHash;
+  }
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
