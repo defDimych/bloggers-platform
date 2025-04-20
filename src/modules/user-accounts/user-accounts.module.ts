@@ -11,6 +11,9 @@ import { LocalStrategy } from './guards/local/local.strategy';
 import { AuthService } from './application/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { NotificationModule } from '../notifications/notification.module';
+import { AuthQueryRepository } from './infrastructure/query/auth.query-repository';
+import { JwtStrategy } from './guards/bearer/jwt.strategy';
+import { BasicAuthGuard } from './guards/basic/basic-auth.guard';
 
 @Module({
   imports: [
@@ -27,6 +30,9 @@ import { NotificationModule } from '../notifications/notification.module';
     CryptoService,
     UsersRepository,
     UsersQueryRepository,
+    AuthQueryRepository,
+    BasicAuthGuard,
+    JwtStrategy,
     LocalStrategy,
     AuthService,
   ],
