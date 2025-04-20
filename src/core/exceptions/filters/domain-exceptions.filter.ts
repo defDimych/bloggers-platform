@@ -16,9 +16,17 @@ export class DomainHttpExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
 
     const status = this.mapToHttpStatus(exception.code);
-    const responseBody = this.buildResponseBody(exception);
 
-    response.status(status).json(responseBody);
+    if (
+      exception.code === DomainExceptionCode.ValidationError ||
+      exception.code === DomainExceptionCode.BadRequest
+    ) {
+      const responseBody = this.buildResponseBody(exception);
+
+      response.status(status).json(responseBody);
+    }
+
+    response.sendStatus(status);
   }
 
   private mapToHttpStatus(code: DomainExceptionCode): number {
