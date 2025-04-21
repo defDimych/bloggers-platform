@@ -4,11 +4,12 @@ import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { Request } from 'express';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { BASIC_AUTH_CREDENTIALS } from '../../../../constants';
 
 @Injectable()
 export class BasicAuthGuard implements CanActivate {
-  private readonly validUsername = 'admin';
-  private readonly validPassword = 'qwerty';
+  private readonly validUsername = BASIC_AUTH_CREDENTIALS.username;
+  private readonly validPassword = BASIC_AUTH_CREDENTIALS.password;
 
   constructor(private reflector: Reflector) {}
   canActivate(context: ExecutionContext) {
