@@ -1,19 +1,14 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '../../src/app.module';
-import { Connection } from 'mongoose';
-import { getConnectionToken } from '@nestjs/mongoose';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { App } from 'supertest/types';
-import { AuthConfig } from '../../src/modules/user-accounts/config/auth.config';
 import { UsersTestHelper } from '../users/users.test-helper';
-import { pipesSetup } from '../../src/setup/pipes.setup';
-import { filtersSetup } from '../../src/setup/filters.setup';
 import request from 'supertest';
 import { ErrorResponseBody } from '../../src/core/exceptions/filters/error-response-body.type';
+import { initApp } from '../helpers/init-settings';
+import { TestingModuleBuilder } from '@nestjs/testing';
+import { AuthConfig } from '../../src/modules/user-accounts/config/auth.config';
 
 describe('/auth/login (POST)', () => {
   let app: INestApplication<App>;
-  let connection: Connection;
 
   let usersTestHelper: UsersTestHelper;
 
@@ -24,32 +19,13 @@ describe('/auth/login (POST)', () => {
   };
 
   beforeAll(async () => {
-    const testingModuleBuilder = Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(AuthConfig)
-      .useValue({ skipPasswordCheck: false });
-
-    const moduleFixture: TestingModule = await testingModuleBuilder.compile();
-
-    app = moduleFixture.createNestApplication();
-
-    // Подключение глобального пайпа, для эмуляции реальных HTTP-запросов
-    pipesSetup(app);
-    filtersSetup(app);
-
-    await app.init();
+    app = await initApp((builder: TestingModuleBuilder) => {
+      builder
+        .overrideProvider(AuthConfig)
+        .useValue({ skipPasswordCheck: false });
+    });
 
     usersTestHelper = new UsersTestHelper(app);
-
-    // Получаем подключение к бд
-    connection = moduleFixture.get<Connection>(getConnectionToken());
-
-    // Очистка всех коллекций в тестовой бд
-    const collections = await connection.db!.listCollections().toArray();
-    for (const collection of collections) {
-      await connection.db!.collection(collection.name).deleteMany({});
-    }
 
     await usersTestHelper.createUser(createTestUserModel);
   });

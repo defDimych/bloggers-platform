@@ -1,15 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '../../src/app.module';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { Connection } from 'mongoose';
-import { getConnectionToken } from '@nestjs/mongoose';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { BlogsTestHelper } from './blogs.test-helper';
+import { initApp } from '../helpers/init-settings';
 
 describe('BlogsController (e2e)', () => {
   let app: INestApplication<App>;
-  let connection: Connection;
 
   let blogsTestHelper: BlogsTestHelper;
 
@@ -20,25 +16,9 @@ describe('BlogsController (e2e)', () => {
   };
 
   beforeAll(async () => {
-    const testingModuleBuilder = Test.createTestingModule({
-      imports: [AppModule],
-    });
-
-    const moduleFixture: TestingModule = await testingModuleBuilder.compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    app = await initApp();
 
     blogsTestHelper = new BlogsTestHelper(app);
-
-    // Получаем подключение к бд
-    connection = moduleFixture.get<Connection>(getConnectionToken());
-
-    // Очистка всех коллекций в тестовой бд
-    const collections = await connection.db!.listCollections().toArray();
-    for (const collection of collections) {
-      await connection.db!.collection(collection.name).deleteMany({});
-    }
   });
 
   afterAll(async () => {
