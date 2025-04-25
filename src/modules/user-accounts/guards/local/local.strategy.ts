@@ -5,10 +5,6 @@ import { AuthService } from '../../application/auth.service';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { UserContextDto } from '../dto/user-context.dto';
-import { LoginInputDto } from '../../api/input-dto/login.input-dto';
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
-import { throwFormattedErrors } from '../../../../setup/pipes.setup';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -16,25 +12,12 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     super({ usernameField: 'loginOrEmail' });
   }
 
+  // Validate method returns data that will be stored in req.user later
   async validate(
     loginOrEmail: string,
     password: string,
   ): Promise<UserContextDto> {
-    const instance = plainToInstance(LoginInputDto, {
-      loginOrEmail,
-      password,
-    });
-
-    const errors = await validate(instance);
-
-    if (errors.length > 0) {
-      throwFormattedErrors(errors);
-    }
-
-    const user = await this.authService.validateUser(
-      instance.loginOrEmail,
-      instance.password,
-    );
+    const user = await this.authService.validateUser(loginOrEmail, password);
 
     if (!user) {
       throw new DomainException({
