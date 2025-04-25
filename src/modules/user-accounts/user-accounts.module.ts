@@ -14,12 +14,13 @@ import { NotificationModule } from '../notifications/notification.module';
 import { AuthQueryRepository } from './infrastructure/query/auth.query-repository';
 import { JwtStrategy } from './guards/bearer/jwt.strategy';
 import { BasicAuthGuard } from './guards/basic/basic-auth.guard';
+import { AuthConfig } from './config/auth.config';
 
 @Module({
   imports: [
     JwtModule.register({
-      secret: 'access-token-secret', // TODO: Move to env file
-      signOptions: { expiresIn: '5m' },
+      secret: 'access-token-secret', // TODO: Move to configService
+      signOptions: { expiresIn: '5m' }, // TODO: TODO: Move to configService
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     NotificationModule,
@@ -35,6 +36,7 @@ import { BasicAuthGuard } from './guards/basic/basic-auth.guard';
     JwtStrategy,
     LocalStrategy,
     AuthService,
+    AuthConfig,
   ],
 })
 export class UserAccountsModule {}

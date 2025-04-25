@@ -8,6 +8,7 @@ import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-c
 import { EmailDto } from '../dto/email.dto';
 import { EmailService } from '../../notifications/email.service';
 import { ConfirmPassRecoveryDto } from '../dto/confirm-pass-recovery.dto';
+import { AuthConfig } from '../config/auth.config';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     private cryptoService: CryptoService,
     private jwtService: JwtService,
     private emailService: EmailService,
+    private authConfig: AuthConfig,
   ) {}
   async validateUser(
     loginOrEmail: string,
@@ -27,15 +29,17 @@ export class AuthService {
       return null;
     }
 
-    const isPasswordValid = await this.cryptoService.comparePasswords({
-      password,
-      hash: user.accountData.passwordHash,
-    });
+    // Проверка SKIP_PASSWORD_CHECK
+    if (!this.authConfig.skipPasswordCheck) {
+      const isPasswordValid = await this.cryptoService.comparePasswords({
+        password,
+        hash: user.accountData.passwordHash,
+      });
 
-    if (!isPasswordValid) {
-      return null;
+      if (!isPasswordValid) {
+        return null;
+      }
     }
-
     return { id: user._id.toString() };
   }
 
