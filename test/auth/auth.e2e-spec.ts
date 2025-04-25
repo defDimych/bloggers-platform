@@ -15,8 +15,13 @@ describe('/auth/login (POST)', () => {
   let app: INestApplication<App>;
   let connection: Connection;
 
-  // let testUser: UsersViewDto;
   let usersTestHelper: UsersTestHelper;
+
+  const createTestUserModel = {
+    login: 'Webster',
+    password: 'Webster123',
+    email: 'test@mail.ru',
+  };
 
   beforeAll(async () => {
     const testingModuleBuilder = Test.createTestingModule({
@@ -46,11 +51,7 @@ describe('/auth/login (POST)', () => {
       await connection.db!.collection(collection.name).deleteMany({});
     }
 
-    await usersTestHelper.createUser({
-      login: 'Webster',
-      password: 'Webster123',
-      email: 'test@mail.ru',
-    });
+    await usersTestHelper.createUser(createTestUserModel);
   });
 
   afterAll(async () => {
@@ -69,5 +70,28 @@ describe('/auth/login (POST)', () => {
     const body = response.body as ErrorResponseBody;
     expect(body.errorsMessages[0].field).toBe('loginOrEmail');
     expect(body.errorsMessages[1].field).toBe('password');
+  });
+
+  it('should return 401 for the incorrect credentials', async () => {
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({
+        loginOrEmail: createTestUserModel.login,
+        password: '123',
+      })
+      .expect(HttpStatus.UNAUTHORIZED);
+  });
+
+  it('should return 200 and accessToken in body for valid credentials', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({
+        loginOrEmail: createTestUserModel.login,
+        password: createTestUserModel.password,
+      })
+      .expect(HttpStatus.OK);
+
+    const body = response.body as { accessToken: string };
+    expect(typeof body.accessToken).toBe('string');
   });
 });
