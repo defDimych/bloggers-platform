@@ -14,7 +14,11 @@ export const initApp = async (
     imports: [AppModule],
   })
     .overrideProvider(AuthConfig)
-    .useValue({ skipPasswordCheck: true });
+    .useValue({
+      skipPasswordCheck: true,
+      accessTokenSecret: 'secret',
+      accessTokenExpireIn: '2s',
+    });
 
   customBuilderSetup(testingModuleBuilder);
 
