@@ -18,9 +18,13 @@ import { AuthConfig } from './config/auth.config';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: 'access-token-secret', // TODO: Move to configService
-      signOptions: { expiresIn: '5m' }, // TODO: TODO: Move to configService
+    JwtModule.registerAsync({
+      imports: [UserAccountsModule],
+      inject: [AuthConfig],
+      useFactory: (authConfig: AuthConfig) => ({
+        secret: authConfig.accessTokenSecret,
+        signOptions: { expiresIn: authConfig.accessTokenExpireIn },
+      }),
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     NotificationModule,
@@ -38,5 +42,6 @@ import { AuthConfig } from './config/auth.config';
     AuthService,
     AuthConfig,
   ],
+  exports: [JwtModule, AuthConfig],
 })
 export class UserAccountsModule {}
