@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
@@ -18,6 +19,9 @@ import { ConfirmPassRecoveryDto } from '../dto/confirm-pass-recovery.dto';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { MeViewDto } from './view-dto/users.view-dto';
 import { AuthQueryRepository } from '../infrastructure/query/auth.query-repository';
+import { CommandBus } from '@nestjs/cqrs';
+import { LoginUserCommand } from '../application/usecases/login-user.usecase';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -25,6 +29,7 @@ export class AuthController {
     private authService: AuthService,
     private usersService: UsersService,
     private authQueryRepository: AuthQueryRepository,
+    private commandBus: CommandBus,
   ) {}
 
   @Get('me')
@@ -36,10 +41,20 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
-  login(@ExtractUserFromRequest() user: UserContextDto): {
-    accessToken: string;
-  } {
-    return this.authService.login(user.id);
+  async login(
+    @Res({ passthrough: true }) res: Response,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<string> {
+    const result = await this.commandBus.execute(
+      new LoginUserCommand({ userId: user.id }),
+    );
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+
+    return result.accessToken;
   }
 
   @Post('registration')

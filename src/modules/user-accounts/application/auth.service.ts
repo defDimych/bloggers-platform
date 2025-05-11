@@ -43,14 +43,6 @@ export class AuthService {
     return { id: user._id.toString() };
   }
 
-  login(userId: string): { accessToken: string } {
-    const accessToken = this.jwtService.sign({ id: userId });
-
-    return {
-      accessToken,
-    };
-  }
-
   async emailConfirmation(dto: { code: string }): Promise<void> {
     const user = await this.usersRepository.findByConfirmationCode(dto.code);
 
