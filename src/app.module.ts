@@ -6,9 +6,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
 import { TestingModule } from './modules/testing/testing.module';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
+    CqrsModule.forRoot(),
     configModule,
     MongooseModule.forRoot(process.env.MONGODB_URI as string),
     BloggersPlatformModule,
