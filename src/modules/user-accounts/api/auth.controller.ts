@@ -44,7 +44,7 @@ export class AuthController {
   async login(
     @Res({ passthrough: true }) res: Response,
     @ExtractUserFromRequest() user: UserContextDto,
-  ): Promise<string> {
+  ): Promise<{ accessToken: string }> {
     const result = await this.commandBus.execute(
       new LoginUserCommand({ userId: user.id }),
     );
@@ -54,7 +54,9 @@ export class AuthController {
       secure: true,
     });
 
-    return result.accessToken;
+    return {
+      accessToken: result.accessToken,
+    };
   }
 
   @Post('registration')
