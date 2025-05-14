@@ -1,47 +1,44 @@
-import { Test, TestingModule, TestingModuleBuilder } from '@nestjs/testing';
+import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
-import { AuthConfig } from '../../src/modules/user-accounts/config/auth.config';
-import { INestApplication } from '@nestjs/common';
+import { EmailService } from '../../src/modules/notifications/email.service';
+import { EmailServiceMock } from '../mock/email-service.mock';
 import { appSetup } from '../../src/setup/app.setup';
 import { Connection } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
-import { App } from 'supertest/types';
+import { AuthTestHelper } from '../auth/auth.test-helper';
+import { deleteAllData } from './delete-all-data';
+import { UsersTestHelper } from '../users/users.test-helper';
 
-export const initApp = async (
-  customBuilderSetup = (builder: TestingModuleBuilder) => {},
+export const initSettings = async (
+  addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
 ) => {
-  const testingModuleBuilder = Test.createTestingModule({
+  const testingModuleBuilder: TestingModuleBuilder = Test.createTestingModule({
     imports: [AppModule],
   })
-    .overrideProvider(AuthConfig)
-    .useValue({
-      skipPasswordCheck: true,
-      accessTokenSecret: 'secret',
-      accessTokenExpireIn: '2s',
-    });
+    .overrideProvider(EmailService)
+    .useClass(EmailServiceMock);
 
-  customBuilderSetup(testingModuleBuilder);
+  if (addSettingsToModuleBuilder) {
+    addSettingsToModuleBuilder(testingModuleBuilder);
+  }
 
-  const moduleFixture: TestingModule = await testingModuleBuilder.compile();
+  const testingAppModule = await testingModuleBuilder.compile();
 
-  const app: INestApplication<App> = moduleFixture.createNestApplication();
-
+  const app = testingAppModule.createNestApplication();
   appSetup(app);
 
   await app.init();
 
-  await clearDB(moduleFixture);
+  const databaseConnection = app.get<Connection>(getConnectionToken());
+  const authTestHelper = new AuthTestHelper(app);
+  const userTestHelper = new UsersTestHelper(app);
 
-  return app;
-};
+  await deleteAllData(app);
 
-const clearDB = async (moduleFixture: TestingModule) => {
-  // Получаем подключение к бд
-  const connection = moduleFixture.get<Connection>(getConnectionToken());
-
-  // Очистка всех коллекций в тестовой бд
-  const collections = await connection.db!.listCollections().toArray();
-  for (const collection of collections) {
-    await connection.db!.collection(collection.name).deleteMany({});
-  }
+  return {
+    app,
+    databaseConnection,
+    authTestHelper,
+    userTestHelper,
+  };
 };
