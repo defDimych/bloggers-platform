@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { UsersController } from './api/users.controller';
-import { UsersService } from './application/services/users.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './domain/user.entity';
 import { CryptoService } from './application/services/crypto.service';
@@ -22,8 +21,15 @@ import {
 import { LoginUserUseCase } from './application/usecases/login-user.usecase';
 import { UsersFactory } from './application/factories/users.factory';
 import { CreateUserUseCase } from './application/usecases/create-user.usecase';
+import { RegisterUserUseCase } from './application/usecases/register-user.usecase';
+import { DeleteUserUseCase } from './application/usecases/delete-user.usecase';
 
-const useCases = [LoginUserUseCase, CreateUserUseCase];
+const useCases = [
+  LoginUserUseCase,
+  CreateUserUseCase,
+  RegisterUserUseCase,
+  DeleteUserUseCase,
+];
 
 @Module({
   imports: [
@@ -54,7 +60,6 @@ const useCases = [LoginUserUseCase, CreateUserUseCase];
       },
       inject: [AuthConfig],
     },
-    UsersService,
     UsersFactory,
     CryptoService,
     UsersRepository,
