@@ -13,7 +13,6 @@ import { ExtractUserFromRequest } from '../guards/decorators/param/extract-user-
 import { UserContextDto } from '../guards/dto/user-context.dto';
 import { AuthService } from '../application/services/auth.service';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { UsersService } from '../application/services/users.service';
 import { EmailDto } from '../dto/email.dto';
 import { ConfirmPassRecoveryDto } from '../dto/confirm-pass-recovery.dto';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
@@ -22,12 +21,12 @@ import { AuthQueryRepository } from '../infrastructure/query/auth.query-reposito
 import { CommandBus } from '@nestjs/cqrs';
 import { LoginUserCommand } from '../application/usecases/login-user.usecase';
 import { Response } from 'express';
+import { RegisterUserCommand } from '../application/usecases/register-user.usecase';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private usersService: UsersService,
     private authQueryRepository: AuthQueryRepository,
     private commandBus: CommandBus,
   ) {}
@@ -62,7 +61,7 @@ export class AuthController {
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   async registration(@Body() body: CreateUserDto): Promise<void> {
-    return this.usersService.registerUser(body);
+    return this.commandBus.execute(new RegisterUserCommand(body));
   }
 
   @Post('registration-confirmation')
