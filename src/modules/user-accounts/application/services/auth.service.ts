@@ -1,21 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../infrastructure/users.repository';
+import { UsersRepository } from '../../infrastructure/users.repository';
 import { CryptoService } from './crypto.service';
-import { UserContextDto } from '../guards/dto/user-context.dto';
-import { JwtService } from '@nestjs/jwt';
-import { DomainException } from '../../../core/exceptions/domain-exceptions';
-import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
-import { EmailDto } from '../dto/email.dto';
-import { EmailService } from '../../notifications/email.service';
-import { ConfirmPassRecoveryDto } from '../dto/confirm-pass-recovery.dto';
-import { AuthConfig } from '../config/auth.config';
+import { UserContextDto } from '../../guards/dto/user-context.dto';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { EmailDto } from '../../dto/email.dto';
+import { EmailService } from '../../../notifications/email.service';
+import { ConfirmPassRecoveryDto } from '../../dto/confirm-pass-recovery.dto';
+import { AuthConfig } from '../../config/auth.config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersRepository: UsersRepository,
     private cryptoService: CryptoService,
-    private jwtService: JwtService,
     private emailService: EmailService,
     private authConfig: AuthConfig,
   ) {}
