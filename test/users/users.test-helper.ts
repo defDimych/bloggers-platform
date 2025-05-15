@@ -4,10 +4,7 @@ import request from 'supertest';
 import { BASIC_AUTH_CREDENTIALS } from '../../src/constants';
 import { UsersViewDto } from '../../src/modules/user-accounts/api/view-dto/users.view-dto';
 import { App } from 'supertest/types';
-
-const fromUTF8ToBase64 = (username: string, password: string): string => {
-  return Buffer.from(`${username}:${password}`).toString('base64');
-};
+import { fromUTF8ToBase64 } from '../helpers/encoder';
 
 export class UsersTestHelper {
   private readonly username: string = BASIC_AUTH_CREDENTIALS.username;
