@@ -1,33 +1,34 @@
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { UsersRepository } from '../../infrastructure/users.repository';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { EmailService } from '../../../notifications/email.service';
-import { CreateUserDto } from '../../dto/create-user.dto';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private usersRepository: UsersRepository,
-    private emailService: EmailService,
-  ) {}
+  constructor(private usersRepository: UsersRepository) {}
+  async checkUniqueOrThrow(login: string, email: string): Promise<void> {
+    const foundUserByLogin = await this.usersRepository.findByLogin(login);
 
-  async registerUser(dto: CreateUserDto): Promise<void> {
-    // const confirmationCode = crypto.randomUUID();
-    // user.setConfirmationCode(confirmationCode);
-    // await this.usersRepository.save(user);
-    // this.emailService
-    //   .sendConfirmationEmail(user.accountData.email, confirmationCode)
-    //   .catch(console.error);
-  }
-
-  async deleteUser(id: string) {
-    const user = await this.usersRepository.findById(id);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
+    if (foundUserByLogin) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: 'Validation failed',
+        extensions: [
+          { message: 'User with the same login already exists', key: 'login' },
+        ],
+      });
     }
 
-    user.makeDeleted();
+    const foundUserByEmail = await this.usersRepository.findByEmail(email);
 
-    await this.usersRepository.save(user);
+    if (foundUserByEmail) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: 'Validation failed',
+        extensions: [
+          { message: 'User with the same email already exists', key: 'email' },
+        ],
+      });
+    }
   }
 }

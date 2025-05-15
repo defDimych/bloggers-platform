@@ -23,6 +23,7 @@ import { UsersFactory } from './application/factories/users.factory';
 import { CreateUserUseCase } from './application/usecases/create-user.usecase';
 import { RegisterUserUseCase } from './application/usecases/register-user.usecase';
 import { DeleteUserUseCase } from './application/usecases/delete-user.usecase';
+import { UsersService } from './application/services/users.service';
 
 const useCases = [
   LoginUserUseCase,
@@ -61,6 +62,7 @@ const useCases = [
       inject: [AuthConfig],
     },
     UsersFactory,
+    UsersService,
     CryptoService,
     UsersRepository,
     UsersQueryRepository,
