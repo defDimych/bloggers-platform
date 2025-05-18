@@ -22,6 +22,10 @@ import { CommandBus } from '@nestjs/cqrs';
 import { LoginUserCommand } from '../application/usecases/login-user.usecase';
 import { Response } from 'express';
 import { RegisterUserCommand } from '../application/usecases/register-user.usecase';
+import { EmailConfirmationCommand } from '../application/usecases/auth/email-confirmation.usecase';
+import { RegistrationEmailResendingCommand } from '../application/usecases/auth/registration-email-resending.usecase';
+import { PasswordRecoveryCommand } from '../application/usecases/auth/password-recovery.usecase';
+import { ConfirmPasswordRecoveryCommand } from '../application/usecases/auth/confirm-password-recovery.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -69,19 +73,19 @@ export class AuthController {
   async registrationConfirmation(
     @Body() body: { code: string },
   ): Promise<void> {
-    return this.authService.emailConfirmation(body);
+    return this.commandBus.execute(new EmailConfirmationCommand(body));
   }
 
   @Post('registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationEmailResending(@Body() body: EmailDto): Promise<void> {
-    return this.authService.registrationEmailResending(body);
+    return this.commandBus.execute(new RegistrationEmailResendingCommand(body));
   }
 
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body() body: EmailDto): Promise<void> {
-    return this.authService.passwordRecovery(body);
+    return this.commandBus.execute(new PasswordRecoveryCommand(body));
   }
 
   @Post('new-password')
@@ -89,6 +93,6 @@ export class AuthController {
   async passwordRecoveryConfirmation(
     @Body() body: ConfirmPassRecoveryDto,
   ): Promise<void> {
-    return this.authService.confirmPasswordRecovery(body);
+    return this.commandBus.execute(new ConfirmPasswordRecoveryCommand(body));
   }
 }

@@ -24,12 +24,20 @@ import { CreateUserUseCase } from './application/usecases/create-user.usecase';
 import { RegisterUserUseCase } from './application/usecases/register-user.usecase';
 import { DeleteUserUseCase } from './application/usecases/delete-user.usecase';
 import { UsersService } from './application/services/users.service';
+import { EmailConfirmationUseCase } from './application/usecases/auth/email-confirmation.usecase';
+import { RegistrationEmailResendingUseCase } from './application/usecases/auth/registration-email-resending.usecase';
+import { PasswordRecoveryUseCase } from './application/usecases/auth/password-recovery.usecase';
+import { ConfirmPasswordRecoveryUseCase } from './application/usecases/auth/confirm-password-recovery.usecase';
 
 const useCases = [
   LoginUserUseCase,
   CreateUserUseCase,
   RegisterUserUseCase,
   DeleteUserUseCase,
+  EmailConfirmationUseCase,
+  RegistrationEmailResendingUseCase,
+  PasswordRecoveryUseCase,
+  ConfirmPasswordRecoveryUseCase,
 ];
 
 @Module({
