@@ -1,12 +1,11 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { App } from 'supertest/types';
 import { BlogsTestHelper } from './blogs.test-helper';
-import { initApp } from '../helpers/init-settings';
+import { initSettings } from '../helpers/init-settings';
+import { deleteAllData } from '../helpers/delete-all-data';
 
 describe('BlogsController (e2e)', () => {
-  let app: INestApplication<App>;
-
+  let app: INestApplication;
   let blogsTestHelper: BlogsTestHelper;
 
   const createModel = {
@@ -16,13 +15,18 @@ describe('BlogsController (e2e)', () => {
   };
 
   beforeAll(async () => {
-    app = await initApp();
+    const result = await initSettings();
 
-    blogsTestHelper = new BlogsTestHelper(app);
+    app = result.app;
+    blogsTestHelper = result.blogsTestHelper;
   });
 
   afterAll(async () => {
     await app.close();
+  });
+
+  beforeEach(async () => {
+    await deleteAllData(app);
   });
 
   it('/blogs/:id (GET) should get blog by id, used additional methods: /blogs (POST)', async () => {
