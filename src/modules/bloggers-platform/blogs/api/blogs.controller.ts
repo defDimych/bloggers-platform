@@ -11,7 +11,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { BlogViewDto } from './view-dto/blogs.view-dto';
-import { BlogsService } from '../application/blogs.service';
 import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
 import { CreateBlogDto } from '../dto/create-blog.dto';
 import { UpdateBlogDto } from '../dto/update-blog.dto';
@@ -22,14 +21,18 @@ import { PostsService } from '../../posts/application/posts.service';
 import { PostsQueryRepository } from '../../posts/infrastructure/query/posts.query-repository';
 import { PostViewDto } from '../../posts/api/view-dto/posts.view-dto';
 import { getPostsQueryParams } from '../../posts/api/input-dto/get-posts-query-params.input-dto';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateBlogCommand } from '../application/usecases/create-blog.usecase';
+import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
+import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
-    private blogsService: BlogsService,
     private postsService: PostsService,
     private blogsQueryRepository: BlogsQueryRepository,
     private postsQueryRepository: PostsQueryRepository,
+    private commandBus: CommandBus,
   ) {}
 
   @Get()
@@ -56,7 +59,7 @@ export class BlogsController {
 
   @Post()
   async createBlog(@Body() body: CreateBlogDto): Promise<BlogViewDto> {
-    const blogId = await this.blogsService.createBlog(body);
+    const blogId = await this.commandBus.execute(new CreateBlogCommand(body));
 
     return this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
   }
@@ -76,13 +79,16 @@ export class BlogsController {
 
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async updateBlog(@Param('id') id: string, @Body() body: UpdateBlogDto) {
-    return this.blogsService.updateBlog(id, body);
+  async updateBlog(
+    @Param('id') id: string,
+    @Body() body: UpdateBlogDto,
+  ): Promise<void> {
+    return this.commandBus.execute(new UpdateBlogCommand(id, body));
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(@Param('id') id: string): Promise<void> {
-    return this.blogsService.deleteBlog(id);
+    return this.commandBus.execute(new DeleteBlogCommand(id));
   }
 }
