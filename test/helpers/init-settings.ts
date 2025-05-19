@@ -9,6 +9,7 @@ import { AuthTestHelper } from '../auth/auth.test-helper';
 import { deleteAllData } from './delete-all-data';
 import { UsersTestHelper } from '../users/users.test-helper';
 import { BlogsTestHelper } from '../blogs/blogs.test-helper';
+import { PostsTestHelper } from '../posts/posts.test-helper';
 
 export const initSettings = async (
   addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
@@ -34,6 +35,7 @@ export const initSettings = async (
   const authTestHelper = new AuthTestHelper(app);
   const userTestHelper = new UsersTestHelper(app);
   const blogsTestHelper = new BlogsTestHelper(app);
+  const postsTestHelper = new PostsTestHelper(app);
 
   await deleteAllData(app);
 
@@ -43,5 +45,6 @@ export const initSettings = async (
     authTestHelper,
     userTestHelper,
     blogsTestHelper,
+    postsTestHelper,
   };
 };
