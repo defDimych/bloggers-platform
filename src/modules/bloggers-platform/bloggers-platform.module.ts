@@ -7,13 +7,22 @@ import { BlogsController } from './blogs/api/blogs.controller';
 import { PostsController } from './posts/api/posts.controller';
 import { Post, PostSchema } from './posts/domain/post.entity';
 import { PostsRepository } from './posts/infrastructure/posts.repository';
-import { PostsService } from './posts/application/posts.service';
 import { PostsQueryRepository } from './posts/infrastructure/query/posts.query-repository';
 import { CreateBlogUseCase } from './blogs/application/usecases/create-blog.usecase';
 import { UpdateBlogUseCase } from './blogs/application/usecases/update-blog.usecase';
 import { DeleteBlogUseCase } from './blogs/application/usecases/delete-blog.usecase';
+import { CreatePostUseCase } from './posts/application/usecases/create-post.usecase';
+import { UpdatePostUseCase } from './posts/application/usecases/update-post.usecase';
+import { DeletePostUseCase } from './posts/application/usecases/delete-post.usecase';
 
-const useCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
+const useCases = [
+  CreateBlogUseCase,
+  UpdateBlogUseCase,
+  DeleteBlogUseCase,
+  CreatePostUseCase,
+  UpdatePostUseCase,
+  DeletePostUseCase,
+];
 
 @Module({
   imports: [
@@ -27,7 +36,6 @@ const useCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
     ...useCases,
     BlogsRepository,
     BlogsQueryRepository,
-    PostsService,
     PostsRepository,
     PostsQueryRepository,
   ],

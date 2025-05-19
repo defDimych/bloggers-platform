@@ -11,18 +11,21 @@ import {
   Query,
 } from '@nestjs/common';
 import { CreatePostDto } from '../dto/create-post.dto';
-import { PostsService } from '../application/posts.service';
 import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
 import { PostViewDto } from './view-dto/posts.view-dto';
 import { getPostsQueryParams } from './input-dto/get-posts-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreatePostCommand } from '../application/usecases/create-post.usecase';
+import { UpdatePostCommand } from '../application/usecases/update-post.usecase';
+import { DeletePostCommand } from '../application/usecases/delete-post.usecase';
 
 @Controller('posts')
 export class PostsController {
   constructor(
-    private postsService: PostsService,
     private postsQueryRepository: PostsQueryRepository,
+    private commandBus: CommandBus,
   ) {}
   @Get(':id')
   async getPost(@Param('id') id: string): Promise<PostViewDto> {
@@ -38,20 +41,23 @@ export class PostsController {
 
   @Post()
   async createPost(@Body() body: CreatePostDto): Promise<PostViewDto> {
-    const postId = await this.postsService.createPost(body);
+    const postId = await this.commandBus.execute(new CreatePostCommand(body));
 
     return this.postsQueryRepository.findByIdOrNotFoundFail(postId);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async updatePost(@Param('id') id: string, @Body() body: UpdatePostDto) {
-    return this.postsService.updatePost(id, body);
+  async updatePost(
+    @Param('id') id: string,
+    @Body() body: UpdatePostDto,
+  ): Promise<void> {
+    return this.commandBus.execute(new UpdatePostCommand(id, body));
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(@Param('id') id: string) {
-    return this.postsService.deletePost(id);
+  async deletePost(@Param('id') id: string): Promise<void> {
+    return this.commandBus.execute(new DeletePostCommand(id));
   }
 }

@@ -17,7 +17,6 @@ import { UpdateBlogDto } from '../dto/update-blog.dto';
 import { getBlogsQueryParams } from './input-dto/get-blogs.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { CreatePostForBlogInputDto } from './input-dto/create-post-for-blog.input-dto';
-import { PostsService } from '../../posts/application/posts.service';
 import { PostsQueryRepository } from '../../posts/infrastructure/query/posts.query-repository';
 import { PostViewDto } from '../../posts/api/view-dto/posts.view-dto';
 import { getPostsQueryParams } from '../../posts/api/input-dto/get-posts-query-params.input-dto';
@@ -25,11 +24,11 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreateBlogCommand } from '../application/usecases/create-blog.usecase';
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
+import { CreatePostCommand } from '../../posts/application/usecases/create-post.usecase';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
-    private postsService: PostsService,
     private blogsQueryRepository: BlogsQueryRepository,
     private postsQueryRepository: PostsQueryRepository,
     private commandBus: CommandBus,
@@ -69,10 +68,12 @@ export class BlogsController {
     @Param('blogId') blogId: string,
     @Body() body: CreatePostForBlogInputDto,
   ): Promise<PostViewDto> {
-    const postId = await this.postsService.createPost({
-      ...body,
-      blogId,
-    });
+    const postId = await this.commandBus.execute(
+      new CreatePostCommand({
+        ...body,
+        blogId,
+      }),
+    );
 
     return this.postsQueryRepository.findByIdOrNotFoundFail(postId);
   }
