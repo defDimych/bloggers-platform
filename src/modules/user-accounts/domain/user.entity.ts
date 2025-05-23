@@ -79,8 +79,10 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
+//регистрирует методы сущности в схеме
 UserSchema.loadClass(User);
 
 export type UserDocument = HydratedDocument<User>;
 
+// Типизация модели + статические методы
 export type UserModelType = Model<UserDocument> & typeof User;
