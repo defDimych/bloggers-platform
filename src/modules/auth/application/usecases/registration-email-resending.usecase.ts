@@ -1,9 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersRepository } from '../../../infrastructure/users.repository';
-import { EmailService } from '../../../../notifications/email.service';
-import { EmailDto } from '../../../dto/email.dto';
-import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
-import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
+import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
+import { EmailService } from '../../../notifications/email.service';
+import { EmailDto } from '../../dto/email.dto';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 export class RegistrationEmailResendingCommand {
   constructor(public dto: EmailDto) {}

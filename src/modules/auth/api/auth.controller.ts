@@ -11,26 +11,24 @@ import {
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 import { ExtractUserFromRequest } from '../guards/decorators/param/extract-user-from-request.decorator';
 import { UserContextDto } from '../guards/dto/user-context.dto';
-import { AuthService } from '../application/services/auth.service';
-import { CreateUserDto } from '../dto/create-user.dto';
+import { CreateUserDto } from '../../user-accounts/dto/create-user.dto';
 import { EmailDto } from '../dto/email.dto';
 import { ConfirmPassRecoveryDto } from '../dto/confirm-pass-recovery.dto';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
-import { MeViewDto } from './view-dto/users.view-dto';
-import { AuthQueryRepository } from '../infrastructure/query/auth.query-repository';
+import { MeViewDto } from '../../user-accounts/api/view-dto/users.view-dto';
+import { AuthQueryRepository } from '../infrastructure/auth.query-repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { LoginUserCommand } from '../application/usecases/login-user.usecase';
 import { Response } from 'express';
 import { RegisterUserCommand } from '../application/usecases/register-user.usecase';
-import { EmailConfirmationCommand } from '../application/usecases/auth/email-confirmation.usecase';
-import { RegistrationEmailResendingCommand } from '../application/usecases/auth/registration-email-resending.usecase';
-import { PasswordRecoveryCommand } from '../application/usecases/auth/password-recovery.usecase';
-import { ConfirmPasswordRecoveryCommand } from '../application/usecases/auth/confirm-password-recovery.usecase';
+import { EmailConfirmationCommand } from '../application/usecases/email-confirmation.usecase';
+import { RegistrationEmailResendingCommand } from '../application/usecases/registration-email-resending.usecase';
+import { PasswordRecoveryCommand } from '../application/usecases/password-recovery.usecase';
+import { ConfirmPasswordRecoveryCommand } from '../application/usecases/confirm-password-recovery.usecase';
 
 @Controller('auth')
 export class AuthController {
   constructor(
-    private authService: AuthService,
     private authQueryRepository: AuthQueryRepository,
     private commandBus: CommandBus,
   ) {}

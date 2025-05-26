@@ -1,5 +1,5 @@
 import { CreateUserDto } from '../../dto/create-user.dto';
-import { CryptoService } from '../services/crypto.service';
+import { CryptoService } from '../../../auth/application/services/crypto.service';
 import { User, UserDocument, UserModelType } from '../../domain/user.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { UsersService } from '../services/users.service';

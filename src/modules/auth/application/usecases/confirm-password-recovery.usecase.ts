@@ -1,9 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersRepository } from '../../../infrastructure/users.repository';
-import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
-import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
-import { ConfirmPassRecoveryDto } from '../../../dto/confirm-pass-recovery.dto';
-import { CryptoService } from '../../services/crypto.service';
+import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { ConfirmPassRecoveryDto } from '../../dto/confirm-pass-recovery.dto';
+import { CryptoService } from '../services/crypto.service';
 
 export class ConfirmPasswordRecoveryCommand {
   constructor(public dto: ConfirmPassRecoveryDto) {}

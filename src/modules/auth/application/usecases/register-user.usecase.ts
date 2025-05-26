@@ -1,7 +1,7 @@
-import { CreateUserDto } from '../../dto/create-user.dto';
+import { CreateUserDto } from '../../../user-accounts/dto/create-user.dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersFactory } from '../factories/users.factory';
-import { UsersRepository } from '../../infrastructure/users.repository';
+import { UsersFactory } from '../../../user-accounts/application/factories/users.factory';
+import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
 import { EmailService } from '../../../notifications/email.service';
 
 export class RegisterUserCommand {

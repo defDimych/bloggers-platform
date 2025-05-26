@@ -1,86 +1,30 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { UsersController } from './api/users.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './domain/user.entity';
-import { CryptoService } from './application/services/crypto.service';
 import { UsersRepository } from './infrastructure/users.repository';
 import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
-import { AuthController } from './api/auth.controller';
-import { LocalStrategy } from './guards/local/local.strategy';
-import { AuthService } from './application/services/auth.service';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { NotificationModule } from '../notifications/notification.module';
-import { AuthQueryRepository } from './infrastructure/query/auth.query-repository';
-import { JwtStrategy } from './guards/bearer/jwt.strategy';
-import { BasicAuthGuard } from './guards/basic/basic-auth.guard';
-import { AuthConfig } from './config/auth.config';
-import {
-  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
-  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-} from './constants/auth-tokens.inject-constants';
-import { LoginUserUseCase } from './application/usecases/login-user.usecase';
 import { UsersFactory } from './application/factories/users.factory';
 import { CreateUserUseCase } from './application/usecases/create-user.usecase';
-import { RegisterUserUseCase } from './application/usecases/register-user.usecase';
 import { DeleteUserUseCase } from './application/usecases/delete-user.usecase';
 import { UsersService } from './application/services/users.service';
-import { EmailConfirmationUseCase } from './application/usecases/auth/email-confirmation.usecase';
-import { RegistrationEmailResendingUseCase } from './application/usecases/auth/registration-email-resending.usecase';
-import { PasswordRecoveryUseCase } from './application/usecases/auth/password-recovery.usecase';
-import { ConfirmPasswordRecoveryUseCase } from './application/usecases/auth/confirm-password-recovery.usecase';
+import { AuthModule } from '../auth/auth.module';
 
-const useCases = [
-  LoginUserUseCase,
-  CreateUserUseCase,
-  RegisterUserUseCase,
-  DeleteUserUseCase,
-  EmailConfirmationUseCase,
-  RegistrationEmailResendingUseCase,
-  PasswordRecoveryUseCase,
-  ConfirmPasswordRecoveryUseCase,
-];
+const useCases = [CreateUserUseCase, DeleteUserUseCase];
 
 @Module({
   imports: [
-    JwtModule,
+    forwardRef(() => AuthModule),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    NotificationModule,
   ],
-  controllers: [UsersController, AuthController],
+  controllers: [UsersController],
   providers: [
     ...useCases,
-    {
-      provide: ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
-      useFactory: (authConfig: AuthConfig): JwtService => {
-        return new JwtService({
-          secret: authConfig.accessTokenSecret,
-          signOptions: { expiresIn: authConfig.accessTokenExpireIn },
-        });
-      },
-      inject: [AuthConfig],
-    },
-    {
-      provide: REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-      useFactory: (authConfig: AuthConfig): JwtService => {
-        return new JwtService({
-          secret: authConfig.refreshTokenSecret,
-          signOptions: { expiresIn: authConfig.refreshTokenExpireIn },
-        });
-      },
-      inject: [AuthConfig],
-    },
     UsersFactory,
     UsersService,
-    CryptoService,
     UsersRepository,
     UsersQueryRepository,
-    AuthQueryRepository,
-    BasicAuthGuard,
-    JwtStrategy,
-    LocalStrategy,
-    AuthService,
-    AuthConfig,
   ],
-  exports: [JwtModule, AuthConfig],
+  exports: [UsersRepository, UsersFactory],
 })
 export class UserAccountsModule {}

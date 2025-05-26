@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../../infrastructure/users.repository';
+import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
 import { CryptoService } from './crypto.service';
 import { UserContextDto } from '../../guards/dto/user-context.dto';
 import { AuthConfig } from '../../config/auth.config';

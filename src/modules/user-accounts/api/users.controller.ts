@@ -15,7 +15,7 @@ import { UsersQueryRepository } from '../infrastructure/query/users.query-reposi
 import { UsersViewDto } from './view-dto/users.view-dto';
 import { GetUsersQueryParams } from './input-dto/get-users.query-params.input-dto';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
-import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
+import { BasicAuthGuard } from '../../auth/guards/basic/basic-auth.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../application/usecases/create-user.usecase';
 import { DeleteUserCommand } from '../application/usecases/delete-user.usecase';
