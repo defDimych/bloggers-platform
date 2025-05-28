@@ -33,7 +33,7 @@ export const initSettings = async (
 
   const databaseConnection = app.get<Connection>(getConnectionToken());
   const authTestHelper = new AuthTestHelper(app);
-  const userTestHelper = new UsersTestHelper(app);
+  const usersTestHelper = new UsersTestHelper(app);
   const blogsTestHelper = new BlogsTestHelper(app);
   const postsTestHelper = new PostsTestHelper(app);
 
@@ -43,7 +43,7 @@ export const initSettings = async (
     app,
     databaseConnection,
     authTestHelper,
-    userTestHelper,
+    usersTestHelper,
     blogsTestHelper,
     postsTestHelper,
   };

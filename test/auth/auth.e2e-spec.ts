@@ -33,7 +33,7 @@ describe('AuthController (e2e)', () => {
 
     app = result.app;
     authTestHelper = result.authTestHelper;
-    userTestHelper = result.userTestHelper;
+    userTestHelper = result.usersTestHelper;
   });
 
   afterAll(async () => {
