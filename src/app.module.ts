@@ -7,6 +7,7 @@ import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-pla
 import { TestingModule } from './modules/testing/testing.module';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
 import { CqrsModule } from '@nestjs/cqrs';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CqrsModule } from '@nestjs/cqrs';
     BloggersPlatformModule,
     TestingModule,
     UserAccountsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
