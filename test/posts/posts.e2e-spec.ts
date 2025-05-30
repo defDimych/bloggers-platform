@@ -5,11 +5,20 @@ import { BlogsTestHelper } from '../blogs/blogs.test-helper';
 import { PostsTestHelper } from './posts.test-helper';
 import request from 'supertest';
 import { PostViewDto } from '../../src/modules/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { UsersTestHelper } from '../users/users.test-helper';
+import { AuthTestHelper } from '../auth/auth.test-helper';
+import { ErrorResponseBody } from '../../src/core/exceptions/filters/error-response-body.type';
+import { CommentViewDto } from '../../src/modules/bloggers-platform/comments/api/view-dto/comments.view-dto';
 
 describe('PostsController (e2e)', () => {
   let app: INestApplication;
+
   let blogsTestHelper: BlogsTestHelper;
   let postsTestHelper: PostsTestHelper;
+  let usersTestHelper: UsersTestHelper;
+  let authTestHelper: AuthTestHelper;
+
+  let skipDeleteData = false;
 
   const createTestingBlogModel = {
     name: 'n1',
@@ -23,6 +32,8 @@ describe('PostsController (e2e)', () => {
     app = result.app;
     blogsTestHelper = result.blogsTestHelper;
     postsTestHelper = result.postsTestHelper;
+    usersTestHelper = result.usersTestHelper;
+    authTestHelper = result.authTestHelper;
   });
 
   afterAll(async () => {
@@ -30,7 +41,9 @@ describe('PostsController (e2e)', () => {
   });
 
   beforeEach(async () => {
-    await deleteAllData(app);
+    if (!skipDeleteData) {
+      await deleteAllData(app);
+    }
   });
 
   it('create post', async () => {
@@ -99,5 +112,83 @@ describe('PostsController (e2e)', () => {
     await request(app.getHttpServer())
       .get('/posts/' + createdPost.id)
       .expect(HttpStatus.NOT_FOUND);
+  });
+
+  describe('create comment', () => {
+    let createdPost: PostViewDto;
+    let accessToken: string;
+
+    beforeAll(async () => {
+      skipDeleteData = true;
+
+      const createdBlog = await blogsTestHelper.createBlog(
+        createTestingBlogModel,
+      );
+
+      createdPost = await postsTestHelper.createPost({
+        title: 't1',
+        shortDescription: 's1',
+        content: 'c1',
+        blogId: createdBlog.id,
+      });
+
+      const createTestingUserModel = {
+        login: 'Webster',
+        password: 'Webster123',
+        email: 'test@mail.ru',
+      };
+
+      const createdUser = await usersTestHelper.createUser(
+        createTestingUserModel,
+      );
+
+      accessToken = await authTestHelper.login({
+        loginOrEmail: createdUser.login,
+        password: createTestingUserModel.password,
+      });
+    });
+
+    afterAll(() => {
+      skipDeleteData = false;
+    });
+
+    it('should return 401 if the user is not authorized', async () => {
+      await request(app.getHttpServer())
+        .post('/posts/' + createdPost.id + '/comments')
+        .send({ content: 'test content' })
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should return 400 if inputModel has incorrect values', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/posts/' + createdPost.id + '/comments')
+        .auth(accessToken, { type: 'bearer' })
+        .send({ content: 'test content' })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      const body = response.body as ErrorResponseBody;
+      expect(body.errorsMessages[0].field).toBe('content');
+    });
+
+    it('should create comment', async () => {
+      const content = 'content_content_content_content';
+
+      const response = await request(app.getHttpServer())
+        .post('/posts/' + createdPost.id + '/comments')
+        .auth(accessToken, { type: 'bearer' })
+        .send({ content })
+        .expect(HttpStatus.CREATED);
+
+      const body = response.body as CommentViewDto;
+      expect(body).toHaveProperty('id');
+      expect(body.commentatorInfo.userId).not.toBe('');
+      expect(body.commentatorInfo.userLogin).not.toBe('');
+      expect(body.content).toBe(content);
+      expect(body.likesInfo).toEqual({
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: 'None',
+      });
+    });
   });
 });
