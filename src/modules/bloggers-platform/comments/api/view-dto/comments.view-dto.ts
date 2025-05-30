@@ -1,10 +1,5 @@
 import { CommentDocument } from '../../domain/comment.entity';
-
-export enum Status {
-  None = 'None',
-  Like = 'Like',
-  Dislike = 'Dislike',
-}
+import { LikeStatus } from '../../../types/like-status.enum';
 
 type CommentatorInfo = {
   userId: string;
@@ -14,7 +9,7 @@ type CommentatorInfo = {
 type LikesInfo = {
   likesCount: number;
   dislikesCount: number;
-  myStatus: Status;
+  myStatus: LikeStatus;
 };
 
 export class CommentViewDto {
@@ -38,7 +33,7 @@ export class CommentViewDto {
       likesCount: comment.likesCount,
       dislikesCount: comment.dislikesCount,
       // TODO: заглушка
-      myStatus: Status.None,
+      myStatus: LikeStatus.None,
     };
 
     return dto;
