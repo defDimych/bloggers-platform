@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
@@ -20,11 +21,19 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../application/usecases/create-post.usecase';
 import { UpdatePostCommand } from '../application/usecases/update-post.usecase';
 import { DeletePostCommand } from '../application/usecases/delete-post.usecase';
+import { CreateCommentInputDto } from '../../comments/api/input-dto/create-comment.input-dto';
+import { CreateCommentCommand } from '../../comments/application/usecases/create-comment.usecase';
+import { ExtractUserFromRequest } from '../../../auth/guards/decorators/param/extract-user-from-request.decorator';
+import { UserContextDto } from '../../../auth/guards/dto/user-context.dto';
+import { CommentsQueryRepository } from '../../comments/infrastructure/query/comments.query-repository';
+import { CommentViewDto } from '../../comments/api/view-dto/comments.view-dto';
+import { JwtAuthGuard } from '../../../auth/guards/bearer/jwt-auth.guard';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private postsQueryRepository: PostsQueryRepository,
+    private commentsQueryRepository: CommentsQueryRepository,
     private commandBus: CommandBus,
   ) {}
   @Get(':id')
@@ -44,6 +53,24 @@ export class PostsController {
     const postId = await this.commandBus.execute(new CreatePostCommand(body));
 
     return this.postsQueryRepository.findByIdOrNotFoundFail(postId);
+  }
+
+  @Post(':postId/comments')
+  @UseGuards(JwtAuthGuard)
+  async createCommentForPost(
+    @Param('postId') postId: string,
+    @Body() body: CreateCommentInputDto,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<CommentViewDto> {
+    const commentId: string = await this.commandBus.execute(
+      new CreateCommentCommand({
+        userId: user.id,
+        postId,
+        content: body.content,
+      }),
+    );
+
+    return this.commentsQueryRepository.getCommentById(commentId, user.id);
   }
 
   @Put(':id')
