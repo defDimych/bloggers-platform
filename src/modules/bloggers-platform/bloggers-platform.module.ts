@@ -20,6 +20,15 @@ import { CommentsRepository } from './comments/infrastructure/comments.repositor
 import { CommentsQueryRepository } from './comments/infrastructure/query/comments.query-repository';
 import { User, UserSchema } from '../user-accounts/domain/user.entity';
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
+import { CommentsController } from './comments/api/comments.controller';
+import { UpdateLikeStatusUseCase } from './comments/application/usecases/update-like-status.usecase';
+import {
+  CommentLike,
+  CommentLikeSchema,
+} from './likes/domain/comment-like.entity';
+import { CommentLikeRepository } from './likes/infrastructure/comment-like.repository';
+import { CreateLikeUseCase } from './comments/application/usecases/create-like.usecase';
+import { UpdateLikesCountUseCase } from './comments/application/usecases/update-likes-count.usecase';
 
 const useCases = [
   CreateBlogUseCase,
@@ -29,8 +38,16 @@ const useCases = [
   UpdatePostUseCase,
   DeletePostUseCase,
   CreateCommentUseCase,
+  UpdateLikeStatusUseCase,
+  CreateLikeUseCase,
+  UpdateLikesCountUseCase,
 ];
-const repository = [BlogsRepository, PostsRepository, CommentsRepository];
+const repository = [
+  BlogsRepository,
+  PostsRepository,
+  CommentsRepository,
+  CommentLikeRepository,
+];
 const queryRepository = [
   BlogsQueryRepository,
   PostsQueryRepository,
@@ -45,9 +62,10 @@ const queryRepository = [
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },
       { name: User.name, schema: UserSchema },
+      { name: CommentLike.name, schema: CommentLikeSchema },
     ]),
   ],
-  controllers: [BlogsController, PostsController],
+  controllers: [BlogsController, PostsController, CommentsController],
   providers: [...useCases, ...repository, ...queryRepository],
 })
 export class BloggersPlatformModule {}
