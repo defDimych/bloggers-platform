@@ -13,6 +13,8 @@ import { ExtractUserFromRequest } from '../../../auth/guards/decorators/param/ex
 import { UserContextDto } from '../../../auth/guards/dto/user-context.dto';
 import { CommandBus } from '@nestjs/cqrs';
 import { UpdateLikeStatusCommand } from '../application/usecases/update-like-status.usecase';
+import { UpdateCommentInputDto } from './input-dto/update-comment.input-dto';
+import { UpdateCommentCommand } from '../application/usecases/update-comment.usecase';
 
 @Controller('comments')
 export class CommentsController {
@@ -30,6 +32,23 @@ export class CommentsController {
       new UpdateLikeStatusCommand({
         commentId,
         likeStatus: body.likeStatus,
+        userId: user.id,
+      }),
+    );
+  }
+
+  @Put(':commentId')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateComment(
+    @Param('commentId') commentId: string,
+    @Body() body: UpdateCommentInputDto,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<void> {
+    return this.commandBus.execute(
+      new UpdateCommentCommand({
+        commentId,
+        content: body.content,
         userId: user.id,
       }),
     );

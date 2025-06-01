@@ -29,6 +29,7 @@ import {
 import { CommentLikeRepository } from './likes/infrastructure/comment-like.repository';
 import { CreateLikeUseCase } from './comments/application/usecases/create-like.usecase';
 import { UpdateLikesCountUseCase } from './comments/application/usecases/update-likes-count.usecase';
+import { UpdateCommentUseCase } from './comments/application/usecases/update-comment.usecase';
 
 const useCases = [
   CreateBlogUseCase,
@@ -41,6 +42,7 @@ const useCases = [
   UpdateLikeStatusUseCase,
   CreateLikeUseCase,
   UpdateLikesCountUseCase,
+  UpdateCommentUseCase,
 ];
 const repository = [
   BlogsRepository,

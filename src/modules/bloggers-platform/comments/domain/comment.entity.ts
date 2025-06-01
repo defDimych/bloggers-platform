@@ -37,6 +37,10 @@ export class Comment {
 
     return comment as CommentDocument;
   }
+
+  update(content: string): void {
+    this.content = content;
+  }
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);
