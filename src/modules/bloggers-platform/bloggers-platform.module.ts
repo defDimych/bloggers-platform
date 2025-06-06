@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Blog, BlogSchema } from './blogs/domain/blog.entity';
 import { BlogsRepository } from './blogs/infrastructure/blogs.repository';
@@ -30,6 +35,8 @@ import { CommentLikeRepository } from './likes/infrastructure/comment-like.repos
 import { CreateLikeUseCase } from './comments/application/usecases/create-like.usecase';
 import { UpdateLikesCountUseCase } from './comments/application/usecases/update-likes-count.usecase';
 import { UpdateCommentUseCase } from './comments/application/usecases/update-comment.usecase';
+import { TryExtractUserIdMiddleware } from './common/middleware/try-extract-user-id.middleware';
+import { AuthModule } from '../auth/auth.module';
 
 const useCases = [
   CreateBlogUseCase,
@@ -58,6 +65,7 @@ const queryRepository = [
 
 @Module({
   imports: [
+    AuthModule,
     UserAccountsModule,
     MongooseModule.forFeature([
       { name: Blog.name, schema: BlogSchema },
@@ -70,4 +78,10 @@ const queryRepository = [
   controllers: [BlogsController, PostsController, CommentsController],
   providers: [...useCases, ...repository, ...queryRepository],
 })
-export class BloggersPlatformModule {}
+export class BloggersPlatformModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(TryExtractUserIdMiddleware)
+      .forRoutes({ path: 'comments/*', method: RequestMethod.GET });
+  }
+}
