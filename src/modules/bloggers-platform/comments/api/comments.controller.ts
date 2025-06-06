@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -15,10 +16,27 @@ import { CommandBus } from '@nestjs/cqrs';
 import { UpdateLikeStatusCommand } from '../application/usecases/update-like-status.usecase';
 import { UpdateCommentInputDto } from './input-dto/update-comment.input-dto';
 import { UpdateCommentCommand } from '../application/usecases/update-comment.usecase';
+import { CommentsQueryRepository } from '../infrastructure/query/comments.query-repository';
+import { CommentViewDto } from './view-dto/comments.view-dto';
+import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
 
 @Controller('comments')
 export class CommentsController {
-  constructor(private commandBus: CommandBus) {}
+  constructor(
+    private commandBus: CommandBus,
+    private commentsQueryRepository: CommentsQueryRepository,
+  ) {}
+
+  @Get(':id')
+  async getById(
+    @Param('id') id: string,
+    @OptionalUserIdFromRequest() userId: string | null,
+  ): Promise<CommentViewDto> {
+    return this.commentsQueryRepository.getById({
+      commentId: id,
+      userId,
+    });
+  }
 
   @Put(':commentId/like-status')
   @UseGuards(JwtAuthGuard)

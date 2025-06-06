@@ -1,5 +1,6 @@
 import { CommentDocument } from '../../domain/comment.entity';
-import { LikeStatus } from '../../../types/like-status.enum';
+import { LikeStatus } from '../../../common/types/like-status.enum';
+import { CommentLikeDocument } from '../../../likes/domain/comment-like.entity';
 
 type CommentatorInfo = {
   userId: string;
@@ -19,23 +20,26 @@ export class CommentViewDto {
   createdAt: string;
   likesInfo: LikesInfo;
 
-  static mapToView = (comment: CommentDocument): CommentViewDto => {
-    const dto = new CommentViewDto();
+  static mapToView = (dto: {
+    userId: string | null;
+    comment: CommentDocument;
+    like: CommentLikeDocument | null;
+  }): CommentViewDto => {
+    const viewDto = new CommentViewDto();
 
-    dto.id = comment._id.toString();
-    dto.commentatorInfo = {
-      userId: comment.commentatorInfo.userId,
-      userLogin: comment.commentatorInfo.login,
+    viewDto.id = dto.comment._id.toString();
+    viewDto.commentatorInfo = {
+      userId: dto.comment.commentatorInfo.userId,
+      userLogin: dto.comment.commentatorInfo.login,
     };
-    dto.content = comment.content;
-    dto.createdAt = comment.createdAt.toISOString();
-    dto.likesInfo = {
-      likesCount: comment.likesCount,
-      dislikesCount: comment.dislikesCount,
-      // TODO: заглушка
-      myStatus: LikeStatus.None,
+    viewDto.content = dto.comment.content;
+    viewDto.createdAt = dto.comment.createdAt.toISOString();
+    viewDto.likesInfo = {
+      likesCount: dto.comment.likesCount,
+      dislikesCount: dto.comment.dislikesCount,
+      myStatus: !dto.userId || !dto.like ? LikeStatus.None : dto.like.myStatus,
     };
 
-    return dto;
+    return viewDto;
   };
 }
