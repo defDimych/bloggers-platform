@@ -1,4 +1,4 @@
-import { LikeStatus } from '../../../types/like-status.enum';
+import { LikeStatus } from '../../../common/types/like-status.enum';
 import { IsEnum } from 'class-validator';
 
 export class UpdateLikeStatusInputDto {

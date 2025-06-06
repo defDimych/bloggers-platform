@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { LikeStatus } from '../../types/like-status.enum';
+import { LikeStatus } from '../../common/types/like-status.enum';
 import { HydratedDocument, Model } from 'mongoose';
 import { CreateLikeDomainDto } from './dto/create-like.domain-dto';
 

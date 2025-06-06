@@ -7,7 +7,7 @@ import {
 } from '../../../likes/domain/comment-like.entity';
 import { CommentLikeRepository } from '../../../likes/infrastructure/comment-like.repository';
 import { UpdateLikesCountCommand } from './update-likes-count.usecase';
-import { LikeStatus } from '../../../types/like-status.enum';
+import { LikeStatus } from '../../../common/types/like-status.enum';
 
 export class CreateLikeCommand {
   constructor(public dto: CreateLikeDto) {}

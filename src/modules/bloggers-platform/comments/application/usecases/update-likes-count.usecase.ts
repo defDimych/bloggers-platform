@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
-import { LikeStatus } from '../../../types/like-status.enum';
+import { LikeStatus } from '../../../common/types/like-status.enum';
 
 export class UpdateLikesCountCommand {
   constructor(public dto: UpdateLikesCountDto) {}

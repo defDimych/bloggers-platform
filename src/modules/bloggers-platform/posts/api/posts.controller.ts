@@ -70,7 +70,7 @@ export class PostsController {
       }),
     );
 
-    return this.commentsQueryRepository.getCommentById(commentId, user.id);
+    return this.commentsQueryRepository.getById({ commentId, userId: user.id });
   }
 
   @Put(':id')
