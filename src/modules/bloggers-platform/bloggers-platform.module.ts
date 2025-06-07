@@ -37,6 +37,7 @@ import { UpdateLikesCountUseCase } from './comments/application/usecases/update-
 import { UpdateCommentUseCase } from './comments/application/usecases/update-comment.usecase';
 import { TryExtractUserIdMiddleware } from './common/middleware/try-extract-user-id.middleware';
 import { AuthModule } from '../auth/auth.module';
+import { PostsService } from './posts/application/posts.service';
 
 const useCases = [
   CreateBlogUseCase,
@@ -76,12 +77,15 @@ const queryRepository = [
     ]),
   ],
   controllers: [BlogsController, PostsController, CommentsController],
-  providers: [...useCases, ...repository, ...queryRepository],
+  providers: [...useCases, ...repository, ...queryRepository, PostsService],
 })
 export class BloggersPlatformModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(TryExtractUserIdMiddleware)
-      .forRoutes({ path: 'comments/*', method: RequestMethod.GET });
+      .forRoutes(
+        { path: 'comments/*', method: RequestMethod.GET },
+        { path: 'posts/*/comments', method: RequestMethod.GET },
+      );
   }
 }

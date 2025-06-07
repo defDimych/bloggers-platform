@@ -28,12 +28,16 @@ import { UserContextDto } from '../../../auth/guards/dto/user-context.dto';
 import { CommentsQueryRepository } from '../../comments/infrastructure/query/comments.query-repository';
 import { CommentViewDto } from '../../comments/api/view-dto/comments.view-dto';
 import { JwtAuthGuard } from '../../../auth/guards/bearer/jwt-auth.guard';
+import { GetCommentsQueryParams } from './input-dto/get-comments-query-params.input-dto';
+import { PostsService } from '../application/posts.service';
+import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private postsQueryRepository: PostsQueryRepository,
     private commentsQueryRepository: CommentsQueryRepository,
+    private postsService: PostsService,
     private commandBus: CommandBus,
   ) {}
   @Get(':id')
@@ -46,6 +50,17 @@ export class PostsController {
     @Query() query: getPostsQueryParams,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
     return this.postsQueryRepository.getPosts(query);
+  }
+
+  @Get(':postId/comments')
+  async getComments(
+    @OptionalUserIdFromRequest() userId: string | null,
+    @Param('postId') postId: string,
+    @Query() query: GetCommentsQueryParams,
+  ): Promise<PaginatedViewDto<CommentViewDto[]>> {
+    await this.postsService.checkPostExistsOrThrow(postId);
+
+    return this.commentsQueryRepository.getAll({ userId, postId, query });
   }
 
   @Post()
