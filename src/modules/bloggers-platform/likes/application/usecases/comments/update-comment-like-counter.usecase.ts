@@ -1,21 +1,21 @@
-import { UpdateLikesCountDto } from '../dto/update-likes-count.dto';
+import { UpdateCommentLikeCounterDto } from './dto/update-comment-like-counter.dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CommentsRepository } from '../../infrastructure/comments.repository';
-import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
-import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
-import { LikeStatus } from '../../../common/types/like-status.enum';
+import { CommentsRepository } from '../../../../comments/infrastructure/comments.repository';
+import { DomainException } from '../../../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../../../core/exceptions/domain-exception-codes';
+import { LikeStatus } from '../../../../common/types/like-status.enum';
 
-export class UpdateLikesCountCommand {
-  constructor(public dto: UpdateLikesCountDto) {}
+export class UpdateCommentLikeCounterCommand {
+  constructor(public dto: UpdateCommentLikeCounterDto) {}
 }
 
-@CommandHandler(UpdateLikesCountCommand)
-export class UpdateLikesCountUseCase
-  implements ICommandHandler<UpdateLikesCountCommand>
+@CommandHandler(UpdateCommentLikeCounterCommand)
+export class UpdateCommentLikeCounterUseCase
+  implements ICommandHandler<UpdateCommentLikeCounterCommand>
 {
   constructor(private commentsRepository: CommentsRepository) {}
 
-  async execute({ dto }: UpdateLikesCountCommand): Promise<void> {
+  async execute({ dto }: UpdateCommentLikeCounterCommand): Promise<void> {
     const comment = await this.commentsRepository.findById(dto.commentId);
 
     if (!comment) {

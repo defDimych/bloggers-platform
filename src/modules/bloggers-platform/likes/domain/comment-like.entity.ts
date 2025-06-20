@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { LikeStatus } from '../../common/types/like-status.enum';
 import { HydratedDocument, Model } from 'mongoose';
-import { CreateLikeDomainDto } from './dto/create-like.domain-dto';
+import { CreateCommentLikeDomainDto } from './dto/create-comment-like.domain-dto';
 
 @Schema()
 export class CommentLike {
@@ -18,7 +18,7 @@ export class CommentLike {
   })
   myStatus: LikeStatus;
 
-  static createInstance(dto: CreateLikeDomainDto): CommentLikeDocument {
+  static createInstance(dto: CreateCommentLikeDomainDto): CommentLikeDocument {
     const like = new this();
 
     like.userId = dto.userId;
