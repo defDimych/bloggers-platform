@@ -24,8 +24,12 @@ export class CommentsQueryRepository {
     dto: GetAllCommentsDto,
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {
     const filter = dto.userId
-      ? { postId: dto.postId, 'commentatorInfo.userId': dto.userId }
-      : { postId: dto.postId };
+      ? {
+          postId: dto.postId,
+          'commentatorInfo.userId': dto.userId,
+          deletedAt: null,
+        }
+      : { postId: dto.postId, deletedAt: null };
 
     try {
       const commentsPromise = this.CommentModel.find(filter)

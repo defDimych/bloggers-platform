@@ -13,7 +13,7 @@ export class CommentsRepository {
   ) {}
 
   async findById(id: string): Promise<CommentDocument | null> {
-    return this.CommentModel.findOne({ _id: id });
+    return this.CommentModel.findOne({ _id: id, deletedAt: null });
   }
 
   async save(comment: CommentDocument): Promise<void> {

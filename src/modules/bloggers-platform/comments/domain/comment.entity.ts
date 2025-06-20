@@ -28,6 +28,9 @@ export class Comment {
   createdAt: Date;
   updatedAt: Date;
 
+  @Prop({ type: Date, default: null })
+  deletedAt: Date | null;
+
   static createInstance(dto: CreateCommentDomainDto): CommentDocument {
     const comment = new this();
 
@@ -40,6 +43,13 @@ export class Comment {
 
   update(content: string): void {
     this.content = content;
+  }
+
+  makeDeleted() {
+    if (this.deletedAt !== null) {
+      throw new Error('Entity already deleted');
+    }
+    this.deletedAt = new Date();
   }
 }
 
