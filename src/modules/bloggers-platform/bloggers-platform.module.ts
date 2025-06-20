@@ -26,18 +26,24 @@ import { CommentsQueryRepository } from './comments/infrastructure/query/comment
 import { User, UserSchema } from '../user-accounts/domain/user.entity';
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
 import { CommentsController } from './comments/api/comments.controller';
-import { UpdateLikeStatusUseCase } from './comments/application/usecases/update-like-status.usecase';
+import { UpdateCommentLikeStatusUseCase } from './likes/application/usecases/comments/update-comment-like-status.usecase';
 import {
   CommentLike,
   CommentLikeSchema,
 } from './likes/domain/comment-like.entity';
 import { CommentLikeRepository } from './likes/infrastructure/comment-like.repository';
-import { CreateLikeUseCase } from './comments/application/usecases/create-like.usecase';
-import { UpdateLikesCountUseCase } from './comments/application/usecases/update-likes-count.usecase';
+import { CreateCommentLikeUseCase } from './likes/application/usecases/comments/create-comment-like.usecase';
+import { UpdateCommentLikeCounterUseCase } from './likes/application/usecases/comments/update-comment-like-counter.usecase';
 import { UpdateCommentUseCase } from './comments/application/usecases/update-comment.usecase';
 import { TryExtractUserIdMiddleware } from './common/middleware/try-extract-user-id.middleware';
 import { AuthModule } from '../auth/auth.module';
 import { PostsService } from './posts/application/posts.service';
+import { DeleteCommentUseCase } from './comments/application/usecases/delete-comment.usecase';
+import { UpdatePostLikeStatusUseCase } from './likes/application/usecases/posts/update-post-like-status.usecase';
+import { PostLike, PostLikeSchema } from './likes/domain/post-like.entity';
+import { PostLikeRepository } from './likes/infrastructure/post-like.repository';
+import { CreatePostLikeUseCase } from './likes/application/usecases/posts/create-post-like.usecase';
+import { UpdatePostLikeCounterUseCase } from './likes/application/usecases/posts/update-post-like-counter.usecase';
 
 const useCases = [
   CreateBlogUseCase,
@@ -47,16 +53,21 @@ const useCases = [
   UpdatePostUseCase,
   DeletePostUseCase,
   CreateCommentUseCase,
-  UpdateLikeStatusUseCase,
-  CreateLikeUseCase,
-  UpdateLikesCountUseCase,
+  UpdateCommentLikeStatusUseCase,
+  UpdatePostLikeStatusUseCase,
+  CreateCommentLikeUseCase,
+  CreatePostLikeUseCase,
+  UpdateCommentLikeCounterUseCase,
+  UpdatePostLikeCounterUseCase,
   UpdateCommentUseCase,
+  DeleteCommentUseCase,
 ];
 const repository = [
   BlogsRepository,
   PostsRepository,
   CommentsRepository,
   CommentLikeRepository,
+  PostLikeRepository,
 ];
 const queryRepository = [
   BlogsQueryRepository,
@@ -74,6 +85,7 @@ const queryRepository = [
       { name: Comment.name, schema: CommentSchema },
       { name: User.name, schema: UserSchema },
       { name: CommentLike.name, schema: CommentLikeSchema },
+      { name: PostLike.name, schema: PostLikeSchema },
     ]),
   ],
   controllers: [BlogsController, PostsController, CommentsController],
