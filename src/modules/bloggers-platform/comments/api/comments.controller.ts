@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -8,17 +9,18 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { UpdateLikeStatusInputDto } from './input-dto/update-like-status.input-dto';
+import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-status.input-dto';
 import { JwtAuthGuard } from '../../../auth/guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from '../../../auth/guards/decorators/param/extract-user-from-request.decorator';
 import { UserContextDto } from '../../../auth/guards/dto/user-context.dto';
 import { CommandBus } from '@nestjs/cqrs';
-import { UpdateLikeStatusCommand } from '../application/usecases/update-like-status.usecase';
+import { UpdateCommentLikeStatusCommand } from '../../likes/application/usecases/comments/update-comment-like-status.usecase';
 import { UpdateCommentInputDto } from './input-dto/update-comment.input-dto';
 import { UpdateCommentCommand } from '../application/usecases/update-comment.usecase';
 import { CommentsQueryRepository } from '../infrastructure/query/comments.query-repository';
 import { CommentViewDto } from './view-dto/comments.view-dto';
 import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
+import { DeleteCommentCommand } from '../application/usecases/delete-comment.usecase';
 
 @Controller('comments')
 export class CommentsController {
@@ -47,7 +49,7 @@ export class CommentsController {
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
     return this.commandBus.execute(
-      new UpdateLikeStatusCommand({
+      new UpdateCommentLikeStatusCommand({
         commentId,
         likeStatus: body.likeStatus,
         userId: user.id,
@@ -69,6 +71,18 @@ export class CommentsController {
         content: body.content,
         userId: user.id,
       }),
+    );
+  }
+
+  @Delete(':commentId')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteComment(
+    @Param('commentId') commentId: string,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<void> {
+    return this.commandBus.execute(
+      new DeleteCommentCommand({ commentId, userId: user.id }),
     );
   }
 }
