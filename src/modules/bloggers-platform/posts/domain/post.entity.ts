@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CreatePostDomainDto } from './dto/create-post.domain-dto';
 import { HydratedDocument, Model } from 'mongoose';
 import { UpdatePostDto } from '../dto/update-post.dto';
+import { LikeInfo, LikeInfoSchema } from './like-info.schema';
 
 export type PostDocument = HydratedDocument<Post>;
 
@@ -27,6 +28,15 @@ export class Post {
 
   @Prop({ type: Date, default: null })
   deletedAt: Date | null;
+
+  @Prop({ type: Number, required: true, default: 0 })
+  likesCount: number;
+
+  @Prop({ type: Number, required: true, default: 0 })
+  dislikesCount: number;
+
+  @Prop({ type: LikeInfoSchema, required: true, default: [] })
+  newestLikes: LikeInfo[];
 
   static createInstance(dto: CreatePostDomainDto): PostDocument {
     const post = new this();

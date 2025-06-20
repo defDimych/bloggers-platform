@@ -1,7 +1,7 @@
 import { LikeStatus } from '../../../common/types/like-status.enum';
 
-export class UpdateLikeStatusDto {
+export class CreatePostLikeDomainDto {
   userId: string;
-  commentId: string;
+  postId: string;
   likeStatus: LikeStatus;
 }

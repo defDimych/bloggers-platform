@@ -11,6 +11,13 @@ export class UsersRepository {
     return this.UserModel.findOne({ _id: id, 'accountData.deletedAt': null });
   }
 
+  async findUsersById(ids: string[]): Promise<UserDocument[]> {
+    return this.UserModel.find({
+      _id: { $in: ids },
+      'accountData.deletedAt': null,
+    });
+  }
+
   async findByIdOrNotFoundFail(id: string): Promise<UserDocument> {
     const user = await this.findById(id);
 

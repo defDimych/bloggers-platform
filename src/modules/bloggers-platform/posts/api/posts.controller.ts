@@ -31,6 +31,8 @@ import { JwtAuthGuard } from '../../../auth/guards/bearer/jwt-auth.guard';
 import { GetCommentsQueryParams } from './input-dto/get-comments-query-params.input-dto';
 import { PostsService } from '../application/posts.service';
 import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
+import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-status.input-dto';
+import { UpdatePostLikeStatusCommand } from '../../likes/application/usecases/posts/update-post-like-status.usecase';
 
 @Controller('posts')
 export class PostsController {
@@ -95,6 +97,23 @@ export class PostsController {
     @Body() body: UpdatePostDto,
   ): Promise<void> {
     return this.commandBus.execute(new UpdatePostCommand(id, body));
+  }
+
+  @Put(':postId/like-status')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateLikeStatus(
+    @Param('postId') postId: string,
+    @Body() body: UpdateLikeStatusInputDto,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<void> {
+    return this.commandBus.execute(
+      new UpdatePostLikeStatusCommand({
+        postId,
+        likeStatus: body.likeStatus,
+        userId: user.id,
+      }),
+    );
   }
 
   @Delete(':id')
