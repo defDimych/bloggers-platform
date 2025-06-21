@@ -43,8 +43,11 @@ export class PostsController {
     private commandBus: CommandBus,
   ) {}
   @Get(':id')
-  async getPost(@Param('id') id: string): Promise<PostViewDto> {
-    return this.postsQueryRepository.findByIdOrNotFoundFail(id);
+  async getPost(
+    @Param('id') id: string,
+    @OptionalUserIdFromRequest() userId: string | null,
+  ): Promise<PostViewDto> {
+    return this.postsQueryRepository.findByIdOrNotFoundFail(id, userId);
   }
 
   @Get()
