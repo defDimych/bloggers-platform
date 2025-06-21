@@ -65,22 +65,6 @@ export class UpdatePostLikeCounterUseCase
       post.likesCount++;
     }
 
-    const newestLikes = await this.postLikeRepository.getNewestLikes(
-      dto.postId,
-    );
-
-    const userIds = newestLikes.map((l) => l.userId);
-    const users = await this.usersRepository.findUsersById(userIds);
-
-    newestLikes.forEach((l) => {
-      const user = users.find((user) => user._id.toString() === l.userId);
-
-      l.userLogin = user!.accountData.login;
-    });
-
-    // TODO: вопрос
-    post.newestLikes = newestLikes;
-
     await this.postsRepository.save(post);
   }
 }

@@ -5,6 +5,7 @@ import { PostLike, PostLikeModelType } from '../../../domain/post-like.entity';
 import { PostLikeRepository } from '../../../infrastructure/post-like.repository';
 import { UpdatePostLikeCounterCommand } from './update-post-like-counter.usecase';
 import { LikeStatus } from '../../../../common/types/like-status.enum';
+import { UsersRepository } from '../../../../../user-accounts/infrastructure/users.repository';
 
 export class CreatePostLikeCommand {
   constructor(public dto: CreatePostLikeDto) {}
@@ -17,11 +18,17 @@ export class CreatePostLikeUseCase
   constructor(
     @InjectModel(PostLike.name) private PostLikeModel: PostLikeModelType,
     private postLikeRepository: PostLikeRepository,
+    private usersRepository: UsersRepository,
     private commandBus: CommandBus,
   ) {}
 
   async execute({ dto }: CreatePostLikeCommand): Promise<void> {
-    const like = this.PostLikeModel.createInstance(dto);
+    const user = await this.usersRepository.findById(dto.userId);
+
+    const like = this.PostLikeModel.createInstance({
+      ...dto,
+      userLogin: user!.accountData.login,
+    });
 
     await this.postLikeRepository.save(like);
 

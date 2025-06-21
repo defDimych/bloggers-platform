@@ -30,6 +30,7 @@ export class PostLike {
     like.userId = dto.userId;
     like.postId = dto.postId;
     like.myStatus = dto.likeStatus;
+    like.userLogin = dto.userLogin;
 
     return like as PostLikeDocument;
   }
