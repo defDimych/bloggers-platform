@@ -3,17 +3,32 @@ import { CreateBlogDomainDto } from './dto/CreateBlogDomainDto';
 import { HydratedDocument, Model } from 'mongoose';
 import { UpdateBlogDto } from '../dto/update-blog.dto';
 
+export const nameConstraints = {
+  maxLength: 15,
+};
+export const descriptionConstraints = {
+  maxLength: 500,
+};
+export const websiteUrlConstraints = {
+  maxLength: 100,
+  match: '^https://([a-zA-Z0-9_-]+\\.)+[a-zA-Z0-9_-]+(\\/[a-zA-Z0-9_-]+)*\\/?$',
+};
+
 export type BlogDocument = HydratedDocument<Blog>;
 
 @Schema({ timestamps: true })
 export class Blog {
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, ...nameConstraints })
   name: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, ...descriptionConstraints })
   description: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({
+    type: String,
+    required: true,
+    maxlength: websiteUrlConstraints.maxLength,
+  })
   websiteUrl: string;
 
   @Prop({ type: Boolean, required: true, default: false })
