@@ -25,6 +25,7 @@ import { CreateBlogCommand } from '../application/usecases/create-blog.usecase';
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
 import { CreatePostCommand } from '../../posts/application/usecases/create-post.usecase';
+import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
 
 @Controller('blogs')
 export class BlogsController {
@@ -45,10 +46,11 @@ export class BlogsController {
   async getPostsForBlog(
     @Param('blogId') blogId: string,
     @Query() query: getPostsQueryParams,
+    @OptionalUserIdFromRequest() userId: string | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
     await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
 
-    return this.postsQueryRepository.getPosts(query, blogId);
+    return this.postsQueryRepository.getPosts(query, userId, blogId);
   }
 
   @Get(':id')

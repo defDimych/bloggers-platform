@@ -6,6 +6,7 @@ import { getPostsQueryParams } from '../../api/input-dto/get-posts-query-params.
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import {
   PostLike,
+  PostLikeDocument,
   PostLikeModelType,
 } from '../../../likes/domain/post-like.entity';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
@@ -18,8 +19,15 @@ export class PostsQueryRepository {
     @InjectModel(Post.name) private PostModel: PostModelType,
     @InjectModel(PostLike.name) private PostLikeModel: PostLikeModelType,
   ) {}
+  private async getNewestLikes(postId: string): Promise<PostLikeDocument[]> {
+    return this.PostLikeModel.find({ postId, myStatus: LikeStatus.Like })
+      .sort({ createdAt: -1 })
+      .limit(3);
+  }
+
   async getPosts(
     query: getPostsQueryParams,
+    userId: string | null,
     blogId?: string,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
     const filter = blogId ? { blogId, deletedAt: null } : { deletedAt: null };
@@ -33,8 +41,45 @@ export class PostsQueryRepository {
 
       const totalCount = await this.PostModel.countDocuments(filter);
 
-      // @ts-ignore
-      const items = posts.map(PostViewDto.mapToView);
+      const ids = posts.map((p) => p._id.toString());
+
+      const userLikes: PostLikeDocument[] = userId
+        ? await this.PostLikeModel.find({ postId: { $in: ids }, userId }).lean()
+        : [];
+
+      const dictionaryLikes = userLikes.reduce((dict, like) => {
+        dict.set(like.postId, like.myStatus);
+        return dict;
+      }, new Map<string, LikeStatus>());
+
+      const itemsPromise = posts.map(async (p) => {
+        const likeStatus = dictionaryLikes.get(p._id.toString());
+        const newestLikes = await this.getNewestLikes(p._id.toString());
+
+        return {
+          id: p._id.toString(),
+          title: p.title,
+          shortDescription: p.shortDescription,
+          content: p.content,
+          blogId: p.blogId,
+          blogName: p.blogName,
+          createdAt: p.createdAt.toISOString(),
+          extendedLikesInfo: {
+            likesCount: p.likesCount,
+            dislikesCount: p.dislikesCount,
+            myStatus: likeStatus ?? LikeStatus.None,
+            newestLikes: newestLikes.map((l) => {
+              return {
+                addedAt: l.createdAt.toISOString(),
+                userId: l.userId,
+                login: l.userLogin,
+              };
+            }),
+          },
+        };
+      });
+
+      const items = await Promise.all(itemsPromise);
 
       return PaginatedViewDto.mapToView({
         items,
@@ -67,12 +112,7 @@ export class PostsQueryRepository {
       ? await this.PostLikeModel.findOne({ postId, userId }).lean()
       : null;
 
-    const newestLikes = await this.PostLikeModel.find({
-      postId,
-      myStatus: LikeStatus.Like,
-    })
-      .sort({ createdAt: -1 })
-      .limit(3);
+    const newestLikes = await this.getNewestLikes(postId);
 
     return PostViewDto.mapToView({
       post,

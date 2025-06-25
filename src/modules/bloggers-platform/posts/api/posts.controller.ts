@@ -53,8 +53,9 @@ export class PostsController {
   @Get()
   async getPosts(
     @Query() query: getPostsQueryParams,
+    @OptionalUserIdFromRequest() userId: string | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
-    return this.postsQueryRepository.getPosts(query);
+    return this.postsQueryRepository.getPosts(query, userId);
   }
 
   @Get(':postId/comments')

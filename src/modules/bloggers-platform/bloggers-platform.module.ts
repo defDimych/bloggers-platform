@@ -99,6 +99,8 @@ export class BloggersPlatformModule implements NestModule {
         { path: 'comments/*', method: RequestMethod.GET },
         { path: 'posts/*/comments', method: RequestMethod.GET },
         { path: 'posts/*', method: RequestMethod.GET },
+        { path: 'posts', method: RequestMethod.GET },
+        { path: 'blogs/*/posts', method: RequestMethod.GET },
       );
   }
 }
