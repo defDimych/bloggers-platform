@@ -4,8 +4,6 @@ import { PostsRepository } from '../../../../posts/infrastructure/posts.reposito
 import { DomainException } from '../../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../../core/exceptions/domain-exception-codes';
 import { LikeStatus } from '../../../../common/types/like-status.enum';
-import { PostLikeRepository } from '../../../infrastructure/post-like.repository';
-import { UsersRepository } from '../../../../../user-accounts/infrastructure/users.repository';
 
 export class UpdatePostLikeCounterCommand {
   constructor(public dto: UpdatePostLikeCounterDto) {}
@@ -15,11 +13,7 @@ export class UpdatePostLikeCounterCommand {
 export class UpdatePostLikeCounterUseCase
   implements ICommandHandler<UpdatePostLikeCounterCommand>
 {
-  constructor(
-    private postsRepository: PostsRepository,
-    private postLikeRepository: PostLikeRepository,
-    private usersRepository: UsersRepository,
-  ) {}
+  constructor(private postsRepository: PostsRepository) {}
 
   async execute({ dto }: UpdatePostLikeCounterCommand): Promise<void> {
     const post = await this.postsRepository.findById(dto.postId);

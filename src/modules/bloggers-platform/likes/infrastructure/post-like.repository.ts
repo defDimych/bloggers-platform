@@ -5,7 +5,6 @@ import {
   PostLikeDocument,
   PostLikeModelType,
 } from '../domain/post-like.entity';
-import { LikeStatus } from '../../common/types/like-status.enum';
 
 @Injectable()
 export class PostLikeRepository {
@@ -13,12 +12,6 @@ export class PostLikeRepository {
     @InjectModel(PostLike.name)
     private PostLikeModel: PostLikeModelType,
   ) {}
-
-  async getNewestLikes(postId: string): Promise<PostLikeDocument[]> {
-    return this.PostLikeModel.find({ postId, myStatus: LikeStatus.Like })
-      .sort({ createdAt: -1 })
-      .limit(3);
-  }
 
   async findLike(
     userId: string,
