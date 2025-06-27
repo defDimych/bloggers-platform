@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { BlogViewDto } from './view-dto/blogs.view-dto';
 import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
@@ -26,8 +27,11 @@ import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
 import { CreatePostCommand } from '../../posts/application/usecases/create-post.usecase';
 import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
+import { BasicAuthGuard } from '../../../auth/guards/basic/basic-auth.guard';
+import { Public } from '../../../auth/guards/decorators/public.decorator';
 
 @Controller('blogs')
+@UseGuards(BasicAuthGuard)
 export class BlogsController {
   constructor(
     private blogsQueryRepository: BlogsQueryRepository,
@@ -36,6 +40,7 @@ export class BlogsController {
   ) {}
 
   @Get()
+  @Public()
   async getAllBlogs(
     @Query() query: getBlogsQueryParams,
   ): Promise<PaginatedViewDto<BlogViewDto[]>> {
@@ -43,6 +48,7 @@ export class BlogsController {
   }
 
   @Get('/:blogId/posts')
+  @Public()
   async getPostsForBlog(
     @Param('blogId') blogId: string,
     @Query() query: getPostsQueryParams,
@@ -54,6 +60,7 @@ export class BlogsController {
   }
 
   @Get(':id')
+  @Public()
   async getBlog(@Param('id') id: string): Promise<BlogViewDto> {
     return this.blogsQueryRepository.getByIdOrNotFoundFail(id);
   }

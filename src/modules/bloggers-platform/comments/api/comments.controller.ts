@@ -21,8 +21,10 @@ import { CommentsQueryRepository } from '../infrastructure/query/comments.query-
 import { CommentViewDto } from './view-dto/comments.view-dto';
 import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
 import { DeleteCommentCommand } from '../application/usecases/delete-comment.usecase';
+import { Public } from '../../../auth/guards/decorators/public.decorator';
 
 @Controller('comments')
+@UseGuards(JwtAuthGuard)
 export class CommentsController {
   constructor(
     private commandBus: CommandBus,
@@ -30,6 +32,7 @@ export class CommentsController {
   ) {}
 
   @Get(':id')
+  @Public()
   async getById(
     @Param('id') id: string,
     @OptionalUserIdFromRequest() userId: string | null,
@@ -41,7 +44,6 @@ export class CommentsController {
   }
 
   @Put(':commentId/like-status')
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateLikeStatus(
     @Param('commentId') commentId: string,
@@ -58,7 +60,6 @@ export class CommentsController {
   }
 
   @Put(':commentId')
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateComment(
     @Param('commentId') commentId: string,
@@ -75,7 +76,6 @@ export class CommentsController {
   }
 
   @Delete(':commentId')
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteComment(
     @Param('commentId') commentId: string,
