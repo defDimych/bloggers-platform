@@ -80,7 +80,10 @@ export class CommentsQueryRepository {
     commentId: string;
     userId: string | null;
   }): Promise<CommentViewDto> {
-    const comment = await this.CommentModel.findById(dto.commentId);
+    const comment = await this.CommentModel.findOne({
+      _id: dto.commentId,
+      deletedAt: null,
+    });
 
     if (!comment) {
       throw new DomainException({
