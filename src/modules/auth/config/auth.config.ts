@@ -1,12 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { IsNotEmpty } from 'class-validator';
+import { configValidationUtility } from '../../../setup/config-validation.utility';
 
 @Injectable()
 export class AuthConfig {
   skipPasswordCheck: boolean;
+
+  @IsNotEmpty({
+    message: 'Set Env variable ACCESS_TOKEN_SECRET, dangerous for security!',
+  })
   accessTokenSecret: string;
+
+  @IsNotEmpty({
+    message: 'Set Env variable ACCESS_TOKEN_SECRET, dangerous for security!',
+  })
   refreshTokenSecret: string;
+
+  @IsNotEmpty({
+    message: 'Set Env variable ACCESS_TOKEN_EXPIRE_IN, examples: 1h, 5m, 2d',
+  })
   accessTokenExpireIn: string;
+
+  @IsNotEmpty({
+    message: 'Set Env variable ACCESS_TOKEN_EXPIRE_IN, examples: 1h, 5m, 2d',
+  })
   refreshTokenExpireIn: string;
 
   constructor(private configService: ConfigService<any, true>) {
@@ -19,5 +37,7 @@ export class AuthConfig {
     this.refreshTokenExpireIn = this.configService.get(
       'REFRESH_TOKEN_EXPIRE_IN',
     );
+
+    configValidationUtility.validateConfig(this);
   }
 }

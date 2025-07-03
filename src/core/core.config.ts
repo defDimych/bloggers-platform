@@ -19,7 +19,13 @@ export class CoreConfig {
     message:
       'Set Env variable INCLUDE_TESTING_MODULE to enable/disable Dangerous for production TestingModule, example: true, available values: [true, false, 0, 1, enabled, disabled]',
   })
-  includeTestingModule: boolean | null;
+  includeTestingModule: boolean;
+
+  @IsBoolean({
+    message:
+      'Set Env variable IS_SWAGGER_ENABLED to enable/disable Swagger, example: true, available values: [true, false, 0, 1, enabled, disabled]',
+  })
+  isSwaggerEnabled: boolean;
 
   constructor(private configService: ConfigService<any, true>) {
     this.port = Number(this.configService.get('PORT'));
@@ -27,7 +33,11 @@ export class CoreConfig {
 
     this.includeTestingModule = configValidationUtility.convertToBoolean(
       this.configService.get('INCLUDE_TESTING_MODULE'),
-    );
+    ) as boolean;
+
+    this.isSwaggerEnabled = configValidationUtility.convertToBoolean(
+      this.configService.get('IS_SWAGGER_ENABLED'),
+    ) as boolean;
 
     configValidationUtility.validateConfig(this);
   }
