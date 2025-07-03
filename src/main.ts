@@ -1,10 +1,12 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { appSetup } from './setup/app.setup';
 import { CoreConfig } from './core/core.config';
+import { initAppModule } from './init-app-module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const DynamicAppModule = await initAppModule();
+  // создаём на основе донастроенного модуля наше приложение
+  const app = await NestFactory.create(DynamicAppModule);
 
   const coreConfig = app.get<CoreConfig>(CoreConfig);
 
