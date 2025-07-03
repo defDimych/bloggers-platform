@@ -13,7 +13,6 @@ export const configValidationUtility = {
   },
 
   convertToBoolean(value: string): boolean | null {
-    console.log(value);
     const trimmedValue = value?.trim();
     if (trimmedValue === 'true') return true;
     if (trimmedValue === '1') return true;
