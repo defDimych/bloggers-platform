@@ -10,7 +10,7 @@ async function bootstrap() {
 
   const coreConfig = app.get<CoreConfig>(CoreConfig);
 
-  appSetup(app); //Global app settings.
+  appSetup(app, coreConfig.isSwaggerEnabled); //Global app settings.
 
   const port = coreConfig.port;
 
