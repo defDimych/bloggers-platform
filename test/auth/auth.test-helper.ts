@@ -1,5 +1,6 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { GLOBAL_PREFIX } from '../../src/setup/global-prefix.setup';
 
 export class AuthTestHelper {
   constructor(private app: INestApplication) {}
@@ -9,7 +10,7 @@ export class AuthTestHelper {
     password: string;
   }): Promise<string> {
     const response = await request(this.app.getHttpServer())
-      .post('/auth/login')
+      .post(`/${GLOBAL_PREFIX}/auth/login`)
       .send(data)
       .expect(HttpStatus.OK);
 

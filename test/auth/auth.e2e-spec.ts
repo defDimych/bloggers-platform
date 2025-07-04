@@ -10,6 +10,7 @@ import request from 'supertest';
 import { ErrorResponseBody } from '../../src/core/exceptions/filters/error-response-body.type';
 import { MeViewDto } from '../../src/modules/user-accounts/api/view-dto/users.view-dto';
 import { delay } from './delay';
+import { GLOBAL_PREFIX } from '../../src/setup/global-prefix.setup';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -53,7 +54,7 @@ describe('AuthController (e2e)', () => {
   describe('login (POST)', () => {
     it('should return 400 if inputModel has incorrect values', async () => {
       const response = await request(app.getHttpServer())
-        .post('/auth/login')
+        .post(`/${GLOBAL_PREFIX}/auth/login`)
         .send({
           loginOrEmail: '',
           password: 123,
@@ -71,7 +72,7 @@ describe('AuthController (e2e)', () => {
       );
 
       await request(app.getHttpServer())
-        .post('/auth/login')
+        .post(`/${GLOBAL_PREFIX}/auth/login`)
         .send({
           loginOrEmail: createdUser.login,
           password: '123',
@@ -101,7 +102,7 @@ describe('AuthController (e2e)', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .get('/auth/me')
+        .get(`/${GLOBAL_PREFIX}/auth/me`)
         .auth(accessToken, { type: 'bearer' })
         .expect(HttpStatus.OK);
 
@@ -122,7 +123,7 @@ describe('AuthController (e2e)', () => {
 
       await delay(2000);
       await request(app.getHttpServer())
-        .get('/auth/me')
+        .get(`/${GLOBAL_PREFIX}/auth/me`)
         .auth(accessToken, { type: 'bearer' })
         .expect(HttpStatus.UNAUTHORIZED);
     });

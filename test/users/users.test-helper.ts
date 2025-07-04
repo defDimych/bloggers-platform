@@ -5,6 +5,7 @@ import { BASIC_AUTH_CREDENTIALS } from '../../src/constants';
 import { UsersViewDto } from '../../src/modules/user-accounts/api/view-dto/users.view-dto';
 import { App } from 'supertest/types';
 import { fromUTF8ToBase64 } from '../helpers/encoder';
+import { GLOBAL_PREFIX } from '../../src/setup/global-prefix.setup';
 
 export class UsersTestHelper {
   private readonly username: string = BASIC_AUTH_CREDENTIALS.username;
@@ -13,7 +14,7 @@ export class UsersTestHelper {
   constructor(private app: INestApplication<App>) {}
   async createUser(data: CreateUserDto): Promise<UsersViewDto> {
     const response: request.Response = await request(this.app.getHttpServer())
-      .post('/users')
+      .post(`/${GLOBAL_PREFIX}/users`)
       .set({
         Authorization:
           'Basic ' + fromUTF8ToBase64(this.username, this.password),

@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../infrastructure/users.repository';
-import { NotFoundException } from '@nestjs/common';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 export class DeleteUserCommand {
   constructor(public id: string) {}
@@ -16,7 +17,10 @@ export class DeleteUserUseCase
     const user = await this.usersRepository.findById(id);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new DomainException({
+        message: `user by id:${id} not found`,
+        code: DomainExceptionCode.NotFound,
+      });
     }
 
     user.makeDeleted();

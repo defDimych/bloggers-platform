@@ -3,13 +3,24 @@ import { App } from 'supertest/types';
 import request from 'supertest';
 import { CreatePostDto } from '../../src/modules/bloggers-platform/posts/dto/create-post.dto';
 import { PostViewDto } from '../../src/modules/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { GLOBAL_PREFIX } from '../../src/setup/global-prefix.setup';
+import { fromUTF8ToBase64 } from '../helpers/encoder';
+import { BASIC_AUTH_CREDENTIALS } from '../../src/constants';
 
 export class PostsTestHelper {
   constructor(private app: INestApplication<App>) {}
 
   async createPost(data: CreatePostDto): Promise<PostViewDto> {
     const response = await request(this.app.getHttpServer())
-      .post('/posts')
+      .post(`/${GLOBAL_PREFIX}/posts`)
+      .set({
+        Authorization:
+          'Basic ' +
+          fromUTF8ToBase64(
+            BASIC_AUTH_CREDENTIALS.username,
+            BASIC_AUTH_CREDENTIALS.password,
+          ),
+      })
       .send(data)
       .expect(HttpStatus.CREATED);
 

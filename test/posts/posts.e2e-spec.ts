@@ -9,6 +9,9 @@ import { UsersTestHelper } from '../users/users.test-helper';
 import { AuthTestHelper } from '../auth/auth.test-helper';
 import { ErrorResponseBody } from '../../src/core/exceptions/filters/error-response-body.type';
 import { CommentViewDto } from '../../src/modules/bloggers-platform/comments/api/view-dto/comments.view-dto';
+import { GLOBAL_PREFIX } from '../../src/setup/global-prefix.setup';
+import { fromUTF8ToBase64 } from '../helpers/encoder';
+import { BASIC_AUTH_CREDENTIALS } from '../../src/constants';
 
 describe('PostsController (e2e)', () => {
   let app: INestApplication;
@@ -79,12 +82,20 @@ describe('PostsController (e2e)', () => {
     };
 
     await request(app.getHttpServer())
-      .put('/posts/' + createdPost.id)
+      .put(`/${GLOBAL_PREFIX}/posts/${createdPost.id}`)
+      .set({
+        Authorization:
+          'Basic ' +
+          fromUTF8ToBase64(
+            BASIC_AUTH_CREDENTIALS.username,
+            BASIC_AUTH_CREDENTIALS.password,
+          ),
+      })
       .send(dataForUpdate)
       .expect(HttpStatus.NO_CONTENT);
 
     const response = await request(app.getHttpServer())
-      .get('/posts/' + createdPost.id)
+      .get(`/${GLOBAL_PREFIX}/posts/${createdPost.id}`)
       .expect(HttpStatus.OK);
 
     const body = response.body as PostViewDto;
@@ -106,11 +117,19 @@ describe('PostsController (e2e)', () => {
     });
 
     await request(app.getHttpServer())
-      .delete('/posts/' + createdPost.id)
+      .delete(`/${GLOBAL_PREFIX}/posts/${createdPost.id}`)
+      .set({
+        Authorization:
+          'Basic ' +
+          fromUTF8ToBase64(
+            BASIC_AUTH_CREDENTIALS.username,
+            BASIC_AUTH_CREDENTIALS.password,
+          ),
+      })
       .expect(HttpStatus.NO_CONTENT);
 
     await request(app.getHttpServer())
-      .get('/posts/' + createdPost.id)
+      .get(`/${GLOBAL_PREFIX}/posts/${createdPost.id}`)
       .expect(HttpStatus.NOT_FOUND);
   });
 
@@ -119,6 +138,7 @@ describe('PostsController (e2e)', () => {
     let accessToken: string;
 
     beforeAll(async () => {
+      // пропустить удаление данных, для связанных тестов.
       skipDeleteData = true;
 
       const createdBlog = await blogsTestHelper.createBlog(
@@ -135,7 +155,7 @@ describe('PostsController (e2e)', () => {
       const createTestingUserModel = {
         login: 'Webster',
         password: 'Webster123',
-        email: 'test@mail.ru',
+        email: 'dmitriy777@gmail.com',
       };
 
       const createdUser = await usersTestHelper.createUser(
@@ -154,14 +174,14 @@ describe('PostsController (e2e)', () => {
 
     it('should return 401 if the user is not authorized', async () => {
       await request(app.getHttpServer())
-        .post('/posts/' + createdPost.id + '/comments')
+        .post(`/${GLOBAL_PREFIX}/posts/${createdPost.id}/comments`)
         .send({ content: 'test content' })
         .expect(HttpStatus.UNAUTHORIZED);
     });
 
     it('should return 400 if inputModel has incorrect values', async () => {
       const response = await request(app.getHttpServer())
-        .post('/posts/' + createdPost.id + '/comments')
+        .post(`/${GLOBAL_PREFIX}/posts/${createdPost.id}/comments`)
         .auth(accessToken, { type: 'bearer' })
         .send({ content: 'test content' })
         .expect(HttpStatus.BAD_REQUEST);
@@ -174,7 +194,7 @@ describe('PostsController (e2e)', () => {
       const content = 'content_content_content_content';
 
       const response = await request(app.getHttpServer())
-        .post('/posts/' + createdPost.id + '/comments')
+        .post(`/${GLOBAL_PREFIX}/posts/${createdPost.id}/comments`)
         .auth(accessToken, { type: 'bearer' })
         .send({ content })
         .expect(HttpStatus.CREATED);

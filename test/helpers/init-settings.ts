@@ -1,5 +1,4 @@
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
-import { AppModule } from '../../src/app.module';
 import { EmailService } from '../../src/modules/notifications/email.service';
 import { EmailServiceMock } from '../mock/email-service.mock';
 import { appSetup } from '../../src/setup/app.setup';
@@ -11,12 +10,14 @@ import { UsersTestHelper } from '../users/users.test-helper';
 import { BlogsTestHelper } from '../blogs/blogs.test-helper';
 import { PostsTestHelper } from '../posts/posts.test-helper';
 import { CoreConfig } from '../../src/core/core.config';
+import { initAppModule } from '../../src/init-app-module';
 
 export const initSettings = async (
   addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
 ) => {
+  const DynamicAppModule = await initAppModule();
   const testingModuleBuilder: TestingModuleBuilder = Test.createTestingModule({
-    imports: [AppModule],
+    imports: [DynamicAppModule],
   })
     .overrideProvider(EmailService)
     .useClass(EmailServiceMock);
