@@ -7,9 +7,12 @@ import {
 import { Request, Response } from 'express';
 import { ExtendedErrorResponseBody } from './error-response-body.type';
 import { DomainExceptionCode } from '../domain-exception-codes';
+import { CoreConfig } from '../../core.config';
 
 @Catch()
 export class AllHttpExceptionsFilter implements ExceptionFilter {
+  constructor(private coreConfig: CoreConfig) {}
+
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const request = ctx.getRequest<Request>();
@@ -27,10 +30,7 @@ export class AllHttpExceptionsFilter implements ExceptionFilter {
     requestUrl: string,
     message: string,
   ): ExtendedErrorResponseBody {
-    //TODO: Replace with getter from configService.
-    const isProduction = process.env.NODE_ENV === 'production';
-
-    if (isProduction) {
+    if (!this.coreConfig.sendInternalServerErrorDetails) {
       return {
         timestamp: new Date().toISOString(),
         path: null,
