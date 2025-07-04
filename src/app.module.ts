@@ -11,6 +11,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { AuthModule } from './modules/auth/auth.module';
 import { CoreModule } from './core/core.module';
 import { CoreConfig } from './core/core.config';
+import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
+import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
 
 @Module({
   imports: [
@@ -33,7 +35,17 @@ import { CoreConfig } from './core/core.config';
     CoreModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: 'APP_FILTER',
+      useClass: AllHttpExceptionsFilter,
+    },
+    {
+      provide: 'APP_FILTER',
+      useClass: DomainHttpExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {
   static async forRoot(coreConfig: CoreConfig): Promise<DynamicModule> {
