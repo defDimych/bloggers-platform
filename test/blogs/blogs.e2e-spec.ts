@@ -3,6 +3,9 @@ import request from 'supertest';
 import { BlogsTestHelper } from './blogs.test-helper';
 import { initSettings } from '../helpers/init-settings';
 import { deleteAllData } from '../helpers/delete-all-data';
+import { GLOBAL_PREFIX } from '../../src/setup/global-prefix.setup';
+import { fromUTF8ToBase64 } from '../helpers/encoder';
+import { BASIC_AUTH_CREDENTIALS } from '../../src/constants';
 
 describe('BlogsController (e2e)', () => {
   let app: INestApplication;
@@ -11,7 +14,7 @@ describe('BlogsController (e2e)', () => {
   const createModel = {
     name: 'n1',
     description: 'd1',
-    websiteUrl: 'http://somesite.com',
+    websiteUrl: 'https://somesite.com',
   };
 
   beforeAll(async () => {
@@ -41,11 +44,19 @@ describe('BlogsController (e2e)', () => {
     const updateModel = {
       name: 'n2',
       description: 'd2',
-      websiteUrl: 'http://somesite.com',
+      websiteUrl: 'https://somesite.com',
     };
 
     await request(app.getHttpServer())
-      .put('/blogs/' + createdBlog.id)
+      .put(`/${GLOBAL_PREFIX}/blogs/${createdBlog.id}`)
+      .set({
+        Authorization:
+          'Basic ' +
+          fromUTF8ToBase64(
+            BASIC_AUTH_CREDENTIALS.username,
+            BASIC_AUTH_CREDENTIALS.password,
+          ),
+      })
       .send(updateModel)
       .expect(HttpStatus.NO_CONTENT);
 
@@ -62,7 +73,15 @@ describe('BlogsController (e2e)', () => {
     await blogsTestHelper.getById(createdBlog.id);
 
     await request(app.getHttpServer())
-      .delete('/blogs/' + createdBlog.id)
+      .delete(`/${GLOBAL_PREFIX}/blogs/${createdBlog.id}`)
+      .set({
+        Authorization:
+          'Basic ' +
+          fromUTF8ToBase64(
+            BASIC_AUTH_CREDENTIALS.username,
+            BASIC_AUTH_CREDENTIALS.password,
+          ),
+      })
       .expect(HttpStatus.NO_CONTENT);
 
     await blogsTestHelper.getById(createdBlog.id, HttpStatus.NOT_FOUND);

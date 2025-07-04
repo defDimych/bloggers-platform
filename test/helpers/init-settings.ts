@@ -10,6 +10,7 @@ import { deleteAllData } from './delete-all-data';
 import { UsersTestHelper } from '../users/users.test-helper';
 import { BlogsTestHelper } from '../blogs/blogs.test-helper';
 import { PostsTestHelper } from '../posts/posts.test-helper';
+import { CoreConfig } from '../../src/core/core.config';
 
 export const initSettings = async (
   addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
@@ -27,7 +28,9 @@ export const initSettings = async (
   const testingAppModule = await testingModuleBuilder.compile();
 
   const app = testingAppModule.createNestApplication();
-  appSetup(app);
+  const coreConfig = app.get<CoreConfig>(CoreConfig);
+
+  appSetup(app, coreConfig.isSwaggerEnabled);
 
   await app.init();
 
