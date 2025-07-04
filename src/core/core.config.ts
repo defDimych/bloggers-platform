@@ -27,6 +27,12 @@ export class CoreConfig {
   })
   isSwaggerEnabled: boolean;
 
+  @IsBoolean({
+    message:
+      'Set Env variable SEND_INTERNAL_SERVER_ERROR_DETAILS to enable/disable Dangerous for production internal server error details (message, etc), example: true, available values: [true, false, 0, 1, enabled, disabled]',
+  })
+  sendInternalServerErrorDetails: boolean;
+
   constructor(private configService: ConfigService<any, true>) {
     this.port = Number(this.configService.get('PORT'));
     this.mongoURI = this.configService.get('MONGO_URI');
@@ -38,6 +44,11 @@ export class CoreConfig {
     this.isSwaggerEnabled = configValidationUtility.convertToBoolean(
       this.configService.get('IS_SWAGGER_ENABLED'),
     ) as boolean;
+
+    this.sendInternalServerErrorDetails =
+      configValidationUtility.convertToBoolean(
+        this.configService.get('SEND_INTERNAL_SERVER_ERROR_DETAILS'),
+      ) as boolean;
 
     configValidationUtility.validateConfig(this);
   }
