@@ -25,6 +25,8 @@ import { EmailConfirmationCommand } from '../application/usecases/email-confirma
 import { RegistrationEmailResendingCommand } from '../application/usecases/registration-email-resending.usecase';
 import { PasswordRecoveryCommand } from '../application/usecases/password-recovery.usecase';
 import { ConfirmPasswordRecoveryCommand } from '../application/usecases/confirm-password-recovery.usecase';
+import { ExtractClientDetails } from './decorators/extract-client-details';
+import { ClientDetailsDto } from './dto/client-details.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -45,9 +47,14 @@ export class AuthController {
   async login(
     @Res({ passthrough: true }) res: Response,
     @ExtractUserFromRequest() user: UserContextDto,
+    @ExtractClientDetails() clientDetails: ClientDetailsDto,
   ): Promise<{ accessToken: string }> {
     const result = await this.commandBus.execute(
-      new LoginUserCommand({ userId: user.id }),
+      new LoginUserCommand({
+        userId: user.id,
+        IP: clientDetails.IP,
+        deviceName: clientDetails.deviceName,
+      }),
     );
 
     res.cookie('refreshToken', result.refreshToken, {

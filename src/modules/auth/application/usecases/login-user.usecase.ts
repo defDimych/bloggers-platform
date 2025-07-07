@@ -1,16 +1,15 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
-import {
-  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
-  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-} from '../../constants/auth-tokens.inject-constants';
-import { JwtService } from '@nestjs/jwt';
+import { LoginUserDto } from '../../dto/login-user.dto';
+import { JwtAuthService } from '../services/jwt-auth.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Session, SessionModelType } from '../../domain/session.entity';
+import { SessionsRepository } from '../../infrastructure/sessions.repository';
 
 export class LoginUserCommand extends Command<{
   accessToken: string;
   refreshToken: string;
 }> {
-  constructor(public dto: { userId: string }) {
+  constructor(public dto: LoginUserDto) {
     super();
   }
 }
@@ -18,20 +17,28 @@ export class LoginUserCommand extends Command<{
 @CommandHandler(LoginUserCommand)
 export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
   constructor(
-    @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
-    private accessTokenContext: JwtService,
-
-    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
-    private refreshTokenContext: JwtService,
+    @InjectModel(Session.name) private SessionModel: SessionModelType,
+    private jwtAuthService: JwtAuthService,
+    private sessionsRepository: SessionsRepository,
   ) {}
 
   async execute({ dto }: LoginUserCommand) {
-    const accessToken = this.accessTokenContext.sign({
-      id: dto.userId,
+    const accessToken = this.jwtAuthService.createAccessToken(dto.userId);
+    const refreshToken = this.jwtAuthService.createRefreshToken(dto.userId);
+
+    const decodedPayload =
+      this.jwtAuthService.getPayloadFromRefreshToken(refreshToken);
+
+    const session = this.SessionModel.createInstance({
+      userId: dto.userId,
+      deviceId: decodedPayload.deviceId,
+      deviceName: dto.deviceName,
+      IP: dto.IP,
+      iat: new Date(decodedPayload.iat),
+      exp: new Date(decodedPayload.exp),
     });
-    const refreshToken = this.refreshTokenContext.sign({
-      id: dto.userId,
-    });
+
+    await this.sessionsRepository.save(session);
 
     return {
       accessToken,
