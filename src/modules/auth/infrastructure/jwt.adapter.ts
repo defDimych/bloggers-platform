@@ -3,9 +3,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-} from '../../constants/auth-tokens.inject-constants';
+} from '../constants/auth-tokens.inject-constants';
 
-interface PayloadRefreshToken {
+export interface PayloadRefreshToken {
   userId: string;
   deviceId: string;
   iat: number;
@@ -13,7 +13,7 @@ interface PayloadRefreshToken {
 }
 
 @Injectable()
-export class JwtAuthService {
+export class JwtAdapter {
   constructor(
     private jwtService: JwtService,
 
@@ -28,14 +28,20 @@ export class JwtAuthService {
     return this.accessTokenContext.sign({ userId });
   }
 
-  createRefreshToken(userId: string) {
-    return this.refreshTokenContext.sign({
-      userId,
-      deviceId: crypto.randomUUID(),
-    });
+  createRefreshToken(userId: string, deviceId: string) {
+    return this.refreshTokenContext.sign({ userId, deviceId });
   }
 
   getPayloadFromRefreshToken(token: string): PayloadRefreshToken {
     return this.jwtService.decode<PayloadRefreshToken>(token);
+  }
+
+  async verifyRefreshToken(token: string): Promise<PayloadRefreshToken | null> {
+    try {
+      return this.refreshTokenContext.verifyAsync<PayloadRefreshToken>(token);
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
   }
 }

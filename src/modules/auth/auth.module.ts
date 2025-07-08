@@ -19,8 +19,8 @@ import { PasswordRecoveryUseCase } from './application/usecases/password-recover
 import { ConfirmPasswordRecoveryUseCase } from './application/usecases/confirm-password-recovery.usecase';
 import { BasicAuthGuard } from './guards/basic/basic-auth.guard';
 import { NotificationModule } from '../notifications/notification.module';
-import { AuthQueryRepository } from './infrastructure/auth.query-repository';
-import { JwtAuthService } from './application/services/jwt-auth.service';
+import { AuthQueryRepository } from './infrastructure/query/auth.query-repository';
+import { JwtAdapter } from './infrastructure/jwt.adapter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Session, SessionSchema } from './domain/session.entity';
 import { SessionsRepository } from './infrastructure/sessions.repository';
@@ -68,7 +68,7 @@ const useCases = [
     JwtStrategy,
     AuthConfig,
     AuthService,
-    JwtAuthService,
+    JwtAdapter,
     CryptoService,
     LocalStrategy,
     BasicAuthGuard,
