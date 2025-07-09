@@ -38,7 +38,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async me(@ExtractUserFromRequest() user: UserContextDto): Promise<MeViewDto> {
-    return this.authQueryRepository.me(user.id);
+    return this.authQueryRepository.me(user.userId);
   }
 
   @Post('login')
@@ -51,7 +51,7 @@ export class AuthController {
   ): Promise<{ accessToken: string }> {
     const result = await this.commandBus.execute(
       new LoginUserCommand({
-        userId: user.id,
+        userId: user.userId,
         IP: clientDetails.IP,
         deviceName: clientDetails.deviceName,
       }),

@@ -54,7 +54,7 @@ export class CommentsController {
       new UpdateCommentLikeStatusCommand({
         commentId,
         likeStatus: body.likeStatus,
-        userId: user.id,
+        userId: user.userId,
       }),
     );
   }
@@ -70,7 +70,7 @@ export class CommentsController {
       new UpdateCommentCommand({
         commentId,
         content: body.content,
-        userId: user.id,
+        userId: user.userId,
       }),
     );
   }
@@ -82,7 +82,7 @@ export class CommentsController {
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
     return this.commandBus.execute(
-      new DeleteCommentCommand({ commentId, userId: user.id }),
+      new DeleteCommentCommand({ commentId, userId: user.userId }),
     );
   }
 }

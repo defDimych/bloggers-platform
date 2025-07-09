@@ -87,13 +87,16 @@ export class PostsController {
   ): Promise<CommentViewDto> {
     const commentId: string = await this.commandBus.execute(
       new CreateCommentCommand({
-        userId: user.id,
+        userId: user.userId,
         postId,
         content: body.content,
       }),
     );
 
-    return this.commentsQueryRepository.getById({ commentId, userId: user.id });
+    return this.commentsQueryRepository.getById({
+      commentId,
+      userId: user.userId,
+    });
   }
 
   @Put(':id')
@@ -118,7 +121,7 @@ export class PostsController {
       new UpdatePostLikeStatusCommand({
         postId,
         likeStatus: body.likeStatus,
-        userId: user.id,
+        userId: user.userId,
       }),
     );
   }
