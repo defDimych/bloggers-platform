@@ -3,5 +3,4 @@
  */
 export class UserContextDto {
   userId: string;
-  deviceId?: string;
 }

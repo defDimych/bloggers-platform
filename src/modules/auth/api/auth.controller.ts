@@ -16,7 +16,7 @@ import { EmailDto } from '../dto/email.dto';
 import { ConfirmPassRecoveryDto } from '../dto/confirm-pass-recovery.dto';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { MeViewDto } from '../../user-accounts/api/view-dto/users.view-dto';
-import { AuthQueryRepository } from '../infrastructure/auth.query-repository';
+import { AuthQueryRepository } from '../infrastructure/query/auth.query-repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { LoginUserCommand } from '../application/usecases/login-user.usecase';
 import { Response } from 'express';
