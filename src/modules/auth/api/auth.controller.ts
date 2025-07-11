@@ -27,6 +27,11 @@ import { PasswordRecoveryCommand } from '../application/usecases/password-recove
 import { ConfirmPasswordRecoveryCommand } from '../application/usecases/confirm-password-recovery.usecase';
 import { ExtractClientDetails } from './decorators/extract-client-details';
 import { ClientDetailsDto } from './dto/client-details.dto';
+import { JwtRefreshAuthGuard } from '../guards/bearer/jwt-refresh-auth.guard';
+import { ExtendedUserContextDto } from '../guards/dto/extended-user-context.dto';
+import { RefreshTokensCommand } from '../application/usecases/refresh-tokens.usecase';
+import { ExtractExtendedUserFromRequest } from '../guards/decorators/param/extract-extended-user-from-request.decorator';
+import { LogoutUserCommand } from '../application/usecases/logout-user.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -55,6 +60,36 @@ export class AuthController {
         IP: clientDetails.IP,
         deviceName: clientDetails.deviceName,
       }),
+    );
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+
+    return {
+      accessToken: result.accessToken,
+    };
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtRefreshAuthGuard)
+  async logout(
+    @ExtractExtendedUserFromRequest() user: ExtendedUserContextDto,
+  ): Promise<void> {
+    return this.commandBus.execute(new LogoutUserCommand(user.sessionId));
+  }
+
+  @Post('refresh-token')
+  @UseGuards(JwtRefreshAuthGuard)
+  async refreshTokens(
+    @ExtractExtendedUserFromRequest() user: ExtendedUserContextDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ accessToken: string }> {
+    // TODO: Вопрос по dto
+    const result = await this.commandBus.execute(
+      new RefreshTokensCommand(user),
     );
 
     res.cookie('refreshToken', result.refreshToken, {

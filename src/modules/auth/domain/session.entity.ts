@@ -22,6 +22,9 @@ export class Session {
   @Prop({ type: Date, required: true })
   exp: Date;
 
+  @Prop({ type: Date, nullable: true })
+  deletedAt: Date | null;
+
   static createInstance(dto: CreateSessionDomainDto): SessionDocument {
     const session = new this();
     session.userId = dto.userId;
@@ -30,8 +33,20 @@ export class Session {
     session.IP = dto.IP;
     session.iat = dto.iat;
     session.exp = dto.exp;
+    session.deletedAt = null;
 
     return session as SessionDocument;
+  }
+
+  updateIssueDate(iat: Date): void {
+    this.iat = iat;
+  }
+
+  makeDeleted(): void {
+    if (this.deletedAt !== null) {
+      throw new Error('Entity already deleted');
+    }
+    this.deletedAt = new Date();
   }
 }
 

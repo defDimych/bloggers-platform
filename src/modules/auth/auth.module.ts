@@ -24,14 +24,20 @@ import { JwtAdapter } from './infrastructure/jwt.adapter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Session, SessionSchema } from './domain/session.entity';
 import { SessionsRepository } from './infrastructure/sessions.repository';
+import { JwtRefreshStrategy } from './guards/bearer/jwt-refresh.strategy';
+import { RefreshTokensUseCase } from './application/usecases/refresh-tokens.usecase';
+import { LogoutUserUseCase } from './application/usecases/logout-user.usecase';
 
 const useCases = [
+  //TODO: Рефакторинг массива + файловая система
   LoginUserUseCase,
+  LogoutUserUseCase,
   RegisterUserUseCase,
   EmailConfirmationUseCase,
   RegistrationEmailResendingUseCase,
   PasswordRecoveryUseCase,
   ConfirmPasswordRecoveryUseCase,
+  RefreshTokensUseCase,
 ];
 
 @Global()
@@ -66,6 +72,7 @@ const useCases = [
       inject: [AuthConfig],
     },
     JwtStrategy,
+    JwtRefreshStrategy,
     AuthConfig,
     AuthService,
     JwtAdapter,

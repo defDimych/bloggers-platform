@@ -3,6 +3,9 @@ import { UsersRepository } from '../../../user-accounts/infrastructure/users.rep
 import { CryptoService } from './crypto.service';
 import { UserContextDto } from '../../guards/dto/user-context.dto';
 import { AuthConfig } from '../../config/auth.config';
+import { SessionsRepository } from '../../infrastructure/sessions.repository';
+import { PayloadRefreshToken } from '../../infrastructure/jwt.adapter';
+import { SessionDocument } from '../../domain/session.entity';
 
 @Injectable()
 export class AuthService {
@@ -10,6 +13,7 @@ export class AuthService {
     private usersRepository: UsersRepository,
     private cryptoService: CryptoService,
     private authConfig: AuthConfig,
+    private sessionsRepository: SessionsRepository,
   ) {}
   async validateUser(
     loginOrEmail: string,
@@ -32,8 +36,16 @@ export class AuthService {
         return null;
       }
     }
-    return { id: user._id.toString() };
     return { userId: user._id.toString() };
   }
+
+  async sessionExists(
+    dto: PayloadRefreshToken,
+  ): Promise<SessionDocument | null> {
+    return this.sessionsRepository.findSession({
+      iat: new Date(dto.iat * 1000),
+      deviceId: dto.deviceId,
+      userId: dto.userId,
+    });
   }
 }
