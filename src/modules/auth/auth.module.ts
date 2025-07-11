@@ -27,6 +27,9 @@ import { SessionsRepository } from './infrastructure/sessions.repository';
 import { JwtRefreshStrategy } from './guards/bearer/jwt-refresh.strategy';
 import { RefreshTokensUseCase } from './application/usecases/refresh-tokens.usecase';
 import { LogoutUserUseCase } from './application/usecases/logout-user.usecase';
+import { SessionsQueryRepository } from './infrastructure/query/sessions.query-repository';
+import { SecurityDevicesController } from './api/security-devices.controller';
+import { DeleteSessionUseCase } from './application/usecases/sessions/delete-session.usecase';
 
 const useCases = [
   //TODO: Рефакторинг массива + файловая система
@@ -38,6 +41,7 @@ const useCases = [
   PasswordRecoveryUseCase,
   ConfirmPasswordRecoveryUseCase,
   RefreshTokensUseCase,
+  DeleteSessionUseCase,
 ];
 
 @Global()
@@ -48,7 +52,7 @@ const useCases = [
     JwtModule,
     NotificationModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, SecurityDevicesController],
   providers: [
     ...useCases,
     {
@@ -81,6 +85,7 @@ const useCases = [
     BasicAuthGuard,
     SessionsRepository,
     AuthQueryRepository,
+    SessionsQueryRepository,
   ],
   exports: [JwtStrategy, JwtModule, AuthConfig, CryptoService, BasicAuthGuard],
 })
