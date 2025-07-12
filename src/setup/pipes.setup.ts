@@ -41,6 +41,7 @@ export function pipesSetup(app: INestApplication) {
     new ValidationPipe({
       transform: true,
       stopAtFirstError: true,
+      validateCustomDecorators: true,
       //Для преобразования ошибок класс валидатора в необходимый вид
       exceptionFactory: (errors) => {
         throwFormattedErrors(errors);
