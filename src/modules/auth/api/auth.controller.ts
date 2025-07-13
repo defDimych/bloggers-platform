@@ -32,7 +32,9 @@ import { ExtendedUserContextDto } from '../guards/dto/extended-user-context.dto'
 import { RefreshTokensCommand } from '../application/usecases/refresh-tokens.usecase';
 import { ExtractExtendedUserFromRequest } from '../guards/decorators/param/extract-extended-user-from-request.decorator';
 import { LogoutUserCommand } from '../application/usecases/logout-user.usecase';
+import { SkipThrottle, ThrottlerGuard } from '@nestjs/throttler';
 
+@UseGuards(ThrottlerGuard)
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -72,6 +74,7 @@ export class AuthController {
     };
   }
 
+  @SkipThrottle()
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtRefreshAuthGuard)
@@ -81,6 +84,7 @@ export class AuthController {
     return this.commandBus.execute(new LogoutUserCommand(user.sessionId));
   }
 
+  @SkipThrottle()
   @Post('refresh-token')
   @UseGuards(JwtRefreshAuthGuard)
   async refreshTokens(

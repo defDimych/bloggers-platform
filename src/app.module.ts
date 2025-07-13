@@ -13,11 +13,20 @@ import { CoreModule } from './core/core.module';
 import { CoreConfig } from './core/core.config';
 import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
 import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
     CqrsModule.forRoot(),
     configModule,
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 10000,
+          limit: 5,
+        },
+      ],
+    }),
     MongooseModule.forRootAsync({
       useFactory: (coreConfig: CoreConfig) => {
         const uri = coreConfig.mongoURI;
