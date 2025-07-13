@@ -18,6 +18,11 @@ export class AllHttpExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
 
+    if (exception.status === HttpStatus.TOO_MANY_REQUESTS) {
+      response.sendStatus(exception.status);
+      return;
+    }
+
     const message =
       (exception.message as string) || 'Unknown exception occurred.';
     const status = HttpStatus.INTERNAL_SERVER_ERROR;
