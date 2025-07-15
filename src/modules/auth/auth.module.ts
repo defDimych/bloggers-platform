@@ -30,6 +30,7 @@ import { LogoutUserUseCase } from './application/usecases/logout-user.usecase';
 import { SessionsQueryRepository } from './infrastructure/query/sessions.query-repository';
 import { SecurityDevicesController } from './api/security-devices.controller';
 import { DeleteSessionUseCase } from './application/usecases/sessions/delete-session.usecase';
+import { DeleteSessionsExcludingCurrentUseCase } from './application/usecases/sessions/delete-sessions-excluding-current.usecase';
 
 const useCases = [
   //TODO: Рефакторинг массива + файловая система
@@ -42,6 +43,7 @@ const useCases = [
   ConfirmPasswordRecoveryUseCase,
   RefreshTokensUseCase,
   DeleteSessionUseCase,
+  DeleteSessionsExcludingCurrentUseCase,
 ];
 
 @Global()

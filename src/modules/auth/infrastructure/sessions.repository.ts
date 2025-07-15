@@ -15,8 +15,19 @@ export class SessionsRepository {
     await session.save();
   }
 
+  async saveMany(sessions: SessionDocument[]): Promise<void> {
+    await this.SessionModel.create(sessions);
+  }
+
   async findByDeviceId(deviceId: string): Promise<SessionDocument | null> {
     return this.SessionModel.findOne({ deviceId, deletedAt: null });
+  }
+
+  async findAllUserSessionsExcludingCurrentOne(
+    userId: string,
+    deviceId: string,
+  ): Promise<SessionDocument[]> {
+    return this.SessionModel.find({ userId, deviceId: { $ne: deviceId } });
   }
 
   async findSession(dto: {

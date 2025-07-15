@@ -14,6 +14,7 @@ import { SessionsViewDto } from './view-dto/sessions.view-dto';
 import { SessionsQueryRepository } from '../infrastructure/query/sessions.query-repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteSessionCommand } from '../application/usecases/sessions/delete-session.usecase';
+import { DeleteSessionsExcludingCurrentCommand } from '../application/usecases/sessions/delete-sessions-excluding-current.usecase';
 
 @Controller('security/devices')
 @UseGuards(JwtRefreshAuthGuard)
@@ -38,6 +39,19 @@ export class SecurityDevicesController {
   ): Promise<void> {
     return this.commandBus.execute(
       new DeleteSessionCommand({ deviceId, userId: user.userId }),
+    );
+  }
+
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteAllExcludingCurrent(
+    @ExtractExtendedUserFromRequest() user: ExtendedUserContextDto,
+  ): Promise<void> {
+    return this.commandBus.execute(
+      new DeleteSessionsExcludingCurrentCommand({
+        userId: user.userId,
+        deviceId: user.deviceId,
+      }),
     );
   }
 }
