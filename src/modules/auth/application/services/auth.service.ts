@@ -25,17 +25,15 @@ export class AuthService {
       return null;
     }
 
-    // Проверка SKIP_PASSWORD_CHECK
-    if (!this.authConfig.skipPasswordCheck) {
-      const isPasswordValid = await this.cryptoService.comparePasswords({
-        password,
-        hash: user.accountData.passwordHash,
-      });
+    const isPasswordValid = await this.cryptoService.comparePasswords({
+      password,
+      hash: user.accountData.passwordHash,
+    });
 
-      if (!isPasswordValid) {
-        return null;
-      }
+    if (!isPasswordValid) {
+      return null;
     }
+
     return { userId: user._id.toString() };
   }
 
