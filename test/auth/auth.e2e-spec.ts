@@ -11,6 +11,7 @@ import { ErrorResponseBody } from '../../src/core/exceptions/filters/error-respo
 import { MeViewDto } from '../../src/modules/user-accounts/api/view-dto/users.view-dto';
 import { delay } from './delay';
 import { GLOBAL_PREFIX } from '../../src/setup/global-prefix.setup';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -29,7 +30,22 @@ describe('AuthController (e2e)', () => {
             });
           },
           inject: [AuthConfig],
+        })
+        .overrideGuard(ThrottlerGuard)
+        .useValue({
+          canActivate() {
+            return true;
+          },
         });
+      // .overrideProvider(AuthConfig)
+      // .useFactory({
+      //   factory: (configService: ConfigService<any, true>) => {
+      //     const authConfig = new AuthConfig(configService);
+      //     authConfig.skipPasswordCheck = true;
+      //     return authConfig;
+      //   },
+      //   inject: [ConfigService],
+      // });
     });
 
     app = result.app;
