@@ -19,13 +19,14 @@ import { ThrottlerModule } from '@nestjs/throttler';
   imports: [
     CqrsModule.forRoot(),
     configModule,
-    ThrottlerModule.forRoot({
-      throttlers: [
+    ThrottlerModule.forRootAsync({
+      useFactory: (coreConfig: CoreConfig) => [
         {
-          ttl: 10000,
-          limit: 5,
+          ttl: coreConfig.THROTTLE_TTL,
+          limit: coreConfig.THROTTLE_LIMIT,
         },
       ],
+      inject: [CoreConfig],
     }),
     MongooseModule.forRootAsync({
       useFactory: (coreConfig: CoreConfig) => {
