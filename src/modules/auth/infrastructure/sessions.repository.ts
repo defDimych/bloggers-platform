@@ -27,7 +27,11 @@ export class SessionsRepository {
     userId: string,
     deviceId: string,
   ): Promise<SessionDocument[]> {
-    return this.SessionModel.find({ userId, deviceId: { $ne: deviceId } });
+    return this.SessionModel.find({
+      userId,
+      deviceId: { $ne: deviceId },
+      deletedAt: null,
+    });
   }
 
   async findSession(dto: {

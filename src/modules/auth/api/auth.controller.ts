@@ -86,6 +86,7 @@ export class AuthController {
 
   @SkipThrottle()
   @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshAuthGuard)
   async refreshTokens(
     @ExtractExtendedUserFromRequest() user: ExtendedUserContextDto,
