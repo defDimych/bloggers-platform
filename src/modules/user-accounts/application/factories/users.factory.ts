@@ -3,7 +3,9 @@ import { CryptoService } from '../../../auth/application/services/crypto.service
 import { User, UserDocument, UserModelType } from '../../domain/user.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { UsersService } from '../services/users.service';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class UsersFactory {
   constructor(
     @InjectModel(User.name) private UserModel: UserModelType,
