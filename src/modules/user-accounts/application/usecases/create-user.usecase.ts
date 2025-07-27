@@ -1,7 +1,8 @@
 import { CreateUserDto } from '../../dto/create-user.dto';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersFactory } from '../factories/users.factory';
 import { UsersRepository } from '../../infrastructure/users.repository';
+import { CryptoService } from '../../../auth/application/services/crypto.service';
+import { UsersService } from '../services/users.service';
 
 export class CreateUserCommand extends Command<string> {
   constructor(public dto: CreateUserDto) {
@@ -14,17 +15,22 @@ export class CreateUserUseCase
   implements ICommandHandler<CreateUserCommand, string>
 {
   constructor(
-    private usersFactory: UsersFactory,
     private usersRepository: UsersRepository,
+    private bcryptService: CryptoService,
+    private usersService: UsersService,
   ) {}
 
   async execute({ dto }: CreateUserCommand): Promise<string> {
-    const user = await this.usersFactory.create(dto);
+    await this.usersService.checkUniqueOrThrow(dto.login, dto.email);
 
-    user.confirmEmail(); // Подтверждаем почту при создании user супер-админом
+    const passwordHash = await this.bcryptService.generateHash(dto.password);
 
-    await this.usersRepository.save(user);
+    // user.confirmEmail(); // Подтверждаем почту при создании user супер-админом
 
-    return user._id.toString();
+    return this.usersRepository.insertOne({
+      login: dto.login,
+      email: dto.email,
+      passwordHash,
+    });
   }
 }

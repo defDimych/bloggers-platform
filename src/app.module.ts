@@ -14,6 +14,8 @@ import { CoreConfig } from './core/core.config';
 import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
 import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Module({
   imports: [
@@ -39,6 +41,17 @@ import { ThrottlerModule } from '@nestjs/throttler';
       },
       inject: [CoreConfig],
     }),
+    // TODO async config
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'nodejs',
+      password: 'nodejs',
+      database: 'Bloggers-platform',
+      autoLoadEntities: false,
+      synchronize: false,
+    }),
     AuthModule,
     BloggersPlatformModule,
     UserAccountsModule,
@@ -58,6 +71,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
   ],
 })
 export class AppModule {
+  constructor(private dataSource: DataSource) {}
+
   static async forRoot(coreConfig: CoreConfig): Promise<DynamicModule> {
     // такой мудрёный способ мы используем, чтобы добавить к основным модулям необязательный модуль.
     // чтобы не обращаться в декораторе к переменной окружения через process.env , потому что
