@@ -4,7 +4,7 @@ import { UsersRepository } from '../../infrastructure/users.repository';
 import { CryptoService } from '../../../auth/application/services/crypto.service';
 import { UsersService } from '../services/users.service';
 
-export class CreateUserCommand extends Command<string> {
+export class CreateUserCommand extends Command<number> {
   constructor(public dto: CreateUserDto) {
     super();
   }
@@ -20,7 +20,7 @@ export class CreateUserUseCase
     private usersService: UsersService,
   ) {}
 
-  async execute({ dto }: CreateUserCommand): Promise<string> {
+  async execute({ dto }: CreateUserCommand): Promise<number> {
     await this.usersService.checkUniqueOrThrow(dto.login, dto.email);
 
     const passwordHash = await this.bcryptService.generateHash(dto.password);

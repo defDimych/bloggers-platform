@@ -68,13 +68,13 @@ export class UsersRepository {
     login: string;
     email: string;
     passwordHash: string;
-  }): Promise<string> {
+  }): Promise<number> {
     const result: { id: number }[] = await this.dataSource.query(
       `INSERT INTO "Users" (login, email, "passwordHash") VALUES ($1, $2, $3) RETURNING id`,
       [dto.login, dto.email, dto.passwordHash],
     );
 
-    return result[0].id.toString();
+    return result[0].id;
   }
 
   async findExistingUserByLoginOrEmail(
