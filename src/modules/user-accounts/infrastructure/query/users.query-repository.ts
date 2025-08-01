@@ -1,5 +1,3 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../../domain/user.entity';
 import { UsersViewDto } from '../../api/view-dto/users.view-dto';
 import { Injectable } from '@nestjs/common';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
@@ -10,47 +8,41 @@ import { UserDbType } from '../../types/user-db.type';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(
-    @InjectModel(User.name) private UserModel: UserModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async getAllUsers(
-    query: GetUsersQueryParams,
+  async getAll(
+    queryParams: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<UsersViewDto[]>> {
-    const filter = {
-      'accountData.deletedAt': null,
-      $or: [
-        {
-          'accountData.login': {
-            $regex: query.searchLoginTerm ?? '',
-            $options: 'i',
-          },
-        },
-        {
-          'accountData.email': {
-            $regex: query.searchEmailTerm ?? '',
-            $options: 'i',
-          },
-        },
-      ],
-    };
-
     try {
-      const users = await this.UserModel.find(filter)
-        .sort({ ['accountData.' + query.sortBy]: query.sortDirection })
-        .skip(query.calculateSkip())
-        .limit(query.pageSize);
+      const users = await this.dataSource.query<UserDbType[]>(
+        `SELECT * FROM "Users" 
+WHERE (login ILIKE $1 OR email ILIKE $2) AND "deletedAt" IS NULL
+ORDER BY "${queryParams.sortBy}" ${queryParams.sortDirection}
+LIMIT ${queryParams.pageSize}
+OFFSET ${queryParams.calculateSkip()}`,
+        [
+          `%${queryParams.searchLoginTerm}%`,
+          `%${queryParams.searchEmailTerm}%`,
+        ],
+      );
 
-      const totalCount = await this.UserModel.countDocuments(filter);
+      const totalCount = await this.dataSource.query<{ totalCount: string }[]>(
+        `SELECT 
+COUNT(*) FILTER (WHERE (login ILIKE $1 OR email ILIKE $2) AND "deletedAt" IS NULL) AS "totalCount"
+FROM "Users";`,
+        [
+          `%${queryParams.searchLoginTerm}%`,
+          `%${queryParams.searchEmailTerm}%`,
+        ],
+      );
 
-      const items = users.map(UsersViewDto.mapManyToView);
+      const items = users.map(UsersViewDto.mapToView);
 
       return PaginatedViewDto.mapToView({
         items,
-        totalCount,
-        page: query.pageNumber,
-        size: query.pageSize,
+        totalCount: Number(totalCount[0].totalCount),
+        page: queryParams.pageNumber,
+        size: queryParams.pageSize,
       });
     } catch (e) {
       console.log(

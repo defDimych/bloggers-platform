@@ -32,7 +32,7 @@ export class UsersController {
   async getAllUsers(
     @Query() query: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<UsersViewDto[]>> {
-    return this.usersQueryRepository.getAllUsers(query);
+    return this.usersQueryRepository.getAll(query);
   }
 
   @Post()
