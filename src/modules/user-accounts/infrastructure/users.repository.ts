@@ -5,6 +5,7 @@ import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { UserDbType } from '../types/user-db.type';
 
 @Injectable()
 export class UsersRepository {
@@ -12,6 +13,22 @@ export class UsersRepository {
     @InjectModel(User.name) private UserModel: UserModelType,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
+
+  async makeDeleted(userId: number): Promise<void> {
+    await this.dataSource.query(
+      `UPDATE "Users" SET "deletedAt" = now() WHERE id = $1`,
+      [userId],
+    );
+  }
+
+  async findUserById(id: number): Promise<UserDbType | null> {
+    const result = await this.dataSource.query<UserDbType[]>(
+      `SELECT * FROM "Users" WHERE id = $1 AND "deletedAt" IS NULL`,
+      [id],
+    );
+
+    return result.length === 1 ? result[0] : null;
+  }
 
   async findById(id: string): Promise<UserDocument | null> {
     return this.UserModel.findOne({ _id: id, 'accountData.deletedAt': null });
@@ -64,7 +81,19 @@ export class UsersRepository {
     await user.save();
   }
 
-  async insertOne(dto: {
+  async setEmailConfirmationDetails(dto: {
+    userId: number;
+    confirmationCode: string;
+    expirationDate: Date;
+    isConfirmed: boolean;
+  }): Promise<void> {
+    await this.dataSource.query(
+      `INSERT INTO "EmailConfirmationDetails" ("userId", "confirmationCode", "expirationDate", "isConfirmed") VALUES ($1, $2, $3, $4);`,
+      [dto.userId, dto.confirmationCode, dto.expirationDate, dto.isConfirmed],
+    );
+  }
+
+  async createUser(dto: {
     login: string;
     email: string;
     passwordHash: string;

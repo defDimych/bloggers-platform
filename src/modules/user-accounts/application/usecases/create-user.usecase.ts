@@ -1,8 +1,8 @@
 import { CreateUserDto } from '../../dto/create-user.dto';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../infrastructure/users.repository';
-import { CryptoService } from '../../../auth/application/services/crypto.service';
-import { UsersService } from '../services/users.service';
+import { add } from 'date-fns';
+import { UsersFactory } from '../factories/users.factory';
 
 export class CreateUserCommand extends Command<number> {
   constructor(public dto: CreateUserDto) {
@@ -16,21 +16,25 @@ export class CreateUserUseCase
 {
   constructor(
     private usersRepository: UsersRepository,
-    private bcryptService: CryptoService,
-    private usersService: UsersService,
+    private usersFactory: UsersFactory,
   ) {}
 
   async execute({ dto }: CreateUserCommand): Promise<number> {
-    await this.usersService.checkUniqueOrThrow(dto.login, dto.email);
+    const userId = await this.usersFactory.create(dto);
 
-    const passwordHash = await this.bcryptService.generateHash(dto.password);
+    const emailConfirmationDetails = {
+      userId,
+      confirmationCode: crypto.randomUUID(),
+      expirationDate: add(new Date(), {
+        minutes: 5,
+      }),
+      isConfirmed: true, // при создании супер-админом true
+    };
 
-    // user.confirmEmail(); // Подтверждаем почту при создании user супер-админом
+    await this.usersRepository.setEmailConfirmationDetails(
+      emailConfirmationDetails,
+    );
 
-    return this.usersRepository.insertOne({
-      login: dto.login,
-      email: dto.email,
-      passwordHash,
-    });
+    return userId;
   }
 }
