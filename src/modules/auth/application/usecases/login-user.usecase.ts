@@ -1,8 +1,6 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { LoginUserDto } from '../../dto/login-user.dto';
 import { JwtAdapter } from '../../infrastructure/jwt.adapter';
-import { InjectModel } from '@nestjs/mongoose';
-import { Session, SessionModelType } from '../../domain/session.entity';
 import { SessionsRepository } from '../../infrastructure/sessions.repository';
 
 export class LoginUserCommand extends Command<{
@@ -17,7 +15,6 @@ export class LoginUserCommand extends Command<{
 @CommandHandler(LoginUserCommand)
 export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
   constructor(
-    @InjectModel(Session.name) private SessionModel: SessionModelType,
     private jwtAdapter: JwtAdapter,
     private sessionsRepository: SessionsRepository,
   ) {}
@@ -34,16 +31,14 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
     const decodedPayload =
       this.jwtAdapter.getPayloadFromRefreshToken(refreshToken);
 
-    const session = this.SessionModel.createInstance({
-      userId: dto.userId,
+    await this.sessionsRepository.createSession({
+      userId: Number(dto.userId),
       deviceId: decodedPayload.deviceId,
       deviceName: dto.deviceName,
       IP: dto.IP,
       iat: new Date(decodedPayload.iat * 1000),
       exp: new Date(decodedPayload.exp * 1000),
     });
-
-    await this.sessionsRepository.save(session);
 
     return {
       accessToken,
