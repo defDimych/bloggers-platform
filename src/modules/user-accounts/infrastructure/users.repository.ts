@@ -53,14 +53,17 @@ export class UsersRepository {
     });
   }
 
-  async findByLoginOrEmail(loginOrEmail: string): Promise<UserDocument | null> {
-    return this.UserModel.findOne({
-      'accountData.deletedAt': null,
-      $or: [
-        { 'accountData.login': loginOrEmail },
-        { 'accountData.email': loginOrEmail },
-      ],
-    });
+  async findByLoginOrEmail(
+    loginOrEmail: string,
+  ): Promise<{ id: number; passwordHash: string } | null> {
+    const result = await this.dataSource.query<
+      { id: number; passwordHash: string }[]
+    >(
+      `SELECT id, "passwordHash" FROM "Users" WHERE (login = $1 OR email = $2) AND "deletedAt" IS NULL`,
+      [loginOrEmail, loginOrEmail],
+    );
+
+    return result.length === 1 ? result[0] : null;
   }
 
   async findByConfirmationCode(code: string): Promise<UserDocument | null> {
