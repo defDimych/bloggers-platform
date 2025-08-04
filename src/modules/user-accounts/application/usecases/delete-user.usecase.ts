@@ -4,7 +4,7 @@ import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 export class DeleteUserCommand {
-  constructor(public id: string) {}
+  constructor(public id: number) {}
 }
 
 @CommandHandler(DeleteUserCommand)
@@ -14,7 +14,7 @@ export class DeleteUserUseCase
   constructor(private usersRepository: UsersRepository) {}
 
   async execute({ id }: DeleteUserCommand): Promise<void> {
-    const user = await this.usersRepository.findById(id);
+    const user = await this.usersRepository.findUserById(id);
 
     if (!user) {
       throw new DomainException({
@@ -23,8 +23,6 @@ export class DeleteUserUseCase
       });
     }
 
-    user.makeDeleted();
-
-    await this.usersRepository.save(user);
+    await this.usersRepository.makeDeleted(user.id);
   }
 }

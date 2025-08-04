@@ -19,6 +19,7 @@ import { BasicAuthGuard } from '../../auth/guards/basic/basic-auth.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../application/usecases/create-user.usecase';
 import { DeleteUserCommand } from '../application/usecases/delete-user.usecase';
+import { IdValidationTransformationPipe } from '../../../core/pipes/id-validation-transformation.pipe';
 
 @Controller('users')
 @UseGuards(BasicAuthGuard)
@@ -44,7 +45,9 @@ export class UsersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUser(@Param('id') id: string): Promise<void> {
+  async deleteUser(
+    @Param('id', IdValidationTransformationPipe) id: number,
+  ): Promise<void> {
     return this.commandBus.execute(new DeleteUserCommand(id));
   }
 }
