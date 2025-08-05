@@ -21,7 +21,7 @@ import { CreateUserCommand } from '../application/usecases/create-user.usecase';
 import { DeleteUserCommand } from '../application/usecases/delete-user.usecase';
 import { IdValidationTransformationPipe } from '../../../core/pipes/id-validation-transformation.pipe';
 
-@Controller('users')
+@Controller('sa/users')
 @UseGuards(BasicAuthGuard)
 export class UsersController {
   constructor(
