@@ -13,27 +13,31 @@ export class UsersQueryRepository {
   async getAll(
     queryParams: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<UsersViewDto[]>> {
+    let filter = `"deletedAt" IS NULL`;
+    let params: string[] | [] = [];
+
+    if (queryParams.searchEmailTerm || queryParams.searchLoginTerm) {
+      filter = `(login ILIKE $1 OR email ILIKE $2) AND "deletedAt" IS NULL`;
+      params = [
+        `%${queryParams.searchLoginTerm}%`,
+        `%${queryParams.searchEmailTerm}%`,
+      ];
+    }
     try {
       const users = await this.dataSource.query<UserDbType[]>(
         `SELECT * FROM "Users" 
-WHERE (login ILIKE $1 OR email ILIKE $2) AND "deletedAt" IS NULL
+WHERE ${filter}
 ORDER BY "${queryParams.sortBy}" ${queryParams.sortDirection}
 LIMIT ${queryParams.pageSize}
 OFFSET ${queryParams.calculateSkip()}`,
-        [
-          `%${queryParams.searchLoginTerm}%`,
-          `%${queryParams.searchEmailTerm}%`,
-        ],
+        params,
       );
 
       const totalCount = await this.dataSource.query<{ totalCount: string }[]>(
         `SELECT 
-COUNT(*) FILTER (WHERE (login ILIKE $1 OR email ILIKE $2) AND "deletedAt" IS NULL) AS "totalCount"
+COUNT(*) FILTER (WHERE ${filter}) AS "totalCount"
 FROM "Users";`,
-        [
-          `%${queryParams.searchLoginTerm}%`,
-          `%${queryParams.searchEmailTerm}%`,
-        ],
+        params,
       );
 
       const items = users.map(UsersViewDto.mapToView);
