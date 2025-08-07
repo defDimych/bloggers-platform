@@ -13,12 +13,14 @@ export class EmailConfirmationUseCase
 {
   constructor(private usersRepository: UsersRepository) {}
   async execute({ dto }: EmailConfirmationCommand): Promise<void> {
-    const user = await this.usersRepository.findByConfirmationCode(dto.code);
+    const emailConfirmationDetails =
+      await this.usersRepository.findEmailConfirmDetailsByConfirmCode(dto.code);
 
     if (
-      !user ||
-      user.emailConfirmation.isConfirmed ||
-      user.emailConfirmation.expirationDate < new Date()
+      !emailConfirmationDetails ||
+      emailConfirmationDetails.isConfirmed ||
+      // TODO sql запрос возвращает строку, нужен ли маппинг в репо?
+      new Date(emailConfirmationDetails.expirationDate) < new Date()
     ) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
@@ -33,8 +35,8 @@ export class EmailConfirmationUseCase
       });
     }
 
-    user.confirmEmail();
-
-    await this.usersRepository.save(user);
+    await this.usersRepository.updateEmailConfirmed(
+      emailConfirmationDetails.id,
+    );
   }
 }

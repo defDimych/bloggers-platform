@@ -4,6 +4,7 @@ import { EmailService } from '../../../notifications/email.service';
 import { EmailDto } from '../../dto/email.dto';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { add } from 'date-fns';
 
 export class RegistrationEmailResendingCommand {
   constructor(public dto: EmailDto) {}
@@ -19,7 +20,8 @@ export class RegistrationEmailResendingUseCase
   ) {}
 
   async execute({ dto }: RegistrationEmailResendingCommand): Promise<void> {
-    const user = await this.usersRepository.findByEmail(dto.email);
+    const user: { id: number } | null =
+      await this.usersRepository.findUserByEmail(dto.email);
 
     if (!user) {
       throw new DomainException({
@@ -29,7 +31,12 @@ export class RegistrationEmailResendingUseCase
       });
     }
 
-    if (user.emailConfirmation.isConfirmed) {
+    const emailConfirmationDetails: { id: number; isConfirmed: boolean } =
+      await this.usersRepository.findEmailConfirmDetailsByUserIdOrThrow(
+        user.id,
+      );
+
+    if (emailConfirmationDetails.isConfirmed) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         message: 'Validation failed',
@@ -39,13 +46,20 @@ export class RegistrationEmailResendingUseCase
       });
     }
 
-    const confirmationCode = crypto.randomUUID();
+    const newEmailConfirmDetails = {
+      confirmCode: crypto.randomUUID(),
+      exp: add(new Date(), {
+        minutes: 5,
+      }),
+    };
 
-    user.setConfirmationCode(confirmationCode);
-    await this.usersRepository.save(user);
+    await this.usersRepository.updateEmailConfirmCodeAndExpiry({
+      id: emailConfirmationDetails.id,
+      ...newEmailConfirmDetails,
+    });
 
     this.emailService
-      .sendConfirmationEmail(user.accountData.email, confirmationCode)
+      .sendConfirmationEmail(dto.email, newEmailConfirmDetails.confirmCode)
       .catch(console.error);
   }
 }
