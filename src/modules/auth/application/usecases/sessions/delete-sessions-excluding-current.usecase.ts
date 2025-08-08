@@ -12,14 +12,11 @@ export class DeleteSessionsExcludingCurrentUseCase
   constructor(private sessionsRepository: SessionsRepository) {}
 
   async execute({ dto }: DeleteSessionsExcludingCurrentCommand): Promise<void> {
-    const sessions =
-      await this.sessionsRepository.findAllUserSessionsExcludingCurrentOne(
-        dto.userId,
-        dto.deviceId,
-      );
-
-    sessions.forEach((s) => s.makeDeleted());
-
-    await this.sessionsRepository.saveMany(sessions);
+    await this.sessionsRepository.makeDeletedAllUserSessionsExcludingCurrentOne(
+      {
+        deviceId: dto.deviceId,
+        userId: Number(dto.userId),
+      },
+    );
   }
 }
