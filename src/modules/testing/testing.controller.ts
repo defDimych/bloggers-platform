@@ -15,7 +15,7 @@ export class TestingController {
 
     const promises = tables.map((table) => {
       return this.dataSource.query(
-        `TRUNCATE TABLE "${table.table_name}" CASCADE RESTART IDENTITY;`,
+        `TRUNCATE TABLE "${table.table_name}" CASCADE;`,
       );
     });
     await Promise.all(promises);
