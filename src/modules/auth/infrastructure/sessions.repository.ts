@@ -35,15 +35,18 @@ export class SessionsRepository {
     return this.SessionModel.findOne({ deviceId, deletedAt: null });
   }
 
-  async findAllUserSessionsExcludingCurrentOne(
-    userId: string,
-    deviceId: string,
-  ): Promise<SessionDocument[]> {
-    return this.SessionModel.find({
-      userId,
-      deviceId: { $ne: deviceId },
-      deletedAt: null,
-    });
+  async makeDeletedAllUserSessionsExcludingCurrentOne(dto: {
+    deviceId: string;
+    userId: number;
+  }): Promise<void> {
+    await this.dataSource.query(
+      `UPDATE "Sessions"
+      SET "deletedAt" = now()
+      WHERE "userId" = $1
+        AND "deviceId" <> $2
+        AND "deletedAt" IS NULL;`,
+      [dto.userId, dto.deviceId],
+    );
   }
 
   async findSession(dto: {
