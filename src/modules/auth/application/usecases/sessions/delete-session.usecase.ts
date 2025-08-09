@@ -23,15 +23,13 @@ export class DeleteSessionUseCase
       });
     }
 
-    if (session.userId !== dto.userId) {
+    if (session.userId.toString() !== dto.userId) {
       throw new DomainException({
         message: 'You do not have permission to delete this session',
         code: DomainExceptionCode.Forbidden,
       });
     }
 
-    session.makeDeleted();
-
-    await this.sessionsRepository.save(session);
+    await this.sessionsRepository.makeDeleted(session.id);
   }
 }

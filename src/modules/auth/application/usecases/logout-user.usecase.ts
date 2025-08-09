@@ -12,10 +12,6 @@ export class LogoutUserUseCase
   constructor(private sessionsRepository: SessionsRepository) {}
 
   async execute({ sessionId }: LogoutUserCommand): Promise<void> {
-    const session = await this.sessionsRepository.findById(sessionId);
-
-    session!.makeDeleted();
-
-    await this.sessionsRepository.save(session!);
+    await this.sessionsRepository.makeDeleted(Number(sessionId));
   }
 }

@@ -5,7 +5,7 @@ import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { UserDbType } from '../types/user-db.type';
+import { UserDbModel } from '../types/user-db-model.type';
 
 @Injectable()
 export class UsersRepository {
@@ -21,8 +21,8 @@ export class UsersRepository {
     );
   }
 
-  async findUserById(id: number): Promise<UserDbType | null> {
-    const result = await this.dataSource.query<UserDbType[]>(
+  async findUserById(id: number): Promise<UserDbModel | null> {
+    const result = await this.dataSource.query<UserDbModel[]>(
       `SELECT * FROM "Users" WHERE id = $1 AND "deletedAt" IS NULL`,
       [id],
     );
@@ -111,13 +111,6 @@ export class UsersRepository {
     );
 
     return result.length === 1 ? result[0] : null;
-  }
-
-  async findByConfirmationCode(code: string): Promise<UserDocument | null> {
-    return this.UserModel.findOne({
-      'accountData.deletedAt': null,
-      'emailConfirmation.confirmationCode': code,
-    });
   }
 
   async findByPasswordRecoveryCode(code: string): Promise<UserDocument | null> {

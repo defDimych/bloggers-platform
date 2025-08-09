@@ -4,7 +4,7 @@ import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { UserDbType } from '../../types/user-db.type';
+import { UserDbModel } from '../../types/user-db-model.type';
 
 @Injectable()
 export class UsersQueryRepository {
@@ -24,7 +24,7 @@ export class UsersQueryRepository {
       ];
     }
     try {
-      const users = await this.dataSource.query<UserDbType[]>(
+      const users = await this.dataSource.query<UserDbModel[]>(
         `SELECT * FROM "Users" 
 WHERE ${filter}
 ORDER BY "${queryParams.sortBy}" ${queryParams.sortDirection}
@@ -57,7 +57,7 @@ FROM "Users";`,
   }
 
   async findById(id: number): Promise<UsersViewDto> {
-    const result = await this.dataSource.query<UserDbType[]>(
+    const result = await this.dataSource.query<UserDbModel[]>(
       `SELECT * FROM "Users" WHERE id = $1`,
       [id],
     );

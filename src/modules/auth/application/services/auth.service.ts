@@ -4,7 +4,7 @@ import { CryptoService } from './crypto.service';
 import { UserContextDto } from '../../guards/dto/user-context.dto';
 import { SessionsRepository } from '../../infrastructure/sessions.repository';
 import { PayloadRefreshToken } from '../../infrastructure/jwt.adapter';
-import { SessionDocument } from '../../domain/session.entity';
+import { SessionDbModel } from '../../infrastructure/types/session-db-model.type';
 
 @Injectable()
 export class AuthService {
@@ -37,11 +37,11 @@ export class AuthService {
 
   async sessionExists(
     dto: PayloadRefreshToken,
-  ): Promise<SessionDocument | null> {
+  ): Promise<SessionDbModel | null> {
     return this.sessionsRepository.findSession({
       iat: new Date(dto.iat * 1000),
       deviceId: dto.deviceId,
-      userId: dto.userId,
+      userId: Number(dto.userId),
     });
   }
 }

@@ -1,4 +1,4 @@
-import { SessionDocument } from '../../domain/session.entity';
+import { SessionDbModel } from '../../infrastructure/types/session-db-model.type';
 
 export class SessionsViewDto {
   ip: string;
@@ -6,12 +6,12 @@ export class SessionsViewDto {
   lastActiveDate: string;
   deviceId: string;
 
-  static mapToView = (sessions: SessionDocument[]): SessionsViewDto[] => {
+  static mapToView = (sessions: SessionDbModel[]): SessionsViewDto[] => {
     return sessions.map((s) => {
       return {
         ip: s.IP,
         title: s.deviceName,
-        lastActiveDate: s.iat.toISOString(),
+        lastActiveDate: s.iat,
         deviceId: s.deviceId,
       };
     });

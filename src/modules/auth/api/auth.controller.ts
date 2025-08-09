@@ -45,7 +45,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async me(@ExtractUserFromRequest() user: UserContextDto): Promise<MeViewDto> {
-    return this.authQueryRepository.me(user.userId);
+    return this.authQueryRepository.me(Number(user.userId));
   }
 
   @Post('login')
