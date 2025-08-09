@@ -46,6 +46,53 @@ export class UsersRepository {
     return user;
   }
 
+  async findEmailConfirmDetailsByUserIdOrThrow(
+    userId: number,
+  ): Promise<{ id: number; isConfirmed: boolean }> {
+    const result = await this.dataSource.query<
+      { id: number; isConfirmed: boolean }[]
+    >(
+      `SELECT id, "isConfirmed" FROM "EmailConfirmationDetails" WHERE "userId" = $1`,
+      [userId],
+    );
+
+    if (!result.length) {
+      throw new Error(
+        `Email confirmation details by userId:${userId} not found!`,
+      );
+    }
+    return result[0];
+  }
+
+  // TODO authRepository ???
+  async findEmailConfirmDetailsByConfirmCode(confirmCode: string): Promise<{
+    id: number;
+    isConfirmed: boolean;
+    expirationDate: string;
+  } | null> {
+    const result = await this.dataSource.query<
+      {
+        id: number;
+        isConfirmed: boolean;
+        expirationDate: string;
+      }[]
+    >(
+      `SELECT id, "isConfirmed", "expirationDate" FROM "EmailConfirmationDetails" WHERE "confirmationCode" = $1`,
+      [confirmCode],
+    );
+
+    return result.length === 1 ? result[0] : null;
+  }
+
+  async findUserByEmail(email: string): Promise<{ id: number } | null> {
+    const result = await this.dataSource.query<{ id: number }[]>(
+      `SELECT id FROM "Users" WHERE email = $1`,
+      [email],
+    );
+
+    return result.length === 1 ? result[0] : null;
+  }
+
   async findByEmail(email: string): Promise<UserDocument | null> {
     return this.UserModel.findOne({
       'accountData.deletedAt': null,
