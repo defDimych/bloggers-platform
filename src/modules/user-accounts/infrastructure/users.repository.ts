@@ -149,6 +149,24 @@ export class UsersRepository {
     return result[0].id;
   }
 
+  async updateEmailConfirmCodeAndExpiry(dto: {
+    id: number;
+    confirmCode: string;
+    exp: Date;
+  }): Promise<void> {
+    await this.dataSource.query(
+      `UPDATE "EmailConfirmationDetails" SET "confirmationCode" = $1, "expirationDate" = $2 WHERE id = $3`,
+      [dto.confirmCode, dto.exp, dto.id],
+    );
+  }
+
+  async updateEmailConfirmed(id: number): Promise<void> {
+    await this.dataSource.query(
+      `UPDATE "EmailConfirmationDetails" SET "isConfirmed" = true WHERE id = $1`,
+      [id],
+    );
+  }
+
   async findExistingUserByLoginOrEmail(
     login: string,
     email: string,
