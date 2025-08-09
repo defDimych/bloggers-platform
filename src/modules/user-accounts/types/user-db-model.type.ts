@@ -1,4 +1,4 @@
-export type UserDbType = {
+export type UserDbModel = {
   id: number;
   login: string;
   email: string;
