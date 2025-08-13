@@ -12,12 +12,16 @@ import {
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { LikeStatus } from '../../../common/types/like-status.enum';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { PostDbModel } from '../types/post-db-model.type';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
     @InjectModel(Post.name) private PostModel: PostModelType,
     @InjectModel(PostLike.name) private PostLikeModel: PostLikeModelType,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
   private async getNewestLikes(postId: string): Promise<PostLikeDocument[]> {
     return this.PostLikeModel.find({ postId, myStatus: LikeStatus.Like })
@@ -28,7 +32,7 @@ export class PostsQueryRepository {
   async getPosts(
     query: getPostsQueryParams,
     userId: string | null,
-    blogId?: string,
+    blogId?: number,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
     const filter = blogId ? { blogId, deletedAt: null } : { deletedAt: null };
 
@@ -93,6 +97,22 @@ export class PostsQueryRepository {
       );
       throw new Error(`some error`);
     }
+  }
+
+  async findPostByIdOrNotFoundFail(postId: number) {
+    const result = await this.dataSource.query<PostDbModel[]>(
+      `SELECT * FROM "Posts" WHERE id = $1 AND "deletedAt" IS NULL;`,
+      [postId],
+    );
+
+    if (!result.length) {
+      throw new DomainException({
+        message: `post by id:${postId} not found`,
+        code: DomainExceptionCode.NotFound,
+      });
+    }
+
+    return PostViewDto.mapToViewWithDefaultLikesInfo(result[0]);
   }
 
   async findByIdOrNotFoundFail(

@@ -6,10 +6,16 @@ import { getBlogsQueryParams } from '../../api/input-dto/get-blogs.query-params.
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { BlogDbModel } from '../types/blog-db-model.type';
 
 @Injectable()
 export class BlogsQueryRepository {
-  constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) {}
+  constructor(
+    @InjectModel(Blog.name) private BlogModel: BlogModelType,
+    @InjectDataSource() private dataSource: DataSource,
+  ) {}
 
   async getAll(
     query: getBlogsQueryParams,
@@ -28,7 +34,7 @@ export class BlogsQueryRepository {
 
     const totalCount = await this.BlogModel.countDocuments(filter);
 
-    const items = blogs.map(BlogViewDto.mapToView);
+    const items = blogs.map(BlogViewDto.mapManyToView);
 
     return PaginatedViewDto.mapToView({
       items,
@@ -38,15 +44,18 @@ export class BlogsQueryRepository {
     });
   }
 
-  async getByIdOrNotFoundFail(id: string): Promise<BlogViewDto> {
-    const blog = await this.BlogModel.findOne({ _id: id, deletedAt: null });
+  async getByIdOrNotFoundFail(id: number): Promise<BlogViewDto> {
+    const result = await this.dataSource.query<BlogDbModel[]>(
+      `SELECT * FROM "Blogs" WHERE id = $1 AND "deletedAt" IS NULL;`,
+      [id],
+    );
 
-    if (!blog) {
+    if (!result.length) {
       throw new DomainException({
         message: `blog by id:${id} not found`,
         code: DomainExceptionCode.NotFound,
       });
     }
-    return BlogViewDto.mapToView(blog);
+    return BlogViewDto.mapToView(result[0]);
   }
 }
