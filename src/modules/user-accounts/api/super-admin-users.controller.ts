@@ -23,7 +23,7 @@ import { IdValidationTransformationPipe } from '../../../core/pipes/id-validatio
 
 @Controller('sa/users')
 @UseGuards(BasicAuthGuard)
-export class UsersController {
+export class SuperAdminUsersController {
   constructor(
     private usersQueryRepository: UsersQueryRepository,
     private commandBus: CommandBus,
