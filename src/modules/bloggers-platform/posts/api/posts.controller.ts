@@ -16,7 +16,6 @@ import { PostsQueryRepository } from '../infrastructure/query/posts.query-reposi
 import { PostViewDto } from './view-dto/posts.view-dto';
 import { getPostsQueryParams } from './input-dto/get-posts-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
-import { UpdatePostDto } from '../dto/update-post.dto';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../application/usecases/create-post.usecase';
 import { UpdatePostCommand } from '../application/usecases/update-post.usecase';
@@ -34,6 +33,8 @@ import { OptionalUserIdFromRequest } from '../../common/decorators/param/optiona
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-status.input-dto';
 import { UpdatePostLikeStatusCommand } from '../../likes/application/usecases/posts/update-post-like-status.usecase';
 import { BasicAuthGuard } from '../../../auth/guards/basic/basic-auth.guard';
+import { UpdatePostInputDto } from './input-dto/update-post.input-dto';
+import { IdValidationTransformationPipe } from '../../../../core/pipes/id-validation-transformation.pipe';
 
 @Controller('posts')
 export class PostsController {
@@ -75,7 +76,7 @@ export class PostsController {
   async createPost(@Body() body: CreatePostDto): Promise<PostViewDto> {
     const postId = await this.commandBus.execute(new CreatePostCommand(body));
 
-    return this.postsQueryRepository.findByIdOrNotFoundFail(postId);
+    return this.postsQueryRepository.findPostByIdOrNotFoundFail(postId);
   }
 
   @Post(':postId/comments')
@@ -103,10 +104,18 @@ export class PostsController {
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(
-    @Param('id') id: string,
-    @Body() body: UpdatePostDto,
+    @Param('id', IdValidationTransformationPipe) id: number,
+    @Body() body: UpdatePostInputDto,
   ): Promise<void> {
-    return this.commandBus.execute(new UpdatePostCommand(id, body));
+    return this.commandBus.execute(
+      new UpdatePostCommand({
+        postId: id,
+        blogId: body.blogId,
+        content: body.content,
+        shortDescription: body.shortDescription,
+        title: body.title,
+      }),
+    );
   }
 
   @Put(':postId/like-status')

@@ -19,7 +19,6 @@ export class EmailConfirmationUseCase
     if (
       !emailConfirmationDetails ||
       emailConfirmationDetails.isConfirmed ||
-      // TODO sql запрос возвращает строку, нужен ли маппинг в репо?
       new Date(emailConfirmationDetails.expirationDate) < new Date()
     ) {
       throw new DomainException({
