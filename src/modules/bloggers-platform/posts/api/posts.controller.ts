@@ -138,7 +138,9 @@ export class PostsController {
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(@Param('id') id: string): Promise<void> {
+  async deletePost(
+    @Param('id', IdValidationTransformationPipe) id: number,
+  ): Promise<void> {
     return this.commandBus.execute(new DeletePostCommand(id));
   }
 }
