@@ -44,6 +44,7 @@ import { PostLike, PostLikeSchema } from './likes/domain/post-like.entity';
 import { PostLikeRepository } from './likes/infrastructure/post-like.repository';
 import { CreatePostLikeUseCase } from './likes/application/usecases/posts/create-post-like.usecase';
 import { UpdatePostLikeCounterUseCase } from './likes/application/usecases/posts/update-post-like-counter.usecase';
+import { SuperAdminBlogsController } from './blogs/api/super-admin-blogs.controller';
 
 const useCases = [
   CreateBlogUseCase,
@@ -88,7 +89,12 @@ const queryRepository = [
       { name: PostLike.name, schema: PostLikeSchema },
     ]),
   ],
-  controllers: [BlogsController, PostsController, CommentsController],
+  controllers: [
+    BlogsController,
+    SuperAdminBlogsController,
+    PostsController,
+    CommentsController,
+  ],
   providers: [...useCases, ...repository, ...queryRepository, PostsService],
 })
 export class BloggersPlatformModule implements NestModule {
