@@ -29,8 +29,11 @@ import { CreatePostCommand } from '../../posts/application/usecases/create-post.
 import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
 import { BasicAuthGuard } from '../../../auth/guards/basic/basic-auth.guard';
 import { Public } from '../../../auth/guards/decorators/public.decorator';
+import { IdValidationTransformationPipe } from '../../../../core/pipes/id-validation-transformation.pipe';
+import { UpdatePostForBlogInputDto } from './input-dto/update-post-for-blog.input-dto';
+import { UpdatePostCommand } from '../../posts/application/usecases/update-post.usecase';
 
-@Controller('blogs')
+@Controller('sa/blogs')
 @UseGuards(BasicAuthGuard)
 export class BlogsController {
   constructor(
@@ -50,10 +53,11 @@ export class BlogsController {
   @Get('/:blogId/posts')
   @Public()
   async getPostsForBlog(
-    @Param('blogId') blogId: string,
+    @Param('blogId', IdValidationTransformationPipe) blogId: number,
     @Query() query: getPostsQueryParams,
     @OptionalUserIdFromRequest() userId: string | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
+    // TODO Move to blog service
     await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
 
     return this.postsQueryRepository.getPosts(query, userId, blogId);
@@ -61,7 +65,9 @@ export class BlogsController {
 
   @Get(':id')
   @Public()
-  async getBlog(@Param('id') id: string): Promise<BlogViewDto> {
+  async getBlog(
+    @Param('id', IdValidationTransformationPipe) id: number,
+  ): Promise<BlogViewDto> {
     return this.blogsQueryRepository.getByIdOrNotFoundFail(id);
   }
 
@@ -74,7 +80,7 @@ export class BlogsController {
 
   @Post('/:blogId/posts')
   async createPostForBlog(
-    @Param('blogId') blogId: string,
+    @Param('blogId', IdValidationTransformationPipe) blogId: number,
     @Body() body: CreatePostForBlogInputDto,
   ): Promise<PostViewDto> {
     const postId = await this.commandBus.execute(
@@ -84,21 +90,41 @@ export class BlogsController {
       }),
     );
 
-    return this.postsQueryRepository.findByIdOrNotFoundFail(postId);
+    return this.postsQueryRepository.findPostByIdOrNotFoundFail(postId);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateBlog(
-    @Param('id') id: string,
+    @Param('id', IdValidationTransformationPipe) id: number,
     @Body() body: UpdateBlogDto,
   ): Promise<void> {
     return this.commandBus.execute(new UpdateBlogCommand(id, body));
   }
 
+  @Put(':blogId/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updatePostForBlog(
+    @Param('blogId', IdValidationTransformationPipe) blogId: number,
+    @Param('postId', IdValidationTransformationPipe) postId: number,
+    @Body() body: UpdatePostForBlogInputDto,
+  ): Promise<void> {
+    return this.commandBus.execute(
+      new UpdatePostCommand({
+        postId: postId,
+        blogId: blogId,
+        content: body.content,
+        shortDescription: body.shortDescription,
+        title: body.title,
+      }),
+    );
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlog(@Param('id') id: string): Promise<void> {
+  async deleteBlog(
+    @Param('id', IdValidationTransformationPipe) id: number,
+  ): Promise<void> {
     return this.commandBus.execute(new DeleteBlogCommand(id));
   }
 }
