@@ -49,6 +49,13 @@ AND "deletedAt" IS NULL`,
     );
   }
 
+  async makeDeleted(id: number): Promise<void> {
+    await this.dataSource.query(
+      `UPDATE "Posts" SET "deletedAt" = now() WHERE id = $1`,
+      [id],
+    );
+  }
+
   async save(post: PostDocument) {
     await post.save();
   }
