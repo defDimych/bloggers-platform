@@ -32,6 +32,7 @@ import { Public } from '../../../auth/guards/decorators/public.decorator';
 import { IdValidationTransformationPipe } from '../../../../core/pipes/id-validation-transformation.pipe';
 import { UpdatePostForBlogInputDto } from './input-dto/update-post-for-blog.input-dto';
 import { UpdatePostCommand } from '../../posts/application/usecases/update-post.usecase';
+import { DeletePostCommand } from '../../posts/application/usecases/delete-post.usecase';
 
 @Controller('sa/blogs')
 @UseGuards(BasicAuthGuard)
@@ -118,6 +119,15 @@ export class BlogsController {
         title: body.title,
       }),
     );
+  }
+
+  @Put(':blogId/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePostForBlog(
+    @Param('blogId', IdValidationTransformationPipe) blogId: number,
+    @Param('postId', IdValidationTransformationPipe) postId: number,
+  ): Promise<void> {
+    return this.commandBus.execute(new DeletePostCommand(postId, blogId));
   }
 
   @Delete(':id')
