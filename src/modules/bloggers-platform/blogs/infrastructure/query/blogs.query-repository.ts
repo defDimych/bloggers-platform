@@ -1,7 +1,5 @@
 import { BlogViewDto } from '../../api/view-dto/blogs.view-dto';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogModelType } from '../../domain/blog.entity';
 import { getBlogsQueryParams } from '../../api/input-dto/get-blogs.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
@@ -12,10 +10,7 @@ import { BlogDbModel } from '../types/blog-db-model.type';
 
 @Injectable()
 export class BlogsQueryRepository {
-  constructor(
-    @InjectModel(Blog.name) private BlogModel: BlogModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async getAllBlogs(
     queryParams: getBlogsQueryParams,
