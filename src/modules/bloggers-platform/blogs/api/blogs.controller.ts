@@ -8,10 +8,12 @@ import { PostViewDto } from '../../posts/api/view-dto/posts.view-dto';
 import { getPostsQueryParams } from '../../posts/api/input-dto/get-posts-query-params.input-dto';
 import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
 import { IdValidationTransformationPipe } from '../../../../core/pipes/id-validation-transformation.pipe';
+import { BlogsService } from '../application/services/blogs.service';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
+    private blogsService: BlogsService,
     private blogsQueryRepository: BlogsQueryRepository,
     private postsQueryRepository: PostsQueryRepository,
   ) {}
@@ -36,8 +38,7 @@ export class BlogsController {
     @Query() query: getPostsQueryParams,
     @OptionalUserIdFromRequest() userId: string | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
-    // TODO Move to blog service
-    await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
+    await this.blogsService.blogIsExistsOrThrow(blogId);
 
     return this.postsQueryRepository.getPosts(query, userId, blogId);
   }

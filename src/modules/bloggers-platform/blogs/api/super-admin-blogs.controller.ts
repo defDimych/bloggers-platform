@@ -32,11 +32,13 @@ import { UpdatePostForBlogInputDto } from './input-dto/update-post-for-blog.inpu
 import { UpdatePostCommand } from '../../posts/application/usecases/update-post.usecase';
 import { DeletePostCommand } from '../../posts/application/usecases/delete-post.usecase';
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
+import { BlogsService } from '../application/services/blogs.service';
 
 @Controller('sa/blogs')
 @UseGuards(BasicAuthGuard)
 export class SuperAdminBlogsController {
   constructor(
+    private blogsService: BlogsService,
     private blogsQueryRepository: BlogsQueryRepository,
     private postsQueryRepository: PostsQueryRepository,
     private commandBus: CommandBus,
@@ -55,8 +57,7 @@ export class SuperAdminBlogsController {
     @Query() query: getPostsQueryParams,
     @OptionalUserIdFromRequest() userId: string | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
-    // TODO Move to blog service
-    await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
+    await this.blogsService.blogIsExistsOrThrow(blogId);
 
     return this.postsQueryRepository.getPosts(query, userId, blogId);
   }
