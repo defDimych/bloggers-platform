@@ -1,6 +1,7 @@
 import { PostDocument } from '../../domain/post.entity';
 import { PostLikeDocument } from '../../../likes/domain/post-like.entity';
 import { LikeStatus } from '../../../common/types/like-status.enum';
+import { PostDbModel } from '../../infrastructure/types/post-db-model.type';
 
 type LikeInfoType = {
   userId: string;
@@ -24,6 +25,26 @@ export class PostViewDto {
   blogName: string;
   createdAt: string;
   extendedLikesInfo: ExtendedLikesInfoType;
+
+  static mapToViewWithDefaultLikesInfo = (post: PostDbModel): PostViewDto => {
+    const viewDto = new PostViewDto();
+
+    viewDto.id = post.id.toString();
+    viewDto.title = post.title;
+    viewDto.shortDescription = post.shortDescription;
+    viewDto.content = post.content;
+    viewDto.blogId = post.blogId.toString();
+    viewDto.blogName = post.blogName;
+    viewDto.createdAt = post.createdAt;
+    viewDto.extendedLikesInfo = {
+      likesCount: 0,
+      dislikesCount: 0,
+      myStatus: LikeStatus.None,
+      newestLikes: [],
+    };
+
+    return viewDto;
+  };
 
   static mapToView = (dto: {
     post: PostDocument;

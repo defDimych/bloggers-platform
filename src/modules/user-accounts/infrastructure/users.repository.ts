@@ -3,10 +3,33 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { UserDbModel } from '../types/user-db-model.type';
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
+  constructor(
+    @InjectModel(User.name) private UserModel: UserModelType,
+    @InjectDataSource() private dataSource: DataSource,
+  ) {}
+
+  async makeDeleted(userId: number): Promise<void> {
+    await this.dataSource.query(
+      `UPDATE "Users" SET "deletedAt" = now() WHERE id = $1`,
+      [userId],
+    );
+  }
+
+  async findUserById(id: number): Promise<UserDbModel | null> {
+    const result = await this.dataSource.query<UserDbModel[]>(
+      `SELECT * FROM "Users" WHERE id = $1 AND "deletedAt" IS NULL`,
+      [id],
+    );
+
+    return result.length === 1 ? result[0] : null;
+  }
+
   async findById(id: string): Promise<UserDocument | null> {
     return this.UserModel.findOne({ _id: id, 'accountData.deletedAt': null });
   }
@@ -23,11 +46,51 @@ export class UsersRepository {
     return user;
   }
 
-  async findByLogin(login: string): Promise<UserDocument | null> {
-    return this.UserModel.findOne({
-      'accountData.deletedAt': null,
-      'accountData.login': login,
-    });
+  async findEmailConfirmDetailsByUserIdOrThrow(
+    userId: number,
+  ): Promise<{ id: number; isConfirmed: boolean }> {
+    const result = await this.dataSource.query<
+      { id: number; isConfirmed: boolean }[]
+    >(
+      `SELECT id, "isConfirmed" FROM "EmailConfirmationDetails" WHERE "userId" = $1`,
+      [userId],
+    );
+
+    if (!result.length) {
+      throw new Error(
+        `Email confirmation details by userId:${userId} not found!`,
+      );
+    }
+    return result[0];
+  }
+
+  // TODO authRepository ???
+  async findEmailConfirmDetailsByConfirmCode(confirmCode: string): Promise<{
+    id: number;
+    isConfirmed: boolean;
+    expirationDate: string;
+  } | null> {
+    const result = await this.dataSource.query<
+      {
+        id: number;
+        isConfirmed: boolean;
+        expirationDate: string;
+      }[]
+    >(
+      `SELECT id, "isConfirmed", "expirationDate" FROM "EmailConfirmationDetails" WHERE "confirmationCode" = $1`,
+      [confirmCode],
+    );
+
+    return result.length === 1 ? result[0] : null;
+  }
+
+  async findUserByEmail(email: string): Promise<{ id: number } | null> {
+    const result = await this.dataSource.query<{ id: number }[]>(
+      `SELECT id FROM "Users" WHERE email = $1`,
+      [email],
+    );
+
+    return result.length === 1 ? result[0] : null;
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
@@ -37,21 +100,17 @@ export class UsersRepository {
     });
   }
 
-  async findByLoginOrEmail(loginOrEmail: string): Promise<UserDocument | null> {
-    return this.UserModel.findOne({
-      'accountData.deletedAt': null,
-      $or: [
-        { 'accountData.login': loginOrEmail },
-        { 'accountData.email': loginOrEmail },
-      ],
-    });
-  }
+  async findByLoginOrEmail(
+    loginOrEmail: string,
+  ): Promise<{ id: number; passwordHash: string } | null> {
+    const result = await this.dataSource.query<
+      { id: number; passwordHash: string }[]
+    >(
+      `SELECT id, "passwordHash" FROM "Users" WHERE (login = $1 OR email = $2) AND "deletedAt" IS NULL`,
+      [loginOrEmail, loginOrEmail],
+    );
 
-  async findByConfirmationCode(code: string): Promise<UserDocument | null> {
-    return this.UserModel.findOne({
-      'accountData.deletedAt': null,
-      'emailConfirmation.confirmationCode': code,
-    });
+    return result.length === 1 ? result[0] : null;
   }
 
   async findByPasswordRecoveryCode(code: string): Promise<UserDocument | null> {
@@ -63,5 +122,61 @@ export class UsersRepository {
 
   async save(user: UserDocument) {
     await user.save();
+  }
+
+  async setEmailConfirmationDetails(dto: {
+    userId: number;
+    confirmationCode: string;
+    expirationDate: Date;
+    isConfirmed: boolean;
+  }): Promise<void> {
+    await this.dataSource.query(
+      `INSERT INTO "EmailConfirmationDetails" ("userId", "confirmationCode", "expirationDate", "isConfirmed") VALUES ($1, $2, $3, $4);`,
+      [dto.userId, dto.confirmationCode, dto.expirationDate, dto.isConfirmed],
+    );
+  }
+
+  async createUser(dto: {
+    login: string;
+    email: string;
+    passwordHash: string;
+  }): Promise<number> {
+    const result: { id: number }[] = await this.dataSource.query(
+      `INSERT INTO "Users" (login, email, "passwordHash") VALUES ($1, $2, $3) RETURNING id`,
+      [dto.login, dto.email, dto.passwordHash],
+    );
+
+    return result[0].id;
+  }
+
+  async updateEmailConfirmCodeAndExpiry(dto: {
+    id: number;
+    confirmCode: string;
+    exp: Date;
+  }): Promise<void> {
+    await this.dataSource.query(
+      `UPDATE "EmailConfirmationDetails" SET "confirmationCode" = $1, "expirationDate" = $2 WHERE id = $3`,
+      [dto.confirmCode, dto.exp, dto.id],
+    );
+  }
+
+  async updateEmailConfirmed(id: number): Promise<void> {
+    await this.dataSource.query(
+      `UPDATE "EmailConfirmationDetails" SET "isConfirmed" = true WHERE id = $1`,
+      [id],
+    );
+  }
+
+  async findExistingUserByLoginOrEmail(
+    login: string,
+    email: string,
+  ): Promise<{ login: string; email: string } | null> {
+    const result: { login: string; email: string }[] | [] =
+      await this.dataSource.query(
+        `SELECT login, email FROM "Users" WHERE (login = $1 OR email = $2) AND "deletedAt" IS NULL LIMIT 1`,
+        [login, email],
+      );
+
+    return result.length === 1 ? result[0] : null;
   }
 }

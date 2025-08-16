@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CreatePostDomainDto } from './dto/create-post.domain-dto';
 import { HydratedDocument, Model } from 'mongoose';
-import { UpdatePostDto } from '../dto/update-post.dto';
 
 export const titleConstraints = {
   minLength: 2,
@@ -58,12 +57,12 @@ export class Post {
     return post as PostDocument;
   }
 
-  update(dto: UpdatePostDto) {
-    this.blogId = dto.blogId;
-    this.content = dto.content;
-    this.shortDescription = dto.shortDescription;
-    this.title = dto.title;
-  }
+  // update(dto: UpdatePostDto) {
+  //   this.blogId = dto.blogId;
+  //   this.content = dto.content;
+  //   this.shortDescription = dto.shortDescription;
+  //   this.title = dto.title;
+  // }
 
   makeDeleted() {
     if (this.deletedAt !== null) {

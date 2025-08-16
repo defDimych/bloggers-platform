@@ -1,9 +1,10 @@
 import { CreateUserDto } from '../../dto/create-user.dto';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersFactory } from '../factories/users.factory';
 import { UsersRepository } from '../../infrastructure/users.repository';
+import { add } from 'date-fns';
+import { UsersFactory } from '../factories/users.factory';
 
-export class CreateUserCommand extends Command<string> {
+export class CreateUserCommand extends Command<number> {
   constructor(public dto: CreateUserDto) {
     super();
   }
@@ -14,17 +15,26 @@ export class CreateUserUseCase
   implements ICommandHandler<CreateUserCommand, string>
 {
   constructor(
-    private usersFactory: UsersFactory,
     private usersRepository: UsersRepository,
+    private usersFactory: UsersFactory,
   ) {}
 
-  async execute({ dto }: CreateUserCommand): Promise<string> {
-    const user = await this.usersFactory.create(dto);
+  async execute({ dto }: CreateUserCommand): Promise<number> {
+    const userId = await this.usersFactory.create(dto);
 
-    user.confirmEmail(); // Подтверждаем почту при создании user супер-админом
+    const emailConfirmationDetails = {
+      userId,
+      confirmationCode: crypto.randomUUID(),
+      expirationDate: add(new Date(), {
+        minutes: 5,
+      }),
+      isConfirmed: true, // при создании супер-админом true
+    };
 
-    await this.usersRepository.save(user);
+    await this.usersRepository.setEmailConfirmationDetails(
+      emailConfirmationDetails,
+    );
 
-    return user._id.toString();
+    return userId;
   }
 }

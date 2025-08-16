@@ -1,24 +1,44 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { NotFoundException } from '@nestjs/common';
 import { PostsRepository } from '../../infrastructure/posts.repository';
+import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
+import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
 
 export class DeletePostCommand {
-  constructor(public id: string) {}
+  constructor(
+    public postId: number,
+    public blogId?: number | undefined,
+  ) {}
 }
 
 @CommandHandler(DeletePostCommand)
 export class DeletePostUseCase implements ICommandHandler<DeletePostCommand> {
-  constructor(private postsRepository: PostsRepository) {}
+  constructor(
+    private postsRepository: PostsRepository,
+    private blogsRepository: BlogsRepository,
+  ) {}
 
-  async execute({ id }: DeletePostCommand): Promise<void> {
-    const post = await this.postsRepository.findById(id);
+  async execute({ blogId, postId }: DeletePostCommand): Promise<void> {
+    if (blogId) {
+      const blog = await this.blogsRepository.findBlogById(blogId);
 
-    if (!post) {
-      throw new NotFoundException('Post not found');
+      if (!blog) {
+        throw new DomainException({
+          message: `Blog by id:${blogId} not found!`,
+          code: DomainExceptionCode.NotFound,
+        });
+      }
     }
 
-    post.makeDeleted();
+    const post = await this.postsRepository.findPostById(postId);
 
-    await this.postsRepository.save(post);
+    if (!post) {
+      throw new DomainException({
+        message: `Post by id:${postId} not found!`,
+        code: DomainExceptionCode.NotFound,
+      });
+    }
+
+    await this.postsRepository.makeDeleted(post.id);
   }
 }

@@ -19,10 +19,11 @@ import { BasicAuthGuard } from '../../auth/guards/basic/basic-auth.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../application/usecases/create-user.usecase';
 import { DeleteUserCommand } from '../application/usecases/delete-user.usecase';
+import { IdValidationTransformationPipe } from '../../../core/pipes/id-validation-transformation.pipe';
 
-@Controller('users')
+@Controller('sa/users')
 @UseGuards(BasicAuthGuard)
-export class UsersController {
+export class SuperAdminUsersController {
   constructor(
     private usersQueryRepository: UsersQueryRepository,
     private commandBus: CommandBus,
@@ -32,7 +33,7 @@ export class UsersController {
   async getAllUsers(
     @Query() query: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<UsersViewDto[]>> {
-    return this.usersQueryRepository.getAllUsers(query);
+    return this.usersQueryRepository.getAll(query);
   }
 
   @Post()
@@ -44,7 +45,9 @@ export class UsersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUser(@Param('id') id: string): Promise<void> {
+  async deleteUser(
+    @Param('id', IdValidationTransformationPipe) id: number,
+  ): Promise<void> {
     return this.commandBus.execute(new DeleteUserCommand(id));
   }
 }

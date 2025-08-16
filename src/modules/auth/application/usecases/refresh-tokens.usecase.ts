@@ -34,10 +34,10 @@ export class RefreshTokensUseCase
     const decodedPayload =
       this.jwtAdapter.getPayloadFromRefreshToken(refreshToken);
 
-    const session = await this.sessionsRepository.findById(dto.sessionId);
-
-    session!.updateIssueDate(new Date(decodedPayload.iat * 1000));
-    await this.sessionsRepository.save(session!);
+    await this.sessionsRepository.updateTokenVersion({
+      sessionId: Number(dto.sessionId),
+      iat: new Date(decodedPayload.iat * 1000),
+    });
 
     return {
       accessToken,

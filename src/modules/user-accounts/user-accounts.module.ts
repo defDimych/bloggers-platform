@@ -1,5 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { UsersController } from './api/users.controller';
+import { SuperAdminUsersController } from './api/super-admin-users.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './domain/user.entity';
 import { UsersRepository } from './infrastructure/users.repository';
@@ -17,7 +17,7 @@ const useCases = [CreateUserUseCase, DeleteUserUseCase];
     forwardRef(() => AuthModule),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
-  controllers: [UsersController],
+  controllers: [SuperAdminUsersController],
   providers: [
     ...useCases,
     UsersFactory,

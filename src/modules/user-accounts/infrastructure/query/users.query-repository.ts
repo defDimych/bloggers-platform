@@ -1,50 +1,52 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../../domain/user.entity';
 import { UsersViewDto } from '../../api/view-dto/users.view-dto';
 import { Injectable } from '@nestjs/common';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { UserDbModel } from '../../types/user-db-model.type';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async getAllUsers(
-    query: GetUsersQueryParams,
+  async getAll(
+    queryParams: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<UsersViewDto[]>> {
-    const filter = {
-      'accountData.deletedAt': null,
-      $or: [
-        {
-          'accountData.login': {
-            $regex: query.searchLoginTerm ?? '',
-            $options: 'i',
-          },
-        },
-        {
-          'accountData.email': {
-            $regex: query.searchEmailTerm ?? '',
-            $options: 'i',
-          },
-        },
-      ],
-    };
+    let filter = `"deletedAt" IS NULL`;
+    let params: string[] | [] = [];
 
+    if (queryParams.searchEmailTerm || queryParams.searchLoginTerm) {
+      filter = `(login ILIKE $1 OR email ILIKE $2) AND "deletedAt" IS NULL`;
+      params = [
+        `%${queryParams.searchLoginTerm}%`,
+        `%${queryParams.searchEmailTerm}%`,
+      ];
+    }
     try {
-      const users = await this.UserModel.find(filter)
-        .sort({ ['accountData.' + query.sortBy]: query.sortDirection })
-        .skip(query.calculateSkip())
-        .limit(query.pageSize);
+      const users = await this.dataSource.query<UserDbModel[]>(
+        `SELECT * FROM "Users" 
+WHERE ${filter}
+ORDER BY "${queryParams.sortBy}" ${queryParams.sortDirection}
+LIMIT ${queryParams.pageSize}
+OFFSET ${queryParams.calculateSkip()}`,
+        params,
+      );
 
-      const totalCount = await this.UserModel.countDocuments(filter);
+      const totalCount = await this.dataSource.query<{ totalCount: string }[]>(
+        `SELECT 
+COUNT(*) FILTER (WHERE ${filter}) AS "totalCount"
+FROM "Users";`,
+        params,
+      );
 
       const items = users.map(UsersViewDto.mapToView);
 
       return PaginatedViewDto.mapToView({
         items,
-        totalCount,
-        page: query.pageNumber,
-        size: query.pageSize,
+        totalCount: Number(totalCount[0].totalCount),
+        page: queryParams.pageNumber,
+        size: queryParams.pageSize,
       });
     } catch (e) {
       console.log(
@@ -54,9 +56,12 @@ export class UsersQueryRepository {
     }
   }
 
-  async findById(id: string): Promise<UsersViewDto> {
-    const user = await this.UserModel.findOne({ _id: id });
+  async findById(id: number): Promise<UsersViewDto> {
+    const result = await this.dataSource.query<UserDbModel[]>(
+      `SELECT * FROM "Users" WHERE id = $1`,
+      [id],
+    );
 
-    return UsersViewDto.mapToView(user!);
+    return UsersViewDto.mapToView(result[0]);
   }
 }

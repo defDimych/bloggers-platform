@@ -52,7 +52,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
     return {
       userId: payload.userId,
       deviceId: payload.deviceId,
-      sessionId: session._id.toString(),
+      sessionId: session.id.toString(),
     };
   }
 }

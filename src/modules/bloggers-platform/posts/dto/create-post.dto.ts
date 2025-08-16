@@ -4,7 +4,7 @@ import {
   shortDescriptionConstraints,
   titleConstraints,
 } from '../domain/post.entity';
-import { IsMongoId } from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class CreatePostDto {
   @IsStringWithTrim(titleConstraints.minLength, titleConstraints.maxLength)
@@ -19,6 +19,6 @@ export class CreatePostDto {
   @IsStringWithTrim(contentConstraints.minLength, contentConstraints.maxLength)
   content: string;
 
-  @IsMongoId()
-  blogId: string;
+  @IsNumber()
+  blogId: number;
 }

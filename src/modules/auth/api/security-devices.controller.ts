@@ -28,7 +28,7 @@ export class SecurityDevicesController {
   async getAllActiveSessions(
     @ExtractExtendedUserFromRequest() user: ExtendedUserContextDto,
   ): Promise<SessionsViewDto[]> {
-    return this.sessionsQueryRepository.getAll(user.userId);
+    return this.sessionsQueryRepository.getAll(Number(user.userId));
   }
 
   @Delete(':deviceId')

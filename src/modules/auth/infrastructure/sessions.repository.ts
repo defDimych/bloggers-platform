@@ -1,53 +1,72 @@
 import { Injectable } from '@nestjs/common';
-import {
-  Session,
-  SessionDocument,
-  SessionModelType,
-} from '../domain/session.entity';
-import { InjectModel } from '@nestjs/mongoose';
+import { CreateSessionDto } from './dto/create-session.dto';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { SessionDbModel } from './types/session-db-model.type';
 
 @Injectable()
 export class SessionsRepository {
-  constructor(
-    @InjectModel(Session.name) private SessionModel: SessionModelType,
-  ) {}
-  async save(session: SessionDocument): Promise<void> {
-    await session.save();
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
+
+  async createSession(dto: CreateSessionDto): Promise<void> {
+    await this.dataSource.query(
+      `INSERT INTO "Sessions" ("userId", "deviceId", "deviceName", "IP", iat, exp) VALUES ($1, $2, $3, $4, $5, $6);`,
+      [dto.userId, dto.deviceId, dto.deviceName, dto.IP, dto.iat, dto.exp],
+    );
   }
 
-  async saveMany(sessions: SessionDocument[]): Promise<void> {
-    await this.SessionModel.create(sessions);
+  async findByDeviceId(deviceId: string): Promise<SessionDbModel | null> {
+    const result = await this.dataSource.query<SessionDbModel[]>(
+      `SELECT * FROM "Sessions" WHERE "deviceId" = $1 AND "deletedAt" IS NULL`,
+      [deviceId],
+    );
+
+    return result.length === 1 ? result[0] : null;
   }
 
-  async findByDeviceId(deviceId: string): Promise<SessionDocument | null> {
-    return this.SessionModel.findOne({ deviceId, deletedAt: null });
-  }
-
-  async findAllUserSessionsExcludingCurrentOne(
-    userId: string,
-    deviceId: string,
-  ): Promise<SessionDocument[]> {
-    return this.SessionModel.find({
-      userId,
-      deviceId: { $ne: deviceId },
-      deletedAt: null,
-    });
+  async makeDeletedAllUserSessionsExcludingCurrentOne(dto: {
+    deviceId: string;
+    userId: number;
+  }): Promise<void> {
+    await this.dataSource.query(
+      `UPDATE "Sessions"
+      SET "deletedAt" = now()
+      WHERE "userId" = $1
+        AND "deviceId" <> $2
+        AND "deletedAt" IS NULL;`,
+      [dto.userId, dto.deviceId],
+    );
   }
 
   async findSession(dto: {
     iat: Date;
     deviceId: string;
-    userId: string;
-  }): Promise<SessionDocument | null> {
-    return this.SessionModel.findOne({
-      userId: dto.userId,
-      deviceId: dto.deviceId,
-      iat: dto.iat,
-      deletedAt: null,
-    });
+    userId: number;
+  }): Promise<SessionDbModel | null> {
+    const result = await this.dataSource.query<SessionDbModel[]>(
+      `SELECT * FROM "Sessions"
+      WHERE ("userId", "deviceId", iat) = ($1, $2, $3)
+      AND "deletedAt" IS NULL`,
+      [dto.userId, dto.deviceId, dto.iat],
+    );
+
+    return result.length === 1 ? result[0] : null;
   }
 
-  async findById(id: string): Promise<SessionDocument | null> {
-    return this.SessionModel.findOne({ _id: id, deletedAt: null });
+  async updateTokenVersion(dto: {
+    sessionId: number;
+    iat: Date;
+  }): Promise<void> {
+    await this.dataSource.query(
+      `UPDATE "Sessions" SET iat = $1 WHERE id = $2`,
+      [dto.iat, dto.sessionId],
+    );
+  }
+
+  async makeDeleted(sessionId: number): Promise<void> {
+    await this.dataSource.query(
+      `UPDATE "Sessions" SET "deletedAt" = now() WHERE id = $1`,
+      [sessionId],
+    );
   }
 }

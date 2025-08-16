@@ -6,27 +6,24 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class UsersService {
   constructor(private usersRepository: UsersRepository) {}
+
   async checkUniqueOrThrow(login: string, email: string): Promise<void> {
-    const foundUserByLogin = await this.usersRepository.findByLogin(login);
+    const result = await this.usersRepository.findExistingUserByLoginOrEmail(
+      login,
+      email,
+    );
 
-    if (foundUserByLogin) {
+    if (result) {
+      const conflictField = result.login === login ? 'login' : 'email';
+
       throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
         message: 'Validation failed',
-        extensions: [
-          { message: 'User with the same login already exists', key: 'login' },
-        ],
-      });
-    }
-
-    const foundUserByEmail = await this.usersRepository.findByEmail(email);
-
-    if (foundUserByEmail) {
-      throw new DomainException({
         code: DomainExceptionCode.BadRequest,
-        message: 'Validation failed',
         extensions: [
-          { message: 'User with the same email already exists', key: 'email' },
+          {
+            message: `User with the same ${conflictField} already exists`,
+            key: conflictField,
+          },
         ],
       });
     }
