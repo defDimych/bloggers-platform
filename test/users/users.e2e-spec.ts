@@ -6,9 +6,10 @@ import request from 'supertest';
 import { BASIC_AUTH_CREDENTIALS } from '../../src/constants';
 import { fromUTF8ToBase64 } from '../helpers/encoder';
 import { GLOBAL_PREFIX } from '../../src/setup/global-prefix.setup';
+import { App } from 'supertest/types';
 
-describe('UsersController (e2e)', () => {
-  let app: INestApplication;
+describe('SuperAdminUsersController (e2e)', () => {
+  let app: INestApplication<App>;
   let userTestHelper: UsersTestHelper;
 
   beforeAll(async () => {
@@ -35,7 +36,7 @@ describe('UsersController (e2e)', () => {
       });
 
       await request(app.getHttpServer())
-        .delete(`/${GLOBAL_PREFIX}/users/${createdUser.id}`)
+        .delete(`/${GLOBAL_PREFIX}/sa/users/${createdUser.id}`)
         .set({
           Authorization:
             'Basic ' +
@@ -47,7 +48,7 @@ describe('UsersController (e2e)', () => {
         .expect(HttpStatus.NO_CONTENT);
 
       await request(app.getHttpServer())
-        .delete(`/${GLOBAL_PREFIX}/users/${createdUser.id}`)
+        .delete(`/${GLOBAL_PREFIX}/sa/users/${createdUser.id}`)
         .set({
           Authorization:
             'Basic ' +

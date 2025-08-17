@@ -12,9 +12,10 @@ import { MeViewDto } from '../../src/modules/user-accounts/api/view-dto/users.vi
 import { delay } from './delay';
 import { GLOBAL_PREFIX } from '../../src/setup/global-prefix.setup';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { App } from 'supertest/types';
 
 describe('AuthController (e2e)', () => {
-  let app: INestApplication;
+  let app: INestApplication<App>;
   let authTestHelper: AuthTestHelper;
   let userTestHelper: UsersTestHelper;
 
@@ -82,7 +83,7 @@ describe('AuthController (e2e)', () => {
       expect(body.errorsMessages[1].field).toBe('password');
     });
 
-    it.skip('should return 401 for the incorrect credentials', async () => {
+    it('should return 401 for the incorrect credentials', async () => {
       const createdUser = await userTestHelper.createUser(
         createTestingUserModel,
       );

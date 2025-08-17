@@ -6,9 +6,10 @@ import { deleteAllData } from '../helpers/delete-all-data';
 import { GLOBAL_PREFIX } from '../../src/setup/global-prefix.setup';
 import { fromUTF8ToBase64 } from '../helpers/encoder';
 import { BASIC_AUTH_CREDENTIALS } from '../../src/constants';
+import { App } from 'supertest/types';
 
 describe('BlogsController (e2e)', () => {
-  let app: INestApplication;
+  let app: INestApplication<App>;
   let blogsTestHelper: BlogsTestHelper;
 
   const createModel = {
@@ -48,7 +49,7 @@ describe('BlogsController (e2e)', () => {
     };
 
     await request(app.getHttpServer())
-      .put(`/${GLOBAL_PREFIX}/blogs/${createdBlog.id}`)
+      .put(`/${GLOBAL_PREFIX}/sa/blogs/${createdBlog.id}`)
       .set({
         Authorization:
           'Basic ' +
@@ -73,7 +74,7 @@ describe('BlogsController (e2e)', () => {
     await blogsTestHelper.getById(createdBlog.id);
 
     await request(app.getHttpServer())
-      .delete(`/${GLOBAL_PREFIX}/blogs/${createdBlog.id}`)
+      .delete(`/${GLOBAL_PREFIX}/sa/blogs/${createdBlog.id}`)
       .set({
         Authorization:
           'Basic ' +

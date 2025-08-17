@@ -22,7 +22,7 @@ export class BlogsTestHelper {
 
   async createBlog(data: CreateBlogDto): Promise<BlogViewDto> {
     const response = await request(this.app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/blogs`)
+      .post(`/${GLOBAL_PREFIX}/sa/blogs`)
       .set({
         Authorization:
           'Basic ' +
@@ -34,11 +34,14 @@ export class BlogsTestHelper {
       .send(data)
       .expect(HttpStatus.CREATED);
 
-    expect(response.body).toHaveProperty('id');
-    expect(response.body.name).toBe(data.name);
-    expect(response.body.description).toBe(data.description);
-    expect(response.body.websiteUrl).toBe(data.websiteUrl);
+    const body = response.body as BlogViewDto;
+    expect(body).toHaveProperty('id');
+    expect(body.name).toBe(data.name);
+    expect(body.description).toBe(data.description);
+    expect(body.websiteUrl).toBe(data.websiteUrl);
+    expect(body.isMembership).toBe(false);
+    expect(typeof body.createdAt).toBe('string');
 
-    return response.body as BlogViewDto;
+    return body;
   }
 }

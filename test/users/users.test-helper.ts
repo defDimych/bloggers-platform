@@ -14,7 +14,7 @@ export class UsersTestHelper {
   constructor(private app: INestApplication<App>) {}
   async createUser(data: CreateUserDto): Promise<UsersViewDto> {
     const response: request.Response = await request(this.app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/users`)
+      .post(`/${GLOBAL_PREFIX}/sa/users`)
       .set({
         Authorization:
           'Basic ' + fromUTF8ToBase64(this.username, this.password),

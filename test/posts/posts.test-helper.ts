@@ -28,7 +28,8 @@ export class PostsTestHelper {
     expect(body.title).toEqual(data.title);
     expect(body.shortDescription).toEqual(data.shortDescription);
     expect(body.content).toEqual(data.content);
-    expect(body.blogId).toEqual(data.blogId);
+    // TODO вопрос по типу id
+    expect(body.blogId).toEqual(data.blogId.toString());
     expect(typeof body.id).toEqual('string');
     expect(typeof body.blogName).toEqual('string');
     expect(typeof body.createdAt).toEqual('string');
