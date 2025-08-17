@@ -41,16 +41,18 @@ import { DataSource } from 'typeorm';
       },
       inject: [CoreConfig],
     }),
-    // TODO async config
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'nodejs',
-      password: 'nodejs',
-      database: 'Bloggers-platform',
-      autoLoadEntities: false,
-      synchronize: false,
+    TypeOrmModule.forRootAsync({
+      useFactory: (coreConfig: CoreConfig) => ({
+        type: 'postgres',
+        host: coreConfig.postgresHost,
+        port: coreConfig.postgresPort,
+        username: coreConfig.postgresUserName,
+        password: coreConfig.postgresPassword,
+        database: coreConfig.postgresDatabase,
+        autoLoadEntities: false,
+        synchronize: false,
+      }),
+      inject: [CoreConfig],
     }),
     AuthModule,
     BloggersPlatformModule,
