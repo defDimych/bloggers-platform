@@ -40,6 +40,10 @@ export class BlogsController {
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
     await this.blogsService.blogIsExistsOrThrow(blogId);
 
-    return this.postsQueryRepository.getPosts(query, userId, blogId);
+    return this.postsQueryRepository.getAllPostsWithDefaultLikesInfo({
+      queryParams: query,
+      userId,
+      blogId,
+    });
   }
 }

@@ -46,10 +46,10 @@ export class PostsController {
   ) {}
   @Get(':id')
   async getPost(
-    @Param('id') id: string,
+    @Param('id', IdValidationTransformationPipe) id: number,
     @OptionalUserIdFromRequest() userId: string | null,
   ): Promise<PostViewDto> {
-    return this.postsQueryRepository.findByIdOrNotFoundFail(id, userId);
+    return this.postsQueryRepository.findPostByIdOrNotFoundFail(id, userId);
   }
 
   @Get()
@@ -57,7 +57,10 @@ export class PostsController {
     @Query() query: getPostsQueryParams,
     @OptionalUserIdFromRequest() userId: string | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
-    return this.postsQueryRepository.getPosts(query, userId);
+    return this.postsQueryRepository.getAllPostsWithDefaultLikesInfo({
+      queryParams: query,
+      userId,
+    });
   }
 
   @Get(':postId/comments')
