@@ -1,8 +1,9 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
 import { CreatePostDto } from '../../dto/create-post.dto';
-import { NotFoundException } from '@nestjs/common';
 import { PostsRepository } from '../../infrastructure/posts.repository';
+import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 
 export class CreatePostCommand extends Command<number> {
   constructor(public dto: CreatePostDto) {
@@ -22,7 +23,10 @@ export class CreatePostUseCase
     const blog = await this.blogsRepository.findBlogById(dto.blogId);
 
     if (!blog) {
-      throw new NotFoundException('Blog not found');
+      throw new DomainException({
+        message: `Blog by id:${dto.blogId} not found!`,
+        code: DomainExceptionCode.NotFound,
+      });
     }
 
     return this.postsRepository.createPost({
