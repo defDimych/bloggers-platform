@@ -8,6 +8,31 @@ export class CoreConfig {
   THROTTLE_TTL: number = 10000;
   THROTTLE_LIMIT: number = 5;
 
+  @IsNotEmpty({ message: 'Set Env variable HOST, example: localhost' })
+  postgresHost: string;
+
+  @IsNumber(
+    {},
+    { message: 'Set valid Env variable POSTGRES_PORT, example: 5432' },
+  )
+  @Min(1, { message: 'Set Env variable POSTGRES_PORT, example: 5432' })
+  postgresPort: number;
+
+  @IsNotEmpty({
+    message: 'Set Env variable POSTGRES_DATABASE, example: Bloggers-platform',
+  })
+  postgresDatabase: string;
+
+  @IsNotEmpty({
+    message: 'Set Env variable POSTGRES_USERNAME, example: backend',
+  })
+  postgresUserName: string;
+
+  @IsNotEmpty({
+    message: 'Set Env variable POSTGRES_PASSWORD, example: backend123',
+  })
+  postgresPassword: string;
+
   @IsNumber({}, { message: 'Set valid Env variable PORT, example: 3000' })
   @Min(1, { message: 'Set Env variable PORT, example: 3000' })
   port: number;
@@ -37,6 +62,11 @@ export class CoreConfig {
   sendInternalServerErrorDetails: boolean;
 
   constructor(private configService: ConfigService<any, true>) {
+    this.postgresHost = this.configService.get('POSTGRES_HOST');
+    this.postgresPort = Number(this.configService.get('POSTGRES_PORT'));
+    this.postgresDatabase = this.configService.get('POSTGRES_DATABASE');
+    this.postgresUserName = this.configService.get('POSTGRES_USERNAME');
+    this.postgresPassword = this.configService.get('POSTGRES_PASSWORD');
     this.port = Number(this.configService.get('PORT'));
     this.mongoURI = this.configService.get('MONGO_URI');
 
