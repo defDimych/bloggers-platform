@@ -29,6 +29,52 @@ export class PostsQueryRepository {
       .limit(3);
   }
 
+  async getAllPostsWithDefaultLikesInfo(dto: {
+    queryParams: getPostsQueryParams;
+    userId: string | null;
+    blogId?: number;
+  }): Promise<PaginatedViewDto<PostViewDto[]>> {
+    let filter = `"deletedAt" IS NULL`;
+    let params: number[] | [] = [];
+
+    if (dto.blogId) {
+      filter = `"blogId" = $1 AND "deletedAt" IS NULL`;
+      params = [dto.blogId];
+    }
+
+    try {
+      const posts = await this.dataSource.query<PostDbModel[]>(
+        `SELECT * FROM "Posts"
+WHERE ${filter}
+ORDER BY "${dto.queryParams.sortBy}" ${dto.queryParams.sortDirection}
+LIMIT ${dto.queryParams.pageSize}
+OFFSET ${dto.queryParams.calculateSkip()}`,
+        params,
+      );
+
+      const totalCount = await this.dataSource.query<{ totalCount: string }[]>(
+        `SELECT
+COUNT(*) FILTER (WHERE ${filter}) AS "totalCount"
+FROM "Posts";`,
+        params,
+      );
+
+      const items = posts.map(PostViewDto.mapToViewWithDefaultLikesInfo);
+
+      return PaginatedViewDto.mapToView({
+        items,
+        totalCount: Number(totalCount[0].totalCount),
+        page: dto.queryParams.pageNumber,
+        size: dto.queryParams.pageSize,
+      });
+    } catch (e) {
+      console.log(
+        `GET query repository, getAllPosts : ${JSON.stringify(e, null, 2)}`,
+      );
+      throw new Error(`some error`);
+    }
+  }
+
   async getPosts(
     query: getPostsQueryParams,
     userId: string | null,
@@ -99,7 +145,10 @@ export class PostsQueryRepository {
     }
   }
 
-  async findPostByIdOrNotFoundFail(postId: number) {
+  async findPostByIdOrNotFoundFail(
+    postId: number,
+    userId?: string | null,
+  ): Promise<PostViewDto> {
     const result = await this.dataSource.query<PostDbModel[]>(
       `SELECT * FROM "Posts" WHERE id = $1 AND "deletedAt" IS NULL;`,
       [postId],
