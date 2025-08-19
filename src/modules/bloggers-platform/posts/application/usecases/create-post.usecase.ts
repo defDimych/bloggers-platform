@@ -30,11 +30,10 @@ export class CreatePostUseCase
     }
 
     return this.postsRepository.createPost({
+      blogId: dto.blogId,
       title: dto.title,
       shortDescription: dto.shortDescription,
       content: dto.content,
-      blogId: dto.blogId,
-      blogName: blog.name,
     });
   }
 }

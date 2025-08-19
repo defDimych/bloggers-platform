@@ -32,9 +32,9 @@ export class PostsRepository {
 
   async createPost(dto: CreatePostRepoDto): Promise<number> {
     const result = await this.dataSource.query<{ id: number }[]>(
-      `INSERT INTO "Posts" ("blogId", "blogName", title, "shortDescription", content) 
-VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-      [dto.blogId, dto.blogName, dto.title, dto.shortDescription, dto.content],
+      `INSERT INTO "Posts" ("blogId", title, "shortDescription", content) 
+VALUES ($1, $2, $3, $4) RETURNING id`,
+      [dto.blogId, dto.title, dto.shortDescription, dto.content],
     );
 
     return result[0].id;

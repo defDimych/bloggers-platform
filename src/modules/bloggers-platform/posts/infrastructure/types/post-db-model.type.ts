@@ -1,11 +1,11 @@
 export type PostDbModel = {
   id: number;
+  blogId: number;
   title: string;
   shortDescription: string;
   content: string;
-  blogId: number;
-  blogName: string;
   createdAt: string;
-  likesCount: number;
-  dislikesCount: number;
+  deletedAt: string;
 };
+
+export type PostWithBlogName = PostDbModel & { blogName: string };

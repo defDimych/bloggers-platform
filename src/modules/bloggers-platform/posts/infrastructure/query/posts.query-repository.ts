@@ -14,7 +14,7 @@ import { DomainExceptionCode } from '../../../../../core/exceptions/domain-excep
 import { LikeStatus } from '../../../common/types/like-status.enum';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { PostDbModel } from '../types/post-db-model.type';
+import { PostWithBlogName } from '../types/post-db-model.type';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -34,28 +34,34 @@ export class PostsQueryRepository {
     userId: string | null;
     blogId?: number;
   }): Promise<PaginatedViewDto<PostViewDto[]>> {
-    let filter = `"deletedAt" IS NULL`;
+    let filter = `p."deletedAt" IS NULL`;
     let params: number[] | [] = [];
 
     if (dto.blogId) {
-      filter = `"blogId" = $1 AND "deletedAt" IS NULL`;
+      filter = `p."blogId" = $1 AND p."deletedAt" IS NULL`;
       params = [dto.blogId];
     }
 
     try {
-      const posts = await this.dataSource.query<PostDbModel[]>(
-        `SELECT * FROM "Posts"
-WHERE ${filter}
-ORDER BY "${dto.queryParams.sortBy}" ${dto.queryParams.sortDirection}
-LIMIT ${dto.queryParams.pageSize}
-OFFSET ${dto.queryParams.calculateSkip()}`,
+      const posts = await this.dataSource.query<PostWithBlogName[]>(
+        `
+  SELECT
+    p.*,
+    b."name" AS "blogName"
+  FROM "Posts" p
+    LEFT JOIN "Blogs" b ON p."blogId" = b.id
+  WHERE ${filter}
+  ORDER BY "${dto.queryParams.sortBy}" ${dto.queryParams.sortDirection}
+  LIMIT ${dto.queryParams.pageSize}
+  OFFSET ${dto.queryParams.calculateSkip()}
+  `,
         params,
       );
 
       const totalCount = await this.dataSource.query<{ totalCount: string }[]>(
         `SELECT
 COUNT(*) FILTER (WHERE ${filter}) AS "totalCount"
-FROM "Posts";`,
+FROM "Posts" p;`,
         params,
       );
 
@@ -149,8 +155,16 @@ FROM "Posts";`,
     postId: number,
     userId?: string | null,
   ): Promise<PostViewDto> {
-    const result = await this.dataSource.query<PostDbModel[]>(
-      `SELECT * FROM "Posts" WHERE id = $1 AND "deletedAt" IS NULL;`,
+    const result = await this.dataSource.query<PostWithBlogName[]>(
+      `
+  SELECT
+    p.*,
+    b."name" AS "blogName"
+  FROM "Posts" p
+    LEFT JOIN "Blogs" b ON p."blogId" = b.id
+  WHERE p.id = $1
+    AND p."deletedAt" IS NULL;
+  `,
       [postId],
     );
 
