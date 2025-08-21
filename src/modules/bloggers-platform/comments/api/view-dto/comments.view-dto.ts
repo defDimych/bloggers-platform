@@ -1,6 +1,7 @@
 import { CommentDocument } from '../../domain/comment.entity';
 import { LikeStatus } from '../../../common/types/like-status.enum';
 import { CommentLikeDocument } from '../../../likes/domain/comment-like.entity';
+import { CommentWithUserLogin } from '../../infrastructure/types/comment-db-model.type';
 
 type CommentatorInfo = {
   userId: string;
@@ -47,6 +48,27 @@ export class CommentViewDto {
     });
 
     return items;
+  }
+
+  static mapToViewWithDefaultLikesInfo(
+    comment: CommentWithUserLogin,
+  ): CommentViewDto {
+    const viewDto = new CommentViewDto();
+
+    viewDto.id = comment.id.toString();
+    viewDto.content = comment.content;
+    viewDto.commentatorInfo = {
+      userId: comment.userId.toString(),
+      userLogin: comment.userLogin,
+    };
+    viewDto.createdAt = comment.createdAt;
+    viewDto.likesInfo = {
+      likesCount: 0,
+      dislikesCount: 0,
+      myStatus: LikeStatus.None,
+    };
+
+    return viewDto;
   }
 
   static mapToView = (dto: {

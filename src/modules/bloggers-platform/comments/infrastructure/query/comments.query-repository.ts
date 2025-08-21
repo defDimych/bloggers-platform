@@ -11,6 +11,9 @@ import {
 import { GetAllCommentsDto } from './dto/get-all-comments.dto';
 import { LikeStatus } from '../../../common/types/like-status.enum';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { CommentWithUserLogin } from '../types/comment-db-model.type';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -18,6 +21,7 @@ export class CommentsQueryRepository {
     @InjectModel(Comment.name) private CommentModel: CommentModelType,
     @InjectModel(CommentLike.name)
     private CommentLikeModel: CommentLikeModelType,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async getAll(
@@ -74,6 +78,31 @@ export class CommentsQueryRepository {
 
       throw new Error(`some error`);
     }
+  }
+
+  async getCommentByIdOrNotFoundFail(dto: {
+    commentId: number;
+  }): Promise<CommentViewDto> {
+    const result = await this.dataSource.query<CommentWithUserLogin[]>(
+      `
+      SELECT
+        c.*,
+        u.login AS "userLogin"
+      FROM "Comments" c
+        LEFT JOIN "Users" u ON c."userId" = u.id
+      WHERE c.id = $1
+        AND c."deletedAt" IS NULL;`,
+      [dto.commentId],
+    );
+
+    if (!result.length) {
+      throw new DomainException({
+        message: `Comment by id:${dto.commentId} not found!`,
+        code: DomainExceptionCode.NotFound,
+      });
+    }
+
+    return CommentViewDto.mapToViewWithDefaultLikesInfo(result[0]);
   }
 
   async getById(dto: {
