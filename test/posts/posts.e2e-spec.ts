@@ -191,7 +191,7 @@ describe('PostsController (e2e)', () => {
       expect(body.errorsMessages[0].field).toBe('content');
     });
 
-    it.skip('should create comment', async () => {
+    it('should create comment', async () => {
       const content = 'content_content_content_content';
 
       const response = await request(app.getHttpServer())
@@ -205,6 +205,7 @@ describe('PostsController (e2e)', () => {
       expect(body.commentatorInfo.userId).not.toBe('');
       expect(body.commentatorInfo.userLogin).not.toBe('');
       expect(body.content).toBe(content);
+      expect(typeof body.createdAt).toBe('string');
       expect(body.likesInfo).toEqual({
         likesCount: 0,
         dislikesCount: 0,
