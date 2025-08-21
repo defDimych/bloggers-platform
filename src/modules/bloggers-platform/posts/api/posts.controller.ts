@@ -85,11 +85,11 @@ export class PostsController {
   @Post(':postId/comments')
   @UseGuards(JwtAuthGuard)
   async createCommentForPost(
-    @Param('postId') postId: string,
+    @Param('postId', IdValidationTransformationPipe) postId: number,
     @Body() body: CreateCommentInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<CommentViewDto> {
-    const commentId: string = await this.commandBus.execute(
+    const commentId = await this.commandBus.execute(
       new CreateCommentCommand({
         userId: user.userId,
         postId,
@@ -97,9 +97,8 @@ export class PostsController {
       }),
     );
 
-    return this.commentsQueryRepository.getById({
+    return this.commentsQueryRepository.getCommentByIdOrNotFoundFail({
       commentId,
-      userId: user.userId,
     });
   }
 

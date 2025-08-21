@@ -3,12 +3,9 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
-import { UsersRepository } from '../../../../user-accounts/infrastructure/users.repository';
-import { InjectModel } from '@nestjs/mongoose';
-import { Comment, CommentModelType } from '../../domain/comment.entity';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 
-export class CreateCommentCommand extends Command<string> {
+export class CreateCommentCommand extends Command<number> {
   constructor(public dto: CreateCommentDto) {
     super();
   }
@@ -16,16 +13,14 @@ export class CreateCommentCommand extends Command<string> {
 
 @CommandHandler(CreateCommentCommand)
 export class CreateCommentUseCase
-  implements ICommandHandler<CreateCommentCommand, string>
+  implements ICommandHandler<CreateCommentCommand, number>
 {
   constructor(
-    @InjectModel(Comment.name) private CommentModel: CommentModelType,
     private postsRepository: PostsRepository,
-    private usersRepository: UsersRepository,
     private commentsRepository: CommentsRepository,
   ) {}
-  async execute({ dto }: CreateCommentCommand): Promise<string> {
-    const post = await this.postsRepository.findById(dto.postId);
+  async execute({ dto }: CreateCommentCommand): Promise<number> {
+    const post = await this.postsRepository.findPostById(dto.postId);
 
     if (!post) {
       throw new DomainException({
@@ -34,19 +29,10 @@ export class CreateCommentUseCase
       });
     }
 
-    const user = await this.usersRepository.findByIdOrNotFoundFail(dto.userId);
-
-    const comment = this.CommentModel.createInstance({
-      postId: dto.postId,
+    return this.commentsRepository.createComment({
+      userId: Number(dto.userId),
+      postId: post.id,
       content: dto.content,
-      commentatorInfo: {
-        userId: dto.userId,
-        login: user.accountData.login,
-      },
     });
-
-    await this.commentsRepository.save(comment);
-
-    return comment._id.toString();
   }
 }
