@@ -31,7 +31,7 @@ export class PostsQueryRepository {
 
   async getAllPostsWithDefaultLikesInfo(dto: {
     queryParams: getPostsQueryParams;
-    userId: string | null;
+    userId: number | null;
     blogId?: number;
   }): Promise<PaginatedViewDto<PostViewDto[]>> {
     let filter = `p."deletedAt" IS NULL`;
@@ -153,7 +153,7 @@ FROM "Posts" p;`,
 
   async findPostByIdOrNotFoundFail(
     postId: number,
-    userId?: string | null,
+    userId?: number | null,
   ): Promise<PostViewDto> {
     const result = await this.dataSource.query<PostWithBlogName[]>(
       `

@@ -47,7 +47,7 @@ export class PostsController {
   @Get(':id')
   async getPost(
     @Param('id', IdValidationTransformationPipe) id: number,
-    @OptionalUserIdFromRequest() userId: string | null,
+    @OptionalUserIdFromRequest() userId: number | null,
   ): Promise<PostViewDto> {
     return this.postsQueryRepository.findPostByIdOrNotFoundFail(id, userId);
   }
@@ -55,7 +55,7 @@ export class PostsController {
   @Get()
   async getPosts(
     @Query() query: getPostsQueryParams,
-    @OptionalUserIdFromRequest() userId: string | null,
+    @OptionalUserIdFromRequest() userId: number | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
     return this.postsQueryRepository.getAllPostsWithDefaultLikesInfo({
       queryParams: query,
@@ -99,6 +99,7 @@ export class PostsController {
 
     return this.commentsQueryRepository.getCommentByIdOrNotFoundFail({
       commentId,
+      userId: Number(user.userId),
     });
   }
 

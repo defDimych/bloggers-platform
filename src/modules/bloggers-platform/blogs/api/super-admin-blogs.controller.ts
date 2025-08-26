@@ -55,7 +55,7 @@ export class SuperAdminBlogsController {
   async getPostsForBlog(
     @Param('blogId', IdValidationTransformationPipe) blogId: number,
     @Query() query: getPostsQueryParams,
-    @OptionalUserIdFromRequest() userId: string | null,
+    @OptionalUserIdFromRequest() userId: number | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
     await this.blogsService.blogIsExistsOrThrow(blogId);
 

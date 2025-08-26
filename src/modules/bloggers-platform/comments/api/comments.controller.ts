@@ -36,6 +36,7 @@ export class CommentsController {
   async getById(
     @Param('id') id: string,
     @OptionalUserIdFromRequest() userId: string | null,
+    @OptionalUserIdFromRequest() userId: number | null,
   ): Promise<CommentViewDto> {
     return this.commentsQueryRepository.getById({
       commentId: id,

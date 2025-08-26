@@ -5,7 +5,7 @@ export const OptionalUserIdFromRequest = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest<Request>();
 
-    const userId = request['userId'] as string | null;
+    const userId = request['userId'] as number | null;
 
     return userId;
   },

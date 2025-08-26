@@ -1,5 +1,5 @@
 export class UpdateCommentDto {
   userId: string;
-  commentId: string;
+  commentId: number;
   content: string;
 }
