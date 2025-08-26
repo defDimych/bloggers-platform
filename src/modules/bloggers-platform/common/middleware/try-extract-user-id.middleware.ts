@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthConfig } from '../../../auth/config/auth.config';
 
 interface JwtPayload {
-  id: string;
+  userId: string;
   iat: number;
   exp: number;
 }
@@ -31,7 +31,8 @@ export class TryExtractUserIdMiddleware implements NestMiddleware {
         secret: this.authConfig.accessTokenSecret,
       });
 
-      req['userId'] = payload.id;
+      // TODO Вопрос по преобразованию типа
+      req['userId'] = Number(payload.userId);
       next();
     } catch (e) {
       console.log(e);
