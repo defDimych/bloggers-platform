@@ -1,7 +1,6 @@
 import { CommentDocument } from '../../domain/comment.entity';
 import { LikeStatus } from '../../../common/types/like-status.enum';
-import { CommentLikeDocument } from '../../../likes/domain/comment-like.entity';
-import { CommentWithUserLogin } from '../../infrastructure/types/comment-db-model.type';
+import { CommentWithUserLoginAndLikesInfo } from '../../infrastructure/types/comment-db.types';
 
 type CommentatorInfo = {
   userId: string;
@@ -50,9 +49,7 @@ export class CommentViewDto {
     return items;
   }
 
-  static mapToViewWithDefaultLikesInfo(
-    comment: CommentWithUserLogin,
-  ): CommentViewDto {
+  static mapToView(comment: CommentWithUserLoginAndLikesInfo): CommentViewDto {
     const viewDto = new CommentViewDto();
 
     viewDto.id = comment.id.toString();
@@ -63,34 +60,11 @@ export class CommentViewDto {
     };
     viewDto.createdAt = comment.createdAt;
     viewDto.likesInfo = {
-      likesCount: 0,
-      dislikesCount: 0,
-      myStatus: LikeStatus.None,
+      likesCount: comment.likesCount,
+      dislikesCount: comment.dislikesCount,
+      myStatus: comment.myStatus,
     };
 
     return viewDto;
   }
-
-  static mapToView = (dto: {
-    userId: string | null;
-    comment: CommentDocument;
-    like: CommentLikeDocument | null;
-  }): CommentViewDto => {
-    const viewDto = new CommentViewDto();
-
-    viewDto.id = dto.comment._id.toString();
-    viewDto.commentatorInfo = {
-      userId: dto.comment.commentatorInfo.userId,
-      userLogin: dto.comment.commentatorInfo.login,
-    };
-    viewDto.content = dto.comment.content;
-    viewDto.createdAt = dto.comment.createdAt.toISOString();
-    viewDto.likesInfo = {
-      likesCount: dto.comment.likesCount,
-      dislikesCount: dto.comment.dislikesCount,
-      myStatus: !dto.userId || !dto.like ? LikeStatus.None : dto.like.myStatus,
-    };
-
-    return viewDto;
-  };
 }
