@@ -19,9 +19,10 @@ import { UpdateCommentInputDto } from './input-dto/update-comment.input-dto';
 import { UpdateCommentCommand } from '../application/usecases/update-comment.usecase';
 import { CommentsQueryRepository } from '../infrastructure/query/comments.query-repository';
 import { CommentViewDto } from './view-dto/comments.view-dto';
-import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
 import { DeleteCommentCommand } from '../application/usecases/delete-comment.usecase';
 import { Public } from '../../../auth/guards/decorators/public.decorator';
+import { IdValidationTransformationPipe } from '../../../../core/pipes/id-validation-transformation.pipe';
+import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
 
 @Controller('comments')
 @UseGuards(JwtAuthGuard)
@@ -34,20 +35,19 @@ export class CommentsController {
   @Get(':id')
   @Public()
   async getById(
-    @Param('id') id: string,
-    @OptionalUserIdFromRequest() userId: string | null,
+    @Param('id', IdValidationTransformationPipe) id: number,
     @OptionalUserIdFromRequest() userId: number | null,
   ): Promise<CommentViewDto> {
-    return this.commentsQueryRepository.getById({
+    return this.commentsQueryRepository.getCommentByIdOrNotFoundFail({
       commentId: id,
-      userId,
+      userId: userId,
     });
   }
 
   @Put(':commentId/like-status')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateLikeStatus(
-    @Param('commentId') commentId: string,
+    @Param('commentId', IdValidationTransformationPipe) commentId: number,
     @Body() body: UpdateLikeStatusInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
@@ -63,7 +63,7 @@ export class CommentsController {
   @Put(':commentId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateComment(
-    @Param('commentId') commentId: string,
+    @Param('commentId', IdValidationTransformationPipe) commentId: number,
     @Body() body: UpdateCommentInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
@@ -79,7 +79,7 @@ export class CommentsController {
   @Delete(':commentId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteComment(
-    @Param('commentId') commentId: string,
+    @Param('commentId', IdValidationTransformationPipe) commentId: number,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
     return this.commandBus.execute(
