@@ -15,7 +15,9 @@ export class DeleteCommentUseCase
   constructor(private commentsRepository: CommentsRepository) {}
 
   async execute({ dto }: DeleteCommentCommand): Promise<void> {
-    const comment = await this.commentsRepository.findById(dto.commentId);
+    const comment = await this.commentsRepository.findCommentById(
+      dto.commentId,
+    );
 
     if (!comment) {
       throw new DomainException({
@@ -24,15 +26,13 @@ export class DeleteCommentUseCase
       });
     }
 
-    if (comment.commentatorInfo.userId !== dto.userId) {
+    if (comment.userId !== Number(dto.userId)) {
       throw new DomainException({
         message: 'You do not have permission to delete this comment',
         code: DomainExceptionCode.Forbidden,
       });
     }
 
-    comment.makeDeleted();
-
-    await this.commentsRepository.save(comment);
+    await this.commentsRepository.makeDeleted(comment.id);
   }
 }

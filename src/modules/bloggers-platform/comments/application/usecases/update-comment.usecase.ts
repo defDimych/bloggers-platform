@@ -15,7 +15,9 @@ export class UpdateCommentUseCase
   constructor(private commentsRepository: CommentsRepository) {}
 
   async execute({ dto }: UpdateCommentCommand): Promise<void> {
-    const comment = await this.commentsRepository.findById(dto.commentId);
+    const comment = await this.commentsRepository.findCommentById(
+      dto.commentId,
+    );
 
     if (!comment) {
       throw new DomainException({
@@ -24,15 +26,13 @@ export class UpdateCommentUseCase
       });
     }
 
-    if (comment.commentatorInfo.userId !== dto.userId) {
+    if (comment.userId !== Number(dto.userId)) {
       throw new DomainException({
         message: 'access error',
         code: DomainExceptionCode.Forbidden,
       });
     }
 
-    comment.update(dto.content);
-
-    await this.commentsRepository.save(comment);
+    await this.commentsRepository.updateComment(comment.id, dto.content);
   }
 }
