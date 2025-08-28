@@ -49,7 +49,9 @@ export class CommentViewDto {
     return items;
   }
 
-  static mapToView(comment: CommentWithUserLoginAndLikesInfo): CommentViewDto {
+  static mapToView = (
+    comment: CommentWithUserLoginAndLikesInfo,
+  ): CommentViewDto => {
     const viewDto = new CommentViewDto();
 
     viewDto.id = comment.id.toString();
@@ -66,5 +68,5 @@ export class CommentViewDto {
     };
 
     return viewDto;
-  }
+  };
 }

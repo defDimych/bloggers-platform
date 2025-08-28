@@ -7,8 +7,8 @@ import { Injectable } from '@nestjs/common';
 export class PostsService {
   constructor(private postsRepository: PostsRepository) {}
 
-  async checkPostExistsOrThrow(postId: string): Promise<void> {
-    const post = await this.postsRepository.findById(postId);
+  async checkPostExistsOrThrow(postId: number): Promise<void> {
+    const post = await this.postsRepository.findPostById(postId);
 
     if (!post) {
       throw new DomainException({

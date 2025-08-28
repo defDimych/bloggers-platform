@@ -65,13 +65,17 @@ export class PostsController {
 
   @Get(':postId/comments')
   async getComments(
-    @OptionalUserIdFromRequest() userId: string | null,
-    @Param('postId') postId: string,
+    @OptionalUserIdFromRequest() userId: number | null,
+    @Param('postId', IdValidationTransformationPipe) postId: number,
     @Query() query: GetCommentsQueryParams,
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {
     await this.postsService.checkPostExistsOrThrow(postId);
 
-    return this.commentsQueryRepository.getAll({ userId, postId, query });
+    return this.commentsQueryRepository.getAllCommentsForPost({
+      queryParams: query,
+      userId: userId,
+      postId: postId,
+    });
   }
 
   @Post()
