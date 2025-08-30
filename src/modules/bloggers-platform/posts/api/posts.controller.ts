@@ -129,7 +129,7 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateLikeStatus(
-    @Param('postId') postId: string,
+    @Param('postId', IdValidationTransformationPipe) postId: number,
     @Body() body: UpdateLikeStatusInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
