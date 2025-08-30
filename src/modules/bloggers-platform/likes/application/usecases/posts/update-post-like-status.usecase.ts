@@ -5,7 +5,6 @@ import { DomainException } from '../../../../../../core/exceptions/domain-except
 import { DomainExceptionCode } from '../../../../../../core/exceptions/domain-exception-codes';
 import { PostLikeRepository } from '../../../infrastructure/post-like.repository';
 import { CreatePostLikeCommand } from './create-post-like.usecase';
-import { UpdatePostLikeCounterCommand } from './update-post-like-counter.usecase';
 
 export class UpdatePostLikeStatusCommand {
   constructor(public dto: UpdatePostLikeStatusDto) {}
@@ -22,7 +21,7 @@ export class UpdatePostLikeStatusUseCase
   ) {}
 
   async execute({ dto }: UpdatePostLikeStatusCommand): Promise<void> {
-    const post = await this.postsRepository.findById(dto.postId);
+    const post = await this.postsRepository.findPostById(dto.postId);
 
     if (!post) {
       throw new DomainException({
@@ -31,29 +30,23 @@ export class UpdatePostLikeStatusUseCase
       });
     }
 
-    const like = await this.postLikeRepository.findLike(dto.userId, dto.postId);
+    const like = await this.postLikeRepository.findPostLike({
+      postId: dto.postId,
+      userId: Number(dto.userId),
+    });
 
     if (!like) {
       await this.commandBus.execute(new CreatePostLikeCommand(dto));
       return;
     }
 
-    if (like.myStatus === dto.likeStatus) {
+    if (like.status === dto.likeStatus) {
       return;
     }
 
-    const oldStatus = like.myStatus;
-
-    like.updateLikeStatus(dto.likeStatus);
-
-    await this.postLikeRepository.save(like);
-
-    await this.commandBus.execute(
-      new UpdatePostLikeCounterCommand({
-        postId: dto.postId,
-        likeStatus: dto.likeStatus,
-        currentStatus: oldStatus,
-      }),
-    );
+    await this.postLikeRepository.updatePostLikeStatus({
+      likeId: like.id,
+      likeStatus: dto.likeStatus,
+    });
   }
 }

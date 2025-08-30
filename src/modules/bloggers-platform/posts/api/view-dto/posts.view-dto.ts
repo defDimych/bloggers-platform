@@ -1,20 +1,5 @@
-import { PostDocument } from '../../domain/post.entity';
-import { PostLikeDocument } from '../../../likes/domain/post-like.entity';
-import { LikeStatus } from '../../../common/types/like-status.enum';
-import { PostWithBlogName } from '../../infrastructure/types/post-db-model.type';
-
-type LikeInfoType = {
-  userId: string;
-  login: string;
-  addedAt: string;
-};
-
-type ExtendedLikesInfoType = {
-  likesCount: number;
-  dislikesCount: number;
-  myStatus: string;
-  newestLikes: LikeInfoType[];
-};
+import { PostWithBlogNameAndExtendedLikesInfo } from '../../infrastructure/types/post-db.types';
+import { ExtendedLikesInfo } from '../../../likes/types/like-info.types';
 
 export class PostViewDto {
   id: string;
@@ -24,10 +9,10 @@ export class PostViewDto {
   blogId: string;
   blogName: string;
   createdAt: string;
-  extendedLikesInfo: ExtendedLikesInfoType;
+  extendedLikesInfo: ExtendedLikesInfo;
 
-  static mapToViewWithDefaultLikesInfo = (
-    post: PostWithBlogName,
+  static mapToView = (
+    post: PostWithBlogNameAndExtendedLikesInfo,
   ): PostViewDto => {
     const viewDto = new PostViewDto();
 
@@ -39,40 +24,10 @@ export class PostViewDto {
     viewDto.blogName = post.blogName;
     viewDto.createdAt = post.createdAt;
     viewDto.extendedLikesInfo = {
-      likesCount: 0,
-      dislikesCount: 0,
-      myStatus: LikeStatus.None,
-      newestLikes: [],
-    };
-
-    return viewDto;
-  };
-
-  static mapToView = (dto: {
-    post: PostDocument;
-    userLike: PostLikeDocument | null;
-    newestLikes: PostLikeDocument[];
-  }): PostViewDto => {
-    const viewDto = new PostViewDto();
-
-    viewDto.id = dto.post._id.toString();
-    viewDto.title = dto.post.title;
-    viewDto.shortDescription = dto.post.shortDescription;
-    viewDto.content = dto.post.content;
-    viewDto.blogId = dto.post.blogId;
-    viewDto.blogName = dto.post.blogName;
-    viewDto.createdAt = dto.post.createdAt.toISOString();
-    viewDto.extendedLikesInfo = {
-      likesCount: dto.post.likesCount,
-      dislikesCount: dto.post.dislikesCount,
-      myStatus: dto.userLike ? dto.userLike.myStatus : LikeStatus.None,
-      newestLikes: dto.newestLikes.map((l) => {
-        return {
-          addedAt: l.createdAt.toISOString(),
-          userId: l.userId,
-          login: l.userLogin,
-        };
-      }),
+      likesCount: post.likesCount,
+      dislikesCount: post.dislikesCount,
+      myStatus: post.myStatus,
+      newestLikes: post.newestLikes,
     };
 
     return viewDto;
