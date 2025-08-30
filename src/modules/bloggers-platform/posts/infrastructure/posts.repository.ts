@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { CreatePostRepoDto } from './dto/create-post.repo-dto';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { PostDbModel } from './types/post-db-model.type';
+import { PostDbModel } from './types/post-db.types';
 import { UpdatePostRepoDto } from './dto/update-post.repo-dto';
 
 @Injectable()

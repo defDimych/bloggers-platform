@@ -1,3 +1,5 @@
+import { ExtendedLikesInfo } from '../../../likes/types/like-info.types';
+
 export type PostDbModel = {
   id: number;
   blogId: number;
@@ -9,3 +11,6 @@ export type PostDbModel = {
 };
 
 export type PostWithBlogName = PostDbModel & { blogName: string };
+export type PostWithBlogNameAndExtendedLikesInfo = PostDbModel & {
+  blogName: string;
+} & ExtendedLikesInfo;
