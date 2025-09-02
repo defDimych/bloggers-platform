@@ -109,11 +109,16 @@ SELECT
       SELECT
         pl.*,
         u.login,
-        ROW_NUMBER() OVER (ORDER BY pl."createdAt" DESC) AS "rowNumber"
+        ROW_NUMBER() OVER (
+          PARTITION BY pl."postId"
+          ORDER BY pl."createdAt" DESC
+          ) AS "rowNumber"
       FROM "PostsLikes" pl
         LEFT JOIN "Users" u ON pl."userId" = u.id
     ) AS "NumberedPostsLikes"
-    WHERE "rowNumber" BETWEEN 1 AND 3
+    WHERE "postId" = $2
+      AND status = '${LikeStatus.Like}'
+      AND "rowNumber" BETWEEN 1 AND 3
   )
 FROM "Posts" p
   LEFT JOIN "Blogs" b ON p."blogId" = b.id
