@@ -9,12 +9,12 @@ export type CommentDbModel = {
   deletedAt: string;
 };
 
-type LikesInfo = {
-  likesCount: number;
-  dislikesCount: number;
+type LikesInfoDb = {
+  likesCount: string;
+  dislikesCount: string;
   myStatus: LikeStatus;
 };
 
 export type CommentWithUserLoginAndLikesInfo = CommentDbModel & {
   userLogin: string;
-} & LikesInfo;
+} & LikesInfoDb;

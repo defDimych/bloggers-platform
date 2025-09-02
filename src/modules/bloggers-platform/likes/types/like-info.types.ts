@@ -1,12 +1,12 @@
-type LikeInfo = {
-  userId: string;
+type LikeInfoDb = {
+  userId: number;
   login: string;
   addedAt: string;
 };
 
-export type ExtendedLikesInfo = {
-  likesCount: number;
-  dislikesCount: number;
+export type ExtendedLikesInfoDb = {
+  likesCount: string;
+  dislikesCount: string;
   myStatus: string;
-  newestLikes: LikeInfo[];
+  newestLikes: LikeInfoDb[] | null;
 };
