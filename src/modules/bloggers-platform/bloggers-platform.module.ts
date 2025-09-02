@@ -33,7 +33,6 @@ import {
 } from './likes/domain/comment-like.entity';
 import { CommentLikeRepository } from './likes/infrastructure/comment-like.repository';
 import { CreateCommentLikeUseCase } from './likes/application/usecases/comments/create-comment-like.usecase';
-import { UpdateCommentLikeCounterUseCase } from './likes/application/usecases/comments/update-comment-like-counter.usecase';
 import { UpdateCommentUseCase } from './comments/application/usecases/update-comment.usecase';
 import { TryExtractUserIdMiddleware } from './common/middleware/try-extract-user-id.middleware';
 import { AuthModule } from '../auth/auth.module';
@@ -43,7 +42,6 @@ import { UpdatePostLikeStatusUseCase } from './likes/application/usecases/posts/
 import { PostLike, PostLikeSchema } from './likes/domain/post-like.entity';
 import { PostLikeRepository } from './likes/infrastructure/post-like.repository';
 import { CreatePostLikeUseCase } from './likes/application/usecases/posts/create-post-like.usecase';
-import { UpdatePostLikeCounterUseCase } from './likes/application/usecases/posts/update-post-like-counter.usecase';
 import { SuperAdminBlogsController } from './blogs/api/super-admin-blogs.controller';
 import { BlogsService } from './blogs/application/services/blogs.service';
 
@@ -59,8 +57,6 @@ const useCases = [
   UpdatePostLikeStatusUseCase,
   CreateCommentLikeUseCase,
   CreatePostLikeUseCase,
-  UpdateCommentLikeCounterUseCase,
-  UpdatePostLikeCounterUseCase,
   UpdateCommentUseCase,
   DeleteCommentUseCase,
 ];
