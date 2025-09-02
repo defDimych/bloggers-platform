@@ -1,8 +1,6 @@
 import { User, UserDocument, UserModelType } from '../domain/user.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
-import { DomainException } from '../../../core/exceptions/domain-exceptions';
-import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { UserDbModel } from '../types/user-db-model.type';
@@ -28,22 +26,6 @@ export class UsersRepository {
     );
 
     return result.length === 1 ? result[0] : null;
-  }
-
-  async findById(id: string): Promise<UserDocument | null> {
-    return this.UserModel.findOne({ _id: id, 'accountData.deletedAt': null });
-  }
-
-  async findByIdOrNotFoundFail(id: string): Promise<UserDocument> {
-    const user = await this.findById(id);
-
-    if (!user) {
-      throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        message: 'User not found',
-      });
-    }
-    return user;
   }
 
   async findEmailConfirmDetailsByUserIdOrThrow(
