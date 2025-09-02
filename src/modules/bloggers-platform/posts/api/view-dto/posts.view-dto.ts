@@ -1,5 +1,17 @@
 import { PostWithBlogNameAndExtendedLikesInfo } from '../../infrastructure/types/post-db.types';
-import { ExtendedLikesInfo } from '../../../likes/types/like-info.types';
+
+type LikeInfo = {
+  userId: string;
+  login: string;
+  addedAt: string;
+};
+
+type ExtendedLikesInfo = {
+  likesCount: number;
+  dislikesCount: number;
+  myStatus: string;
+  newestLikes: LikeInfo[];
+};
 
 export class PostViewDto {
   id: string;
@@ -24,10 +36,19 @@ export class PostViewDto {
     viewDto.blogName = post.blogName;
     viewDto.createdAt = post.createdAt;
     viewDto.extendedLikesInfo = {
-      likesCount: post.likesCount,
-      dislikesCount: post.dislikesCount,
+      likesCount: Number(post.likesCount),
+      dislikesCount: Number(post.dislikesCount),
       myStatus: post.myStatus,
-      newestLikes: post.newestLikes,
+      // необходима проверка на null, т.к при создании поста, и likesCount: 0 возвращается пустой массив!
+      newestLikes: post.newestLikes
+        ? post.newestLikes.map((l) => {
+            return {
+              addedAt: l.addedAt,
+              userId: l.userId.toString(),
+              login: l.login,
+            };
+          })
+        : [],
     };
 
     return viewDto;

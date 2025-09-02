@@ -57,7 +57,7 @@ export class PostsController {
     @Query() query: getPostsQueryParams,
     @OptionalUserIdFromRequest() userId: number | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
-    return this.postsQueryRepository.getAllPostsWithDefaultLikesInfo({
+    return this.postsQueryRepository.getAllPostsWithOptionalBlogId({
       queryParams: query,
       userId,
     });

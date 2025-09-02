@@ -7,49 +7,97 @@ import { DomainExceptionCode } from '../../../../../core/exceptions/domain-excep
 import { LikeStatus } from '../../../common/types/like-status.enum';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import {
-  PostWithBlogName,
-  PostWithBlogNameAndExtendedLikesInfo,
-} from '../types/post-db.types';
+import { PostWithBlogNameAndExtendedLikesInfo } from '../types/post-db.types';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async getAllPostsWithDefaultLikesInfo(dto: {
+  async getAllPostsWithOptionalBlogId(dto: {
     queryParams: getPostsQueryParams;
     userId: number | null;
     blogId?: number;
   }): Promise<PaginatedViewDto<PostViewDto[]>> {
-    let filter = `p."deletedAt" IS NULL`;
-    let params: number[] | [] = [];
+    // фильтр и параметры для списка постов ($1 — всегда userId, $2 — blogId при наличии)
+    const filterPosts = dto.blogId
+      ? `p."blogId" = $2 AND p."deletedAt" IS NULL`
+      : `p."deletedAt" IS NULL`;
 
-    if (dto.blogId) {
-      filter = `p."blogId" = $1 AND p."deletedAt" IS NULL`;
-      params = [dto.blogId];
-    }
+    const paramsPosts: (number | null)[] = [
+      dto.userId,
+      ...(dto.blogId ? [dto.blogId] : []),
+    ];
 
+    // фильтр и параметры для totalCount (тут нужен только blogId как $1 при наличии)
+    const filterCount = dto.blogId
+      ? `p."blogId" = $1 AND p."deletedAt" IS NULL`
+      : `p."deletedAt" IS NULL`;
+
+    const paramsCount: number[] = dto.blogId ? [dto.blogId] : [];
     try {
-      const posts = await this.dataSource.query<PostWithBlogName[]>(
+      const posts = await this.dataSource.query<
+        PostWithBlogNameAndExtendedLikesInfo[]
+      >(
         `
-  SELECT
-    p.*,
-    b."name" AS "blogName"
-  FROM "Posts" p
-    LEFT JOIN "Blogs" b ON p."blogId" = b.id
-  WHERE ${filter}
+SELECT
+  p.*,
+  b."name" AS "blogName",
+  (
+    SELECT COUNT(*)
+    FROM "PostsLikes" pl
+    WHERE pl."postId" = p.id
+      AND pl.status = '${LikeStatus.Like}'
+  ) AS "likesCount",
+  (
+    SELECT COUNT(*)
+    FROM "PostsLikes" pl
+    WHERE pl."postId" = p.id
+      AND pl.status = '${LikeStatus.Dislike}'
+  ) AS "dislikesCount",
+  COALESCE((
+    SELECT pl.status
+    FROM "PostsLikes" pl
+    WHERE pl."postId" = p.id
+      AND pl."userId" = $1
+  ), '${LikeStatus.None}') AS "myStatus",
+  (
+    SELECT jsonb_agg(
+      json_build_object(
+        'addedAt', "createdAt",
+        'userId', "userId",
+        'login', "login"
+      )
+    ) AS "newestLikes"
+    FROM (
+      SELECT
+        pl.*,
+        u.login,
+        ROW_NUMBER() OVER (
+          PARTITION BY pl."postId"
+          ORDER BY pl."createdAt" DESC
+          ) AS "rowNumber"
+      FROM "PostsLikes" pl
+        LEFT JOIN "Users" u ON pl."userId" = u.id
+    ) AS "NumberedPostsLikes"
+    WHERE "postId" = p.id
+      AND status = '${LikeStatus.Like}'
+      AND "rowNumber" BETWEEN 1 AND 3
+  )
+FROM "Posts" p
+  LEFT JOIN "Blogs" b ON p."blogId" = b.id
+WHERE ${filterPosts}
   ORDER BY "${dto.queryParams.sortBy}" ${dto.queryParams.sortDirection}
   LIMIT ${dto.queryParams.pageSize}
   OFFSET ${dto.queryParams.calculateSkip()}
   `,
-        params,
+        paramsPosts,
       );
 
       const totalCount = await this.dataSource.query<{ totalCount: string }[]>(
         `SELECT
-COUNT(*) FILTER (WHERE ${filter}) AS "totalCount"
+COUNT(*) FILTER (WHERE ${filterCount}) AS "totalCount"
 FROM "Posts" p;`,
-        params,
+        paramsCount,
       );
 
       const items = posts.map(PostViewDto.mapToView);
