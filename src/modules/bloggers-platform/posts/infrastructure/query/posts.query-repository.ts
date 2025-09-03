@@ -39,6 +39,18 @@ export class PostsQueryRepository {
         PostWithBlogNameAndExtendedLikesInfo[]
       >(
         `
+WITH "NumberedPostsLikes" AS (
+    SELECT
+        pl.*,
+        u.login,
+        ROW_NUMBER() OVER (
+            PARTITION BY pl."postId"
+            ORDER BY pl."createdAt" DESC
+        ) AS "rowNumber"
+    FROM "PostsLikes" pl
+        LEFT JOIN "Users" u ON pl."userId" = u.id
+)
+
 SELECT
   p.*,
   b."name" AS "blogName",
@@ -68,17 +80,7 @@ SELECT
         'login', "login"
       )
     ) AS "newestLikes"
-    FROM (
-      SELECT
-        pl.*,
-        u.login,
-        ROW_NUMBER() OVER (
-          PARTITION BY pl."postId"
-          ORDER BY pl."createdAt" DESC
-          ) AS "rowNumber"
-      FROM "PostsLikes" pl
-        LEFT JOIN "Users" u ON pl."userId" = u.id
-    ) AS "NumberedPostsLikes"
+    FROM "NumberedPostsLikes"
     WHERE "postId" = p.id
       AND status = '${LikeStatus.Like}'
       AND "rowNumber" BETWEEN 1 AND 3
@@ -124,6 +126,18 @@ FROM "Posts" p;`,
       PostWithBlogNameAndExtendedLikesInfo[]
     >(
       `
+WITH "NumberedPostsLikes" AS (
+    SELECT
+        pl.*,
+        u.login,
+        ROW_NUMBER() OVER (
+            PARTITION BY pl."postId"
+            ORDER BY pl."createdAt" DESC
+        ) AS "rowNumber"
+    FROM "PostsLikes" pl
+        LEFT JOIN "Users" u ON pl."userId" = u.id
+)
+
 SELECT
   p.*,
   b."name" AS "blogName",
@@ -153,17 +167,7 @@ SELECT
         'login', "login"
       )
     ) AS "newestLikes"
-    FROM (
-      SELECT
-        pl.*,
-        u.login,
-        ROW_NUMBER() OVER (
-          PARTITION BY pl."postId"
-          ORDER BY pl."createdAt" DESC
-          ) AS "rowNumber"
-      FROM "PostsLikes" pl
-        LEFT JOIN "Users" u ON pl."userId" = u.id
-    ) AS "NumberedPostsLikes"
+    FROM "NumberedPostsLikes"
     WHERE "postId" = $2
       AND status = '${LikeStatus.Like}'
       AND "rowNumber" BETWEEN 1 AND 3
