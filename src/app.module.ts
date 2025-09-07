@@ -49,8 +49,8 @@ import { DataSource } from 'typeorm';
         username: coreConfig.postgresUserName,
         password: coreConfig.postgresPassword,
         database: coreConfig.postgresDatabase,
-        autoLoadEntities: false,
-        synchronize: false,
+        autoLoadEntities: true, // Автоподгрузка сущностей
+        synchronize: true, // Автоматическое обновление схемы БД (только для разработки!)
       }),
       inject: [CoreConfig],
     }),
