@@ -67,7 +67,7 @@ describe('SuperAdminUsersController (e2e)', () => {
     });
   });
 
-  describe.skip('delete user', () => {
+  describe('delete user', () => {
     it('should delete user', async () => {
       const createdUser = await userTestHelper.createUser({
         login: 'Webster',
@@ -101,35 +101,3 @@ describe('SuperAdminUsersController (e2e)', () => {
     });
   });
 });
-
-// it("/users (POST) shouldn't create user with incorrect input data", async () => {
-//   const response = await request(app.getHttpServer())
-//     .post('/users')
-//     .set({ Authorization: 'Basic ' + fromUTF8ToBase64(username, password) })
-//     .send({
-//       login: '',
-//       password: 123,
-//       email: 'email',
-//     })
-//     .expect(400);
-//
-//   const body = response.body as ErrorResponse;
-//   expect(body.errorsMessages[0].field).toBe('login');
-//   expect(body.errorsMessages[1].field).toBe('password');
-//   expect(body.errorsMessages[2].field).toBe('email');
-// });
-//
-// it("shouldn't create a user if the login or email is not unique", async () => {
-//   const response = await request(app.getHttpServer())
-//     .post('/users')
-//     .set({ Authorization: 'Basic ' + fromUTF8ToBase64(username, password) })
-//     .send({
-//       login: 'Webster',
-//       password: 'Webster123',
-//       email: 'Webster@mail.ru',
-//     })
-//     .expect(400);
-//
-//   const body = response.body as ErrorResponse;
-//   expect(body.errorsMessages[0].field).toBe('login');
-// });
