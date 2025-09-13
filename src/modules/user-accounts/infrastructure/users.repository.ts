@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { UserDbModel } from '../types/user-db-model.type';
 import { User } from '../entities/user.entity';
 
 @Injectable()
@@ -13,19 +12,14 @@ export class UsersRepository {
   ) {}
 
   async makeDeleted(userId: number): Promise<void> {
-    await this.dataSource.query(
-      `UPDATE "Users" SET "deletedAt" = now() WHERE id = $1`,
-      [userId],
-    );
+    await this.usersRepo.softDelete({ id: userId });
   }
 
-  async findUserById(id: number): Promise<UserDbModel | null> {
-    const result = await this.dataSource.query<UserDbModel[]>(
-      `SELECT * FROM "Users" WHERE id = $1 AND "deletedAt" IS NULL`,
-      [id],
-    );
-
-    return result.length === 1 ? result[0] : null;
+  async findUserById(id: number): Promise<User | null> {
+    return await this.usersRepo.findOne({
+      where: { id },
+      withDeleted: false,
+    });
   }
 
   async findEmailConfirmDetailsByUserIdOrThrow(
