@@ -1,15 +1,15 @@
-import { User, UserDocument, UserModelType } from '../domain/user.entity';
-import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UserDbModel } from '../types/user-db-model.type';
+import { User } from '../entities/user.entity';
 
 @Injectable()
 export class UsersRepository {
   constructor(
-    @InjectModel(User.name) private UserModel: UserModelType,
-    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(User) private readonly usersRepo: Repository<User>,
+    @InjectDataSource()
+    private dataSource: DataSource,
   ) {}
 
   async makeDeleted(userId: number): Promise<void> {
@@ -75,10 +75,13 @@ export class UsersRepository {
     return result.length === 1 ? result[0] : null;
   }
 
-  async findByEmail(email: string): Promise<UserDocument | null> {
-    return this.UserModel.findOne({
-      'accountData.deletedAt': null,
-      'accountData.email': email,
+  async findByEmail(email: string): Promise<User | null> {
+    return await this.usersRepo.findOne({
+      relations: {
+        recovery: true,
+      },
+      where: { email },
+      withDeleted: false,
     });
   }
 
@@ -95,40 +98,25 @@ export class UsersRepository {
     return result.length === 1 ? result[0] : null;
   }
 
-  async findByPasswordRecoveryCode(code: string): Promise<UserDocument | null> {
-    return this.UserModel.findOne({
-      'accountData.deletedAt': null,
-      'passwordRecovery.recoveryCode': code,
+  async findByPasswordRecoveryCode(recoveryCode: string): Promise<User | null> {
+    return this.usersRepo.findOne({
+      relations: {
+        recovery: true,
+      },
+      where: {
+        recovery: {
+          recoveryCode: recoveryCode,
+        },
+      },
     });
   }
 
-  async save(user: UserDocument) {
-    await user.save();
+  async save(user: User): Promise<void> {
+    await this.usersRepo.save(user);
   }
 
-  async setEmailConfirmationDetails(dto: {
-    userId: number;
-    confirmationCode: string;
-    expirationDate: Date;
-    isConfirmed: boolean;
-  }): Promise<void> {
-    await this.dataSource.query(
-      `INSERT INTO "EmailConfirmationDetails" ("userId", "confirmationCode", "expirationDate", "isConfirmed") VALUES ($1, $2, $3, $4);`,
-      [dto.userId, dto.confirmationCode, dto.expirationDate, dto.isConfirmed],
-    );
-  }
-
-  async createUser(dto: {
-    login: string;
-    email: string;
-    passwordHash: string;
-  }): Promise<number> {
-    const result: { id: number }[] = await this.dataSource.query(
-      `INSERT INTO "Users" (login, email, "passwordHash") VALUES ($1, $2, $3) RETURNING id`,
-      [dto.login, dto.email, dto.passwordHash],
-    );
-
-    return result[0].id;
+  async createUser(user: User): Promise<void> {
+    await this.usersRepo.save(user);
   }
 
   async updateEmailConfirmCodeAndExpiry(dto: {
@@ -149,16 +137,13 @@ export class UsersRepository {
     );
   }
 
-  async findExistingUserByLoginOrEmail(
-    login: string,
-    email: string,
-  ): Promise<{ login: string; email: string } | null> {
-    const result: { login: string; email: string }[] | [] =
-      await this.dataSource.query(
-        `SELECT login, email FROM "Users" WHERE (login = $1 OR email = $2) AND "deletedAt" IS NULL LIMIT 1`,
-        [login, email],
-      );
-
-    return result.length === 1 ? result[0] : null;
+  async findUserByLoginOrEmail(dto: {
+    login: string;
+    email: string;
+  }): Promise<User | null> {
+    return this.usersRepo.findOne({
+      where: [{ login: dto.login }, { email: dto.email }],
+      withDeleted: false,
+    });
   }
 }

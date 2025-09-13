@@ -2,13 +2,17 @@ import { UsersViewDto } from '../../api/view-dto/users.view-dto';
 import { Injectable } from '@nestjs/common';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UserDbModel } from '../../types/user-db-model.type';
+import { User } from '../../entities/user.entity';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(User) private readonly usersRepo: Repository<User>,
+  ) {}
 
   async getAll(
     queryParams: GetUsersQueryParams,
@@ -40,7 +44,7 @@ FROM "Users";`,
         params,
       );
 
-      const items = users.map(UsersViewDto.mapToView);
+      const items = users.map(UsersViewDto.mapManyToView);
 
       return PaginatedViewDto.mapToView({
         items,
@@ -56,12 +60,12 @@ FROM "Users";`,
     }
   }
 
-  async findById(id: number): Promise<UsersViewDto> {
-    const result = await this.dataSource.query<UserDbModel[]>(
-      `SELECT * FROM "Users" WHERE id = $1`,
-      [id],
-    );
+  async findUserById(id: number): Promise<UsersViewDto> {
+    const user = await this.usersRepo.findOne({
+      where: { id: id },
+      withDeleted: false,
+    });
 
-    return UsersViewDto.mapToView(result[0]);
+    return UsersViewDto.mapToView(user!);
   }
 }
