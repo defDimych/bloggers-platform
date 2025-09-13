@@ -7,14 +7,17 @@ import { Injectable } from '@nestjs/common';
 export class UsersService {
   constructor(private usersRepository: UsersRepository) {}
 
-  async checkUniqueOrThrow(login: string, email: string): Promise<void> {
-    const result = await this.usersRepository.findExistingUserByLoginOrEmail(
-      login,
-      email,
-    );
+  async checkUniqueOrThrow(dto: {
+    login: string;
+    email: string;
+  }): Promise<void> {
+    const user = await this.usersRepository.findUserByLoginOrEmail({
+      login: dto.login,
+      email: dto.email,
+    });
 
-    if (result) {
-      const conflictField = result.login === login ? 'login' : 'email';
+    if (user) {
+      const conflictField = user.login === dto.login ? 'login' : 'email';
 
       throw new DomainException({
         message: 'Validation failed',

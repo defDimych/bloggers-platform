@@ -1,5 +1,6 @@
 import { OmitType } from '@nestjs/swagger';
 import { UserDbModel } from '../../types/user-db-model.type';
+import { User } from '../../entities/user.entity';
 
 export class UsersViewDto {
   id: string;
@@ -7,13 +8,24 @@ export class UsersViewDto {
   email: string;
   createdAt: string;
 
-  static mapToView = (user: UserDbModel): UsersViewDto => {
+  static mapManyToView = (user: UserDbModel): UsersViewDto => {
     const dto = new UsersViewDto();
 
     dto.id = user.id.toString();
     dto.login = user.login;
     dto.email = user.email;
     dto.createdAt = user.createdAt;
+
+    return dto;
+  };
+
+  static mapToView = (user: User): UsersViewDto => {
+    const dto = new UsersViewDto();
+
+    dto.id = user.id.toString();
+    dto.login = user.login;
+    dto.email = user.email;
+    dto.createdAt = user.createdAt.toISOString();
 
     return dto;
   };

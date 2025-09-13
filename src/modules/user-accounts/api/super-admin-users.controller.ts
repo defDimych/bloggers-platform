@@ -40,7 +40,7 @@ export class SuperAdminUsersController {
   async createUser(@Body() body: CreateUserDto): Promise<UsersViewDto> {
     const userId = await this.commandBus.execute(new CreateUserCommand(body));
 
-    return this.usersQueryRepository.findById(userId);
+    return this.usersQueryRepository.findUserById(userId);
   }
 
   @Delete(':id')

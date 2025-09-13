@@ -20,16 +20,14 @@ export class PasswordRecoveryUseCase
     const user = await this.usersRepository.findByEmail(dto.email);
     if (!user) return;
 
-    const confirmationCode = crypto.randomUUID();
+    const recoveryCode = crypto.randomUUID();
 
-    user.setConfirmationCodeForPasswordRecovery(confirmationCode);
+    user.recovery.update(recoveryCode);
+
     await this.usersRepository.save(user);
 
     this.emailService
-      .sendEmailForPasswordRecovery(
-        dto.email,
-        user.passwordRecovery.recoveryCode,
-      )
+      .sendEmailForPasswordRecovery(dto.email, recoveryCode)
       .catch(console.error);
   }
 }

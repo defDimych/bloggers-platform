@@ -1,10 +1,7 @@
 import { IsStringWithTrim } from '../../../core/decorators/validation/is-string-with-trim';
-import {
-  loginConstraints,
-  passwordConstraints,
-} from '../domain/account-data.schema';
 import { IsEmail, IsString } from 'class-validator';
 import { Trim } from '../../../core/decorators/transform/trim';
+import { loginConstraints, passwordConstraints } from '../entities/user.entity';
 
 export class CreateUserDto {
   @IsStringWithTrim(loginConstraints.minLength, loginConstraints.maxLength)

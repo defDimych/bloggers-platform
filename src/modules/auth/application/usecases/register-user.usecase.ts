@@ -2,8 +2,8 @@ import { CreateUserDto } from '../../../user-accounts/dto/create-user.dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
 import { EmailService } from '../../../notifications/email.service';
-import { add } from 'date-fns';
 import { UsersFactory } from '../../../user-accounts/application/factories/users.factory';
+import { User } from '../../../user-accounts/entities/user.entity';
 
 export class RegisterUserCommand {
   constructor(public dto: CreateUserDto) {}
@@ -20,26 +20,16 @@ export class RegisterUserUseCase
   ) {}
 
   async execute({ dto }: RegisterUserCommand): Promise<void> {
-    const userId = await this.usersFactory.create(dto);
+    const user: User = await this.usersFactory.create(dto);
 
-    const emailConfirmationDetails = {
-      userId,
-      confirmationCode: crypto.randomUUID(),
-      expirationDate: add(new Date(), {
-        minutes: 5,
-      }),
-      isConfirmed: false,
-    };
+    const confirmationCode: string = crypto.randomUUID();
 
-    await this.usersRepository.setEmailConfirmationDetails(
-      emailConfirmationDetails,
-    );
+    user.confirmation.update(confirmationCode);
+
+    await this.usersRepository.createUser(user);
 
     this.emailService
-      .sendConfirmationEmail(
-        dto.email,
-        emailConfirmationDetails.confirmationCode,
-      )
+      .sendConfirmationEmail(dto.email, confirmationCode)
       .catch(console.error);
   }
 }

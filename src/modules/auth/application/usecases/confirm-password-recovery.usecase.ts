@@ -22,7 +22,7 @@ export class ConfirmPasswordRecoveryUseCase
       dto.recoveryCode,
     );
 
-    if (!user || user.passwordRecovery.expirationDate < new Date()) {
+    if (!user || user.recovery.expirationDate < new Date()) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         message: 'Validation failed',
@@ -37,7 +37,8 @@ export class ConfirmPasswordRecoveryUseCase
 
     const passwordHash = await this.cryptoService.generateHash(dto.newPassword);
 
-    user.setNewPassword(passwordHash);
+    user.setNewPasswordHash(passwordHash);
+
     await this.usersRepository.save(user);
   }
 }

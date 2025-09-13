@@ -1,8 +1,8 @@
 import { CreateUserDto } from '../../dto/create-user.dto';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../infrastructure/users.repository';
-import { add } from 'date-fns';
 import { UsersFactory } from '../factories/users.factory';
+import { User } from '../../entities/user.entity';
 
 export class CreateUserCommand extends Command<number> {
   constructor(public dto: CreateUserDto) {
@@ -20,21 +20,12 @@ export class CreateUserUseCase
   ) {}
 
   async execute({ dto }: CreateUserCommand): Promise<number> {
-    const userId = await this.usersFactory.create(dto);
+    const user: User = await this.usersFactory.create(dto);
 
-    const emailConfirmationDetails = {
-      userId,
-      confirmationCode: crypto.randomUUID(),
-      expirationDate: add(new Date(), {
-        minutes: 5,
-      }),
-      isConfirmed: true, // при создании супер-админом true
-    };
+    user.confirmation.confirmEmail();
 
-    await this.usersRepository.setEmailConfirmationDetails(
-      emailConfirmationDetails,
-    );
+    await this.usersRepository.createUser(user);
 
-    return userId;
+    return user.id;
   }
 }

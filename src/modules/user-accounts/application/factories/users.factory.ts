@@ -2,18 +2,20 @@ import { CreateUserDto } from '../../dto/create-user.dto';
 import { CryptoService } from '../../../auth/application/services/crypto.service';
 import { UsersService } from '../services/users.service';
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../../infrastructure/users.repository';
+import { User } from '../../entities/user.entity';
 
 @Injectable()
 export class UsersFactory {
   constructor(
     private usersService: UsersService,
     private bcryptService: CryptoService,
-    private usersRepository: UsersRepository,
   ) {}
 
-  async create(dto: CreateUserDto): Promise<number> {
-    await this.usersService.checkUniqueOrThrow(dto.login, dto.email);
+  async create(dto: CreateUserDto): Promise<User> {
+    await this.usersService.checkUniqueOrThrow({
+      login: dto.login,
+      email: dto.email,
+    });
 
     const passwordHash = await this.createPasswordHash(dto.password);
 
@@ -24,11 +26,8 @@ export class UsersFactory {
     return this.bcryptService.generateHash(password);
   }
 
-  private createUser(
-    dto: CreateUserDto,
-    passwordHash: string,
-  ): Promise<number> {
-    return this.usersRepository.createUser({
+  private createUser(dto: CreateUserDto, passwordHash: string): User {
+    return User.create({
       login: dto.login,
       email: dto.email,
       passwordHash,
