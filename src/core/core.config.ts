@@ -37,12 +37,6 @@ export class CoreConfig {
   @Min(1, { message: 'Set Env variable PORT, example: 3000' })
   port: number;
 
-  @IsNotEmpty({
-    message:
-      'Set Env variable MONGO_URI, example: mongodb://localhost:27017/blogs-and-posts-nest',
-  })
-  mongoURI: string;
-
   @IsBoolean({
     message:
       'Set Env variable INCLUDE_TESTING_MODULE to enable/disable Dangerous for production TestingModule, example: true, available values: [true, false, 0, 1, enabled, disabled]',
@@ -68,7 +62,6 @@ export class CoreConfig {
     this.postgresUserName = this.configService.get('POSTGRES_USERNAME');
     this.postgresPassword = this.configService.get('POSTGRES_PASSWORD');
     this.port = Number(this.configService.get('PORT'));
-    this.mongoURI = this.configService.get('MONGO_URI');
 
     this.includeTestingModule = configValidationUtility.convertToBoolean(
       this.configService.get('INCLUDE_TESTING_MODULE'),
