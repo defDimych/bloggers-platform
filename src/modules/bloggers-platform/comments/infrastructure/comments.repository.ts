@@ -1,20 +1,12 @@
-import {
-  Comment,
-  CommentDocument,
-  CommentModelType,
-} from '../domain/comment.entity';
+import { CommentDocument } from '../domain/comment.entity';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { CommentDbModel } from './types/comment-db.types';
 
 @Injectable()
 export class CommentsRepository {
-  constructor(
-    @InjectModel(Comment.name) private CommentModel: CommentModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findCommentById(id: number): Promise<CommentDbModel | null> {
     const result = await this.dataSource.query<CommentDbModel[]>(
@@ -28,10 +20,6 @@ export class CommentsRepository {
     );
 
     return result.length === 1 ? result[0] : null;
-  }
-
-  async findById(id: string): Promise<CommentDocument | null> {
-    return this.CommentModel.findOne({ _id: id, deletedAt: null });
   }
 
   async createComment(dto: {

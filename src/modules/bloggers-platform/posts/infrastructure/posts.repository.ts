@@ -1,6 +1,5 @@
-import { Post, PostDocument, PostModelType } from '../domain/post.entity';
+import { PostDocument } from '../domain/post.entity';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { CreatePostRepoDto } from './dto/create-post.repo-dto';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -9,10 +8,7 @@ import { UpdatePostRepoDto } from './dto/update-post.repo-dto';
 
 @Injectable()
 export class PostsRepository {
-  constructor(
-    @InjectModel(Post.name) private PostModel: PostModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findPostById(id: number): Promise<PostDbModel | null> {
     const result = await this.dataSource.query<PostDbModel[]>(
@@ -21,13 +17,6 @@ export class PostsRepository {
     );
 
     return result.length === 1 ? result[0] : null;
-  }
-
-  async findById(id: string): Promise<PostDocument | null> {
-    return this.PostModel.findOne({
-      _id: id,
-      deletedAt: null,
-    });
   }
 
   async createPost(dto: CreatePostRepoDto): Promise<number> {
