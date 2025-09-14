@@ -8,17 +8,6 @@ export class UsersViewDto {
   email: string;
   createdAt: string;
 
-  static mapManyToView = (user: UserDbModel): UsersViewDto => {
-    const dto = new UsersViewDto();
-
-    dto.id = user.id.toString();
-    dto.login = user.login;
-    dto.email = user.email;
-    dto.createdAt = user.createdAt;
-
-    return dto;
-  };
-
   static mapToView = (user: User): UsersViewDto => {
     const dto = new UsersViewDto();
 

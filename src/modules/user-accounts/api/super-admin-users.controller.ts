@@ -33,7 +33,7 @@ export class SuperAdminUsersController {
   async getAllUsers(
     @Query() query: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<UsersViewDto[]>> {
-    return this.usersQueryRepository.getAll(query);
+    return this.usersQueryRepository.findAllUsers(query);
   }
 
   @Post()

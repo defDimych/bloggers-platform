@@ -2,59 +2,49 @@ import { UsersViewDto } from '../../api/view-dto/users.view-dto';
 import { Injectable } from '@nestjs/common';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { UserDbModel } from '../../types/user-db-model.type';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ILike, Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 
 @Injectable()
 export class UsersQueryRepository {
   constructor(
-    @InjectDataSource() private dataSource: DataSource,
     @InjectRepository(User) private readonly usersRepo: Repository<User>,
   ) {}
 
-  async getAll(
+  async findAllUsers(
     queryParams: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<UsersViewDto[]>> {
-    let filter = `"deletedAt" IS NULL`;
-    let params: string[] | [] = [];
+    const where: any[] = [];
 
-    if (queryParams.searchEmailTerm || queryParams.searchLoginTerm) {
-      filter = `(login ILIKE $1 OR email ILIKE $2) AND "deletedAt" IS NULL`;
-      params = [
-        `%${queryParams.searchLoginTerm}%`,
-        `%${queryParams.searchEmailTerm}%`,
-      ];
+    if (queryParams.searchLoginTerm) {
+      where.push({ login: ILike(`%${queryParams.searchLoginTerm}%`) });
     }
+
+    if (queryParams.searchEmailTerm) {
+      where.push({ email: ILike(`%${queryParams.searchEmailTerm}%`) });
+    }
+
     try {
-      const users = await this.dataSource.query<UserDbModel[]>(
-        `SELECT * FROM "Users" 
-WHERE ${filter}
-ORDER BY "${queryParams.sortBy}" ${queryParams.sortDirection}
-LIMIT ${queryParams.pageSize}
-OFFSET ${queryParams.calculateSkip()}`,
-        params,
-      );
+      const result: [User[], number] = await this.usersRepo.findAndCount({
+        where,
+        order: { [queryParams.sortBy]: queryParams.sortDirection },
+        skip: queryParams.calculateSkip(),
+        take: queryParams.pageSize,
+        withDeleted: false,
+      });
 
-      const totalCount = await this.dataSource.query<{ totalCount: string }[]>(
-        `SELECT 
-COUNT(*) FILTER (WHERE ${filter}) AS "totalCount"
-FROM "Users";`,
-        params,
-      );
-
-      const items = users.map(UsersViewDto.mapManyToView);
+      const items = result[0].map(UsersViewDto.mapToView);
 
       return PaginatedViewDto.mapToView({
         items,
-        totalCount: Number(totalCount[0].totalCount),
+        totalCount: result[1],
         page: queryParams.pageNumber,
         size: queryParams.pageSize,
       });
     } catch (e) {
       console.log(
-        `GET query repository, getAllUsers : ${JSON.stringify(e, null, 2)}`,
+        `GET query repository, findAllUsers : ${JSON.stringify(e, null, 2)}`,
       );
       throw new Error(`some error`);
     }
