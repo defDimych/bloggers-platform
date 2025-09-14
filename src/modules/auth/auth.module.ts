@@ -21,8 +21,6 @@ import { BasicAuthGuard } from './guards/basic/basic-auth.guard';
 import { NotificationModule } from '../notifications/notification.module';
 import { AuthQueryRepository } from './infrastructure/query/auth.query-repository';
 import { JwtAdapter } from './infrastructure/jwt.adapter';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Session, SessionSchema } from './domain/session.entity';
 import { SessionsRepository } from './infrastructure/sessions.repository';
 import { JwtRefreshStrategy } from './guards/bearer/jwt-refresh.strategy';
 import { RefreshTokensUseCase } from './application/usecases/refresh-tokens.usecase';
@@ -50,7 +48,6 @@ const useCases = [
 @Module({
   imports: [
     forwardRef(() => UserAccountsModule),
-    MongooseModule.forFeature([{ name: Session.name, schema: SessionSchema }]),
     JwtModule,
     NotificationModule,
   ],

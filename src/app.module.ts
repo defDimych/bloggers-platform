@@ -3,7 +3,6 @@ import { configModule } from './dynamic-config.module';
 import { DynamicModule, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MongooseModule } from '@nestjs/mongoose';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
 import { TestingModule } from './modules/testing/testing.module';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
@@ -28,17 +27,6 @@ import { DataSource } from 'typeorm';
           limit: coreConfig.THROTTLE_LIMIT,
         },
       ],
-      inject: [CoreConfig],
-    }),
-    MongooseModule.forRootAsync({
-      useFactory: (coreConfig: CoreConfig) => {
-        const uri = coreConfig.mongoURI;
-        console.log('DB_URI', uri);
-
-        return {
-          uri: uri,
-        };
-      },
       inject: [CoreConfig],
     }),
     TypeOrmModule.forRootAsync({
