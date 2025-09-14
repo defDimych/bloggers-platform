@@ -18,7 +18,7 @@ export class ConfirmPasswordRecoveryUseCase
     private cryptoService: CryptoService,
   ) {}
   async execute({ dto }: ConfirmPasswordRecoveryCommand): Promise<void> {
-    const user = await this.usersRepository.findByPasswordRecoveryCode(
+    const user = await this.usersRepository.findUserByPasswordRecoveryCode(
       dto.recoveryCode,
     );
 

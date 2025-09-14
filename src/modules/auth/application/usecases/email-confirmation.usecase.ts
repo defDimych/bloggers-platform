@@ -13,13 +13,15 @@ export class EmailConfirmationUseCase
 {
   constructor(private usersRepository: UsersRepository) {}
   async execute({ dto }: EmailConfirmationCommand): Promise<void> {
-    const emailConfirmationDetails =
-      await this.usersRepository.findEmailConfirmDetailsByConfirmCode(dto.code);
+    // TODO: не понимаю, почему делаем это через юзера
+    const user = await this.usersRepository.findUserByEmailConfirmationCode(
+      dto.code,
+    );
 
     if (
-      !emailConfirmationDetails ||
-      emailConfirmationDetails.isConfirmed ||
-      new Date(emailConfirmationDetails.expirationDate) < new Date()
+      !user ||
+      user.confirmation.isConfirmed ||
+      user.confirmation.expirationDate < new Date()
     ) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
@@ -34,8 +36,8 @@ export class EmailConfirmationUseCase
       });
     }
 
-    await this.usersRepository.updateEmailConfirmed(
-      emailConfirmationDetails.id,
-    );
+    user.confirmation.confirmEmail();
+
+    await this.usersRepository.save(user);
   }
 }

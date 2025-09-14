@@ -17,7 +17,7 @@ export class PasswordRecoveryUseCase
   ) {}
 
   async execute({ dto }: PasswordRecoveryCommand): Promise<void> {
-    const user = await this.usersRepository.findByEmail(dto.email);
+    const user = await this.usersRepository.findUserByEmail(dto.email);
     if (!user) return;
 
     const recoveryCode = crypto.randomUUID();
