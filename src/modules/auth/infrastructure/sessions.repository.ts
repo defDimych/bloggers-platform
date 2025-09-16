@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSessionDto } from './dto/create-session.dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { SessionDbModel } from './types/session-db-model.type';
+import { Session } from '../entities/session.entity';
 
 @Injectable()
 export class SessionsRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Session)
+    private readonly sessionsRepo: Repository<Session>,
+  ) {}
 
-  async createSession(dto: CreateSessionDto): Promise<void> {
-    await this.dataSource.query(
-      `INSERT INTO "Sessions" ("userId", "deviceId", "deviceName", "IP", iat, exp) VALUES ($1, $2, $3, $4, $5, $6);`,
-      [dto.userId, dto.deviceId, dto.deviceName, dto.IP, dto.iat, dto.exp],
-    );
+  async createSession(session: Session): Promise<void> {
+    await this.sessionsRepo.save(session);
   }
 
   async findByDeviceId(deviceId: string): Promise<SessionDbModel | null> {
