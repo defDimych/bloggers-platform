@@ -1,8 +1,9 @@
 import { BaseEntity } from '../../../core/entities/base.entity';
-import { Column, Entity, OneToOne } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { CreateUserEntityDto } from './dto/create-user.entity-dto';
 import { EmailConfirmation } from './email-confirmation.entity';
 import { PasswordRecovery } from './password-recovery.entity';
+import { Session } from '../../auth/entities/session.entity';
 
 export const loginConstraints = {
   minLength: 3,
@@ -48,6 +49,9 @@ export class User extends BaseEntity {
     { cascade: true },
   )
   recovery: PasswordRecovery;
+
+  @OneToMany(() => Session, (session) => session.user)
+  sessions: Session[];
 
   static create(dto: CreateUserEntityDto): User {
     const user = new this();

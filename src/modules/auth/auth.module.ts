@@ -29,6 +29,8 @@ import { SessionsQueryRepository } from './infrastructure/query/sessions.query-r
 import { SecurityDevicesController } from './api/security-devices.controller';
 import { DeleteSessionUseCase } from './application/usecases/sessions/delete-session.usecase';
 import { DeleteSessionsExcludingCurrentUseCase } from './application/usecases/sessions/delete-sessions-excluding-current.usecase';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Session } from './entities/session.entity';
 
 const useCases = [
   //TODO: Рефакторинг массива + файловая система
@@ -48,6 +50,7 @@ const useCases = [
 @Module({
   imports: [
     forwardRef(() => UserAccountsModule),
+    TypeOrmModule.forFeature([Session]),
     JwtModule,
     NotificationModule,
   ],
