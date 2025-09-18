@@ -32,7 +32,7 @@ import { ExtendedUserContextDto } from '../guards/dto/extended-user-context.dto'
 import { RefreshTokensCommand } from '../application/usecases/refresh-tokens.usecase';
 import { ExtractExtendedUserFromRequest } from '../guards/decorators/param/extract-extended-user-from-request.decorator';
 import { LogoutUserCommand } from '../application/usecases/logout-user.usecase';
-import { SkipThrottle, ThrottlerGuard } from '@nestjs/throttler';
+import { ConfirmEmailCodeDto } from '../dto/confirm-email-code.dto';
 
 @UseGuards(ThrottlerGuard)
 @Controller('auth')
@@ -92,7 +92,6 @@ export class AuthController {
     @ExtractExtendedUserFromRequest() user: ExtendedUserContextDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
-    // TODO: Вопрос по dto
     const result = await this.commandBus.execute(
       new RefreshTokensCommand(user),
     );
@@ -116,7 +115,7 @@ export class AuthController {
   @Post('registration-confirmation')
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationConfirmation(
-    @Body() body: { code: string },
+    @Body() body: ConfirmEmailCodeDto,
   ): Promise<void> {
     return this.commandBus.execute(new EmailConfirmationCommand(body));
   }

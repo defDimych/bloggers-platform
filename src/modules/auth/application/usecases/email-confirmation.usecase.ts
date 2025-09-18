@@ -2,9 +2,10 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
+import { ConfirmEmailCodeDto } from '../../dto/confirm-email-code.dto';
 
 export class EmailConfirmationCommand {
-  constructor(public dto: { code: string }) {}
+  constructor(public dto: ConfirmEmailCodeDto) {}
 }
 
 @CommandHandler(EmailConfirmationCommand)
@@ -13,7 +14,6 @@ export class EmailConfirmationUseCase
 {
   constructor(private usersRepository: UsersRepository) {}
   async execute({ dto }: EmailConfirmationCommand): Promise<void> {
-    // TODO: не понимаю, почему делаем это через юзера
     const user = await this.usersRepository.findUserByEmailConfirmationCode(
       dto.code,
     );
