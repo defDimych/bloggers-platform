@@ -41,7 +41,7 @@ export class RegistrationEmailResendingUseCase
 
     const confirmationCode: string = crypto.randomUUID();
 
-    user.confirmation.update(confirmationCode);
+    user.confirmation.updateConfirmationCodeAndExpiry(confirmationCode);
 
     await this.usersRepository.save(user);
 

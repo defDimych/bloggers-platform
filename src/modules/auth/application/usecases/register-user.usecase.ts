@@ -24,7 +24,7 @@ export class RegisterUserUseCase
 
     const confirmationCode: string = crypto.randomUUID();
 
-    user.confirmation.update(confirmationCode);
+    user.confirmation.updateConfirmationCodeAndExpiry(confirmationCode);
 
     await this.usersRepository.createUser(user);
 

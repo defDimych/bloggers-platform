@@ -34,7 +34,7 @@ export class EmailConfirmation extends BaseEntity {
     this.isConfirmed = true;
   }
 
-  update(confirmationCode: string) {
+  updateConfirmationCodeAndExpiry(confirmationCode: string) {
     this.confirmationCode = confirmationCode;
     this.expirationDate = add(new Date(), {
       minutes: 5,
