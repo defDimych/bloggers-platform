@@ -31,6 +31,7 @@ import { DeleteSessionUseCase } from './application/usecases/sessions/delete-ses
 import { DeleteSessionsExcludingCurrentUseCase } from './application/usecases/sessions/delete-sessions-excluding-current.usecase';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Session } from './entities/session.entity';
+import { User } from '../user-accounts/entities/user.entity';
 
 const useCases = [
   //TODO: Рефакторинг массива + файловая система
@@ -50,7 +51,7 @@ const useCases = [
 @Module({
   imports: [
     forwardRef(() => UserAccountsModule),
-    TypeOrmModule.forFeature([Session]),
+    TypeOrmModule.forFeature([Session, User]),
     JwtModule,
     NotificationModule,
   ],
