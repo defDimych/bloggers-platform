@@ -1,7 +1,6 @@
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   ManyToOne,
   PrimaryColumn,
@@ -39,8 +38,8 @@ export class Session {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn()
-  deletedAt?: Date;
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  deletedAt: Date | null;
 
   static create(dto: CreateSessionEntityDto): Session {
     const session = new this();
@@ -57,5 +56,12 @@ export class Session {
 
   updateIssueDate(iat: Date): void {
     this.issuedAt = iat;
+  }
+
+  makeDeleted(): void {
+    if (this.deletedAt !== null) {
+      throw new Error('Entity already deleted');
+    }
+    this.deletedAt = new Date();
   }
 }
