@@ -3,8 +3,7 @@ import { UsersRepository } from '../../../user-accounts/infrastructure/users.rep
 import { CryptoService } from './crypto.service';
 import { UserContextDto } from '../../guards/dto/user-context.dto';
 import { SessionsRepository } from '../../infrastructure/sessions.repository';
-import { PayloadRefreshToken } from '../../infrastructure/jwt.adapter';
-import { SessionDbModel } from '../../infrastructure/types/session-db-model.type';
+import { Session } from '../../entities/session.entity';
 
 @Injectable()
 export class AuthService {
@@ -36,13 +35,13 @@ export class AuthService {
     return { userId: user.id.toString() };
   }
 
-  async sessionExists(
-    dto: PayloadRefreshToken,
-  ): Promise<SessionDbModel | null> {
-    return this.sessionsRepository.findSession({
+  async getSessionByDeviceAndVersion(dto: {
+    deviceId: string;
+    iat: number;
+  }): Promise<Session | null> {
+    return this.sessionsRepository.findSessionByDeviceIdAndVersion({
       iat: new Date(dto.iat * 1000),
       deviceId: dto.deviceId,
-      userId: Number(dto.userId),
     });
   }
 }

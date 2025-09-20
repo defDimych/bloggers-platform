@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SessionsRepository } from '../../infrastructure/sessions.repository';
 
 export class LogoutUserCommand {
-  constructor(public readonly sessionId: string) {}
+  constructor(public readonly deviceId: string) {}
 }
 
 @CommandHandler(LogoutUserCommand)
@@ -11,7 +11,7 @@ export class LogoutUserUseCase
 {
   constructor(private sessionsRepository: SessionsRepository) {}
 
-  async execute({ sessionId }: LogoutUserCommand): Promise<void> {
-    await this.sessionsRepository.makeDeleted(Number(sessionId));
+  async execute({ deviceId }: LogoutUserCommand): Promise<void> {
+    await this.sessionsRepository.makeDeleted(deviceId);
   }
 }

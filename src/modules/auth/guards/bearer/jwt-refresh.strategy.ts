@@ -40,7 +40,10 @@ export class JwtRefreshStrategy extends PassportStrategy(
   async validate(
     payload: PayloadRefreshToken,
   ): Promise<ExtendedUserContextDto> {
-    const session = await this.authService.sessionExists(payload);
+    const session = await this.authService.getSessionByDeviceAndVersion({
+      deviceId: payload.deviceId,
+      iat: payload.iat,
+    });
 
     if (!session) {
       throw new DomainException({
@@ -50,9 +53,8 @@ export class JwtRefreshStrategy extends PassportStrategy(
     }
 
     return {
-      userId: payload.userId,
-      deviceId: payload.deviceId,
-      sessionId: session.id.toString(),
+      userId: session.userId.toString(),
+      deviceId: session.deviceId,
     };
   }
 }

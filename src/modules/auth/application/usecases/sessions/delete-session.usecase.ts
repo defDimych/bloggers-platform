@@ -14,7 +14,9 @@ export class DeleteSessionUseCase
   constructor(private sessionsRepository: SessionsRepository) {}
 
   async execute({ dto }: DeleteSessionCommand): Promise<void> {
-    const session = await this.sessionsRepository.findByDeviceId(dto.deviceId);
+    const session = await this.sessionsRepository.findSessionByDeviceId(
+      dto.deviceId,
+    );
 
     if (!session) {
       throw new DomainException({
@@ -30,6 +32,6 @@ export class DeleteSessionUseCase
       });
     }
 
-    await this.sessionsRepository.makeDeleted(session.id);
+    await this.sessionsRepository.makeDeleted(dto.deviceId);
   }
 }

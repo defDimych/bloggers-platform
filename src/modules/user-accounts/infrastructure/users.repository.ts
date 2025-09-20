@@ -21,7 +21,7 @@ export class UsersRepository {
   }
 
   async findUserByEmail(email: string): Promise<User | null> {
-    return await this.usersRepo.findOne({
+    return this.usersRepo.findOne({
       relations: {
         recovery: true,
         confirmation: true,
