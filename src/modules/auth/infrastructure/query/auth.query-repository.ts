@@ -1,19 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { MeViewDto } from '../../../user-accounts/api/view-dto/users.view-dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { UserDbModel } from '../../../user-accounts/types/user-db-model.type';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../../../user-accounts/entities/user.entity';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 @Injectable()
 export class AuthQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(User) private readonly usersRepo: Repository<User>,
+  ) {}
 
-  async me(userId: number): Promise<MeViewDto> {
-    const result = await this.dataSource.query<UserDbModel[]>(
-      `SELECT * FROM "Users" WHERE id = $1`,
-      [userId],
-    );
+  async getInfoAboutCurrentUserOrThrow(userId: number): Promise<MeViewDto> {
+    const user = await this.usersRepo.findOne({
+      where: { id: userId },
+      withDeleted: false,
+    });
 
-    return MeViewDto.mapToView(result[0]);
+    if (!user) {
+      throw new DomainException({
+        message: `user by id:${userId} not found`,
+        code: DomainExceptionCode.NotFound,
+      });
+    }
+
+    return MeViewDto.mapToView(user);
   }
 }
