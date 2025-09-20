@@ -4,5 +4,4 @@
 export class ExtendedUserContextDto {
   userId: string;
   deviceId: string;
-  sessionId: string;
 }
