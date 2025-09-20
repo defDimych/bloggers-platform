@@ -15,6 +15,7 @@ import { SessionsQueryRepository } from '../infrastructure/query/sessions.query-
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteSessionCommand } from '../application/usecases/sessions/delete-session.usecase';
 import { DeleteSessionsExcludingCurrentCommand } from '../application/usecases/sessions/delete-sessions-excluding-current.usecase';
+import { CustomParseUUIDPipe } from '../../../core/pipes/custom-parse-uuid.pipe';
 
 @Controller('security/devices')
 @UseGuards(JwtRefreshAuthGuard)
@@ -28,13 +29,15 @@ export class SecurityDevicesController {
   async getAllActiveSessions(
     @ExtractExtendedUserFromRequest() user: ExtendedUserContextDto,
   ): Promise<SessionsViewDto[]> {
-    return this.sessionsQueryRepository.getAll(Number(user.userId));
+    return this.sessionsQueryRepository.findAllSessionsByUserId(
+      Number(user.userId),
+    );
   }
 
   @Delete(':deviceId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(
-    @Param('deviceId') deviceId: string,
+    @Param('deviceId', CustomParseUUIDPipe) deviceId: string,
     @ExtractExtendedUserFromRequest() user: ExtendedUserContextDto,
   ): Promise<void> {
     return this.commandBus.execute(
