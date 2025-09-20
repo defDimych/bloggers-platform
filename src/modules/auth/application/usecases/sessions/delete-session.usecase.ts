@@ -32,6 +32,8 @@ export class DeleteSessionUseCase
       });
     }
 
-    await this.sessionsRepository.makeDeleted(dto.deviceId);
+    session.makeDeleted();
+
+    await this.sessionsRepository.save(session);
   }
 }

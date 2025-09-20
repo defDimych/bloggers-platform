@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MeViewDto } from '../../../user-accounts/api/view-dto/users.view-dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { User } from '../../../user-accounts/entities/user.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
@@ -14,8 +14,7 @@ export class AuthQueryRepository {
 
   async getInfoAboutCurrentUserOrThrow(userId: number): Promise<MeViewDto> {
     const user = await this.usersRepo.findOne({
-      where: { id: userId },
-      withDeleted: false,
+      where: { id: userId, deletedAt: IsNull() },
     });
 
     if (!user) {

@@ -26,7 +26,7 @@ export class RegisterUserUseCase
 
     user.confirmation.updateConfirmationCodeAndExpiry(confirmationCode);
 
-    await this.usersRepository.createUser(user);
+    await this.usersRepository.save(user);
 
     this.emailService
       .sendConfirmationEmail(dto.email, confirmationCode)

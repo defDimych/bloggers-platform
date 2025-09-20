@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { Session } from '../entities/session.entity';
 
 @Injectable()
@@ -12,13 +12,21 @@ export class SessionsRepository {
 
   async findSessionByDeviceId(deviceId: string): Promise<Session | null> {
     return this.sessionsRepo.findOne({
-      where: { deviceId },
-      withDeleted: false,
+      where: { deviceId, deletedAt: IsNull() },
     });
   }
 
-  async createSession(session: Session): Promise<void> {
-    await this.sessionsRepo.save(session);
+  async findUserSessionsExcludingCurrentOne(dto: {
+    deviceId: string;
+    userId: number;
+  }): Promise<Session[]> {
+    return this.sessionsRepo.find({
+      where: {
+        userId: dto.userId,
+        deviceId: Not(dto.deviceId),
+        deletedAt: IsNull(),
+      },
+    });
   }
 
   async makeDeletedAllUserSessionsExcludingCurrentOne(dto: {
@@ -36,13 +44,8 @@ export class SessionsRepository {
     deviceId: string;
   }): Promise<Session | null> {
     return this.sessionsRepo.findOne({
-      where: { issuedAt: dto.iat, deviceId: dto.deviceId },
-      withDeleted: false,
+      where: { issuedAt: dto.iat, deviceId: dto.deviceId, deletedAt: IsNull() },
     });
-  }
-
-  async makeDeleted(deviceId: string): Promise<void> {
-    await this.sessionsRepo.softDelete({ deviceId });
   }
 
   async save(session: Session): Promise<void> {

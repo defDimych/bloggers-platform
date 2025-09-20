@@ -41,7 +41,7 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
       expiresAt: new Date(decodedPayload.exp * 1000),
     });
 
-    await this.sessionsRepository.createSession(session);
+    await this.sessionsRepository.save(session);
 
     return {
       accessToken,

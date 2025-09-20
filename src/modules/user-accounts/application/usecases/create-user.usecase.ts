@@ -24,7 +24,7 @@ export class CreateUserUseCase
 
     user.confirmation.confirmEmail();
 
-    await this.usersRepository.createUser(user);
+    await this.usersRepository.save(user);
 
     return user.id;
   }

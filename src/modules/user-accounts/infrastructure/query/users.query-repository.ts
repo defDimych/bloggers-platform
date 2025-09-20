@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { ILike, IsNull, Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 
 @Injectable()
@@ -18,11 +18,21 @@ export class UsersQueryRepository {
     const where: any[] = [];
 
     if (queryParams.searchLoginTerm) {
-      where.push({ login: ILike(`%${queryParams.searchLoginTerm}%`) });
+      where.push({
+        login: ILike(`%${queryParams.searchLoginTerm}%`),
+        deletedAt: IsNull(),
+      });
     }
 
     if (queryParams.searchEmailTerm) {
-      where.push({ email: ILike(`%${queryParams.searchEmailTerm}%`) });
+      where.push({
+        email: ILike(`%${queryParams.searchEmailTerm}%`),
+        deletedAt: IsNull(),
+      });
+    }
+
+    if (!where.length) {
+      where.push({ deletedAt: IsNull() });
     }
 
     try {
@@ -52,8 +62,7 @@ export class UsersQueryRepository {
 
   async findUserById(id: number): Promise<UsersViewDto> {
     const user = await this.usersRepo.findOne({
-      where: { id: id },
-      withDeleted: false,
+      where: { id, deletedAt: IsNull() },
     });
 
     return UsersViewDto.mapToView(user!);

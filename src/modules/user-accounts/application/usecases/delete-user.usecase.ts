@@ -23,6 +23,8 @@ export class DeleteUserUseCase
       });
     }
 
-    await this.usersRepository.makeDeleted(user.id);
+    user.makeDeleted();
+
+    await this.usersRepository.save(user);
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 
 @Injectable()
@@ -9,14 +9,9 @@ export class UsersRepository {
     @InjectRepository(User) private readonly usersRepo: Repository<User>,
   ) {}
 
-  async makeDeleted(userId: number): Promise<void> {
-    await this.usersRepo.softDelete({ id: userId });
-  }
-
   async findUserById(id: number): Promise<User | null> {
     return await this.usersRepo.findOne({
-      where: { id },
-      withDeleted: false,
+      where: { id, deletedAt: IsNull() },
     });
   }
 
@@ -26,8 +21,7 @@ export class UsersRepository {
         recovery: true,
         confirmation: true,
       },
-      where: { email },
-      withDeleted: false,
+      where: { email, deletedAt: IsNull() },
     });
   }
 
@@ -61,27 +55,21 @@ export class UsersRepository {
     });
   }
 
-  async save(user: User): Promise<void> {
-    await this.usersRepo.save(user);
-  }
-
-  async createUser(user: User): Promise<void> {
-    await this.usersRepo.save(user);
-  }
-
   async findUserByLoginOrEmail(
     arg: string | { login: string; email: string },
   ): Promise<User | null> {
-    if (typeof arg === 'string') {
-      return this.usersRepo.findOne({
-        where: [{ login: arg }, { email: arg }],
-        withDeleted: false,
-      });
-    }
+    const login = typeof arg === 'string' ? arg : arg.login;
+    const email = typeof arg === 'string' ? arg : arg.email;
 
     return this.usersRepo.findOne({
-      where: [{ login: arg.login }, { email: arg.email }],
-      withDeleted: false,
+      where: [
+        { login, deletedAt: IsNull() },
+        { email, deletedAt: IsNull() },
+      ],
     });
+  }
+
+  async save(user: User): Promise<void> {
+    await this.usersRepo.save(user);
   }
 }
