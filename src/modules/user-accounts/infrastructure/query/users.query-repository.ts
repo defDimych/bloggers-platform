@@ -41,7 +41,6 @@ export class UsersQueryRepository {
         order: { [queryParams.sortBy]: queryParams.sortDirection },
         skip: queryParams.calculateSkip(),
         take: queryParams.pageSize,
-        withDeleted: false,
       });
 
       const items = result[0].map(UsersViewDto.mapToView);
