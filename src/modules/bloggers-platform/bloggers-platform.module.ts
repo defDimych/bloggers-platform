@@ -34,6 +34,8 @@ import { PostLikeRepository } from './likes/infrastructure/post-like.repository'
 import { CreatePostLikeUseCase } from './likes/application/usecases/posts/create-post-like.usecase';
 import { SuperAdminBlogsController } from './blogs/api/super-admin-blogs.controller';
 import { BlogsService } from './blogs/application/services/blogs.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Blog } from './blogs/entities/blog.entity';
 
 const useCases = [
   CreateBlogUseCase,
@@ -64,7 +66,7 @@ const queryRepository = [
 ];
 
 @Module({
-  imports: [AuthModule, UserAccountsModule],
+  imports: [AuthModule, UserAccountsModule, TypeOrmModule.forFeature([Blog])],
   controllers: [
     BlogsController,
     SuperAdminBlogsController,

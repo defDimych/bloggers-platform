@@ -1,10 +1,10 @@
 import { IsStringWithTrim } from '../../../../core/decorators/validation/is-string-with-trim';
+import { Matches, MaxLength } from 'class-validator';
 import {
   descriptionConstraints,
   nameConstraints,
   websiteUrlConstraints,
-} from '../domain/blog.entity';
-import { Matches, MaxLength } from 'class-validator';
+} from '../entities/blog.entity';
 
 export class CreateBlogDto {
   @IsStringWithTrim(2, nameConstraints.maxLength)

@@ -12,7 +12,7 @@ export class DeleteBlogUseCase implements ICommandHandler<DeleteBlogCommand> {
   constructor(private blogsRepository: BlogsRepository) {}
 
   async execute({ id }: DeleteBlogCommand): Promise<void> {
-    const blog = await this.blogsRepository.findBlogById(id);
+    const blog = await this.blogsRepository.findById(id);
 
     if (!blog) {
       throw new DomainException({
@@ -21,6 +21,8 @@ export class DeleteBlogUseCase implements ICommandHandler<DeleteBlogCommand> {
       });
     }
 
-    await this.blogsRepository.makeDeleted(blog.id);
+    blog.makeDeleted();
+
+    await this.blogsRepository.save(blog);
   }
 }

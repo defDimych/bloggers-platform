@@ -22,14 +22,14 @@ export class BlogsController {
   async getBlog(
     @Param('id', IdValidationTransformationPipe) id: number,
   ): Promise<BlogViewDto> {
-    return this.blogsQueryRepository.getByIdOrNotFoundFail(id);
+    return this.blogsQueryRepository.findBlogByIdOrNotFoundFail(id);
   }
 
   @Get()
   async getAllBlogs(
     @Query() query: getBlogsQueryParams,
   ): Promise<PaginatedViewDto<BlogViewDto[]>> {
-    return this.blogsQueryRepository.getAllBlogs(query);
+    return this.blogsQueryRepository.findAllBlogs(query);
   }
 
   @Get('/:blogId/posts')

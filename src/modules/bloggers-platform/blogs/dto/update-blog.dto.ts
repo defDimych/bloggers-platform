@@ -3,7 +3,7 @@ import {
   descriptionConstraints,
   nameConstraints,
   websiteUrlConstraints,
-} from '../domain/blog.entity';
+} from '../entities/blog.entity';
 import { Matches, MaxLength } from 'class-validator';
 
 export class UpdateBlogDto {

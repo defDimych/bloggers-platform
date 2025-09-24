@@ -48,7 +48,7 @@ export class SuperAdminBlogsController {
   async getAllBlogs(
     @Query() query: getBlogsQueryParams,
   ): Promise<PaginatedViewDto<BlogViewDto[]>> {
-    return this.blogsQueryRepository.getAllBlogs(query);
+    return this.blogsQueryRepository.findAllBlogs(query);
   }
 
   @Get('/:blogId/posts')
@@ -70,7 +70,7 @@ export class SuperAdminBlogsController {
   async createBlog(@Body() body: CreateBlogDto): Promise<BlogViewDto> {
     const blogId = await this.commandBus.execute(new CreateBlogCommand(body));
 
-    return this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
+    return this.blogsQueryRepository.findBlogByIdOrNotFoundFail(blogId);
   }
 
   @Post('/:blogId/posts')

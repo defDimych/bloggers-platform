@@ -16,7 +16,7 @@ export class UpdateBlogUseCase implements ICommandHandler<UpdateBlogCommand> {
   constructor(private blogsRepository: BlogsRepository) {}
 
   async execute({ dto, id }: UpdateBlogCommand): Promise<void> {
-    const blog = await this.blogsRepository.findBlogById(id);
+    const blog = await this.blogsRepository.findById(id);
 
     if (!blog) {
       throw new DomainException({
@@ -25,11 +25,8 @@ export class UpdateBlogUseCase implements ICommandHandler<UpdateBlogCommand> {
       });
     }
 
-    await this.blogsRepository.updateBlog({
-      id: blog.id,
-      name: dto.name,
-      description: dto.description,
-      websiteUrl: dto.websiteUrl,
-    });
+    blog.update(dto);
+
+    await this.blogsRepository.save(blog);
   }
 }
