@@ -7,7 +7,7 @@ import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository'
 export class DeletePostCommand {
   constructor(
     public postId: number,
-    public blogId?: number | undefined,
+    public blogId: number,
   ) {}
 }
 
@@ -19,15 +19,13 @@ export class DeletePostUseCase implements ICommandHandler<DeletePostCommand> {
   ) {}
 
   async execute({ blogId, postId }: DeletePostCommand): Promise<void> {
-    if (blogId) {
-      const blog = await this.blogsRepository.findBlogById(blogId);
+    const blog = await this.blogsRepository.findById(blogId);
 
-      if (!blog) {
-        throw new DomainException({
-          message: `Blog by id:${blogId} not found!`,
-          code: DomainExceptionCode.NotFound,
-        });
-      }
+    if (!blog) {
+      throw new DomainException({
+        message: `Blog by id:${blogId} not found!`,
+        code: DomainExceptionCode.NotFound,
+      });
     }
 
     const post = await this.postsRepository.findPostById(postId);
