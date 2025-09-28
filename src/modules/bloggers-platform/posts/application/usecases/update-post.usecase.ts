@@ -17,7 +17,7 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
   ) {}
 
   async execute({ dto }: UpdatePostCommand): Promise<void> {
-    const blog = await this.blogsRepository.findBlogById(dto.blogId);
+    const blog = await this.blogsRepository.findById(dto.blogId);
 
     if (!blog) {
       throw new DomainException({
@@ -26,7 +26,7 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
       });
     }
 
-    const post = await this.postsRepository.findPostById(dto.postId);
+    const post = await this.postsRepository.findById(dto.postId);
 
     if (!post) {
       throw new DomainException({
@@ -35,12 +35,12 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
       });
     }
 
-    await this.postsRepository.updatePost({
-      postId: post.id,
-      blogId: blog.id,
-      content: dto.content,
+    post.update({
       title: dto.title,
       shortDescription: dto.shortDescription,
+      content: dto.content,
     });
+
+    await this.postsRepository.save(post);
   }
 }

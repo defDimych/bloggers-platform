@@ -28,7 +28,7 @@ export class DeletePostUseCase implements ICommandHandler<DeletePostCommand> {
       });
     }
 
-    const post = await this.postsRepository.findPostById(postId);
+    const post = await this.postsRepository.findById(postId);
 
     if (!post) {
       throw new DomainException({
@@ -37,6 +37,8 @@ export class DeletePostUseCase implements ICommandHandler<DeletePostCommand> {
       });
     }
 
-    await this.postsRepository.makeDeleted(post.id);
+    post.makeDeleted();
+
+    await this.postsRepository.save(post);
   }
 }

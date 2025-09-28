@@ -36,6 +36,7 @@ import { SuperAdminBlogsController } from './blogs/api/super-admin-blogs.control
 import { BlogsService } from './blogs/application/services/blogs.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Blog } from './blogs/entities/blog.entity';
+import { Post } from './posts/entities/post.entity';
 
 const useCases = [
   CreateBlogUseCase,
@@ -66,7 +67,11 @@ const queryRepository = [
 ];
 
 @Module({
-  imports: [AuthModule, UserAccountsModule, TypeOrmModule.forFeature([Blog])],
+  imports: [
+    AuthModule,
+    UserAccountsModule,
+    TypeOrmModule.forFeature([Blog, Post]),
+  ],
   controllers: [
     BlogsController,
     SuperAdminBlogsController,

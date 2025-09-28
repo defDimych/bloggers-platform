@@ -3,7 +3,7 @@ import {
   contentConstraints,
   shortDescriptionConstraints,
   titleConstraints,
-} from '../../../posts/domain/post.entity';
+} from '../../../posts/entities/post.entity';
 
 export class CreatePostForBlogInputDto {
   @IsStringWithTrim(titleConstraints.minLength, titleConstraints.maxLength)

@@ -1,9 +1,9 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsNumber } from 'class-validator';
 
 export enum SortDirection {
-  Asc = 'asc',
-  Desc = 'desc',
+  Asc = 'ASC',
+  Desc = 'DESC',
 }
 
 export class BaseQueryParams {
@@ -15,6 +15,9 @@ export class BaseQueryParams {
   @IsNumber()
   pageSize: number = 10;
 
+  @Transform(({ value }: { value: string | undefined }) =>
+    value ? value.toUpperCase() : undefined,
+  )
   @IsEnum(SortDirection)
   sortDirection: SortDirection = SortDirection.Desc;
 

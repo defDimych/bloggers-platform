@@ -1,5 +1,4 @@
-export class CreatePostRepoDto {
-  blogId: number;
+export class UpdatePostEntityDto {
   title: string;
   shortDescription: string;
   content: string;

@@ -4,7 +4,7 @@ import {
   contentConstraints,
   shortDescriptionConstraints,
   titleConstraints,
-} from '../../domain/post.entity';
+} from '../../entities/post.entity';
 
 export class UpdatePostInputDto {
   @IsNumber()

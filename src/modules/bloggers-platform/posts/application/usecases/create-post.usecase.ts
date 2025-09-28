@@ -4,6 +4,7 @@ import { CreatePostDto } from '../../dto/create-post.dto';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
+import { Post } from '../../entities/post.entity';
 
 export class CreatePostCommand extends Command<number> {
   constructor(public dto: CreatePostDto) {
@@ -20,7 +21,7 @@ export class CreatePostUseCase
     private postsRepository: PostsRepository,
   ) {}
   async execute({ dto }: CreatePostCommand): Promise<number> {
-    const blog = await this.blogsRepository.findBlogById(dto.blogId);
+    const blog = await this.blogsRepository.findById(dto.blogId);
 
     if (!blog) {
       throw new DomainException({
@@ -29,11 +30,15 @@ export class CreatePostUseCase
       });
     }
 
-    return this.postsRepository.createPost({
-      blogId: dto.blogId,
+    const post = Post.create({
+      blogId: blog.id,
       title: dto.title,
       shortDescription: dto.shortDescription,
       content: dto.content,
     });
+
+    await this.postsRepository.save(post);
+
+    return post.id;
   }
 }

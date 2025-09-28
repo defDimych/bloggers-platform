@@ -1,10 +1,10 @@
 import { IsStringWithTrim } from '../../../../core/decorators/validation/is-string-with-trim';
+import { IsNumber } from 'class-validator';
 import {
   contentConstraints,
   shortDescriptionConstraints,
   titleConstraints,
-} from '../domain/post.entity';
-import { IsNumber } from 'class-validator';
+} from '../entities/post.entity';
 
 export class CreatePostDto {
   @IsStringWithTrim(titleConstraints.minLength, titleConstraints.maxLength)

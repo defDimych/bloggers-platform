@@ -1,17 +1,116 @@
 import { PostViewDto } from '../../api/view-dto/posts.view-dto';
 import { Injectable } from '@nestjs/common';
-import { getPostsQueryParams } from '../../api/input-dto/get-posts-query-params.input-dto';
-import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
-import { LikeStatus } from '../../../common/types/like-status.enum';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { PostWithBlogNameAndExtendedLikesInfo } from '../types/post-db.types';
+import { Post } from '../../entities/post.entity';
+import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
+import { getPostsQueryParams } from '../../api/input-dto/get-posts-query-params.input-dto';
+import { PostWithBlogNameRaw } from './post-with-blog-name-raw.type';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
+
+  async findPostByIdOrNotFoundFail(
+    postId: number,
+    userId?: number | null,
+  ): Promise<PostViewDto> {
+    const rawPost = await this.dataSource
+      .getRepository(Post)
+      .createQueryBuilder('p')
+      .select([
+        'p.id as id',
+        'p."blogId" as "blogId"',
+        'p.title as title',
+        'p."shortDescription" as "shortDescription"',
+        'p.content as content',
+        'p."createdAt" as "createdAt"',
+        'p."updatedAt" as "updatedAt"',
+        'p."deletedAt" as "deletedAt"',
+        'b.name as "blogName"',
+      ])
+      .leftJoin('p.blog', 'b')
+      .where('p.id = :postId', { postId })
+      .andWhere('p.deletedAt IS NULL')
+      .getRawOne<PostWithBlogNameRaw>();
+
+    if (!rawPost) {
+      throw new DomainException({
+        message: `post by id:${postId} not found`,
+        code: DomainExceptionCode.NotFound,
+      });
+    }
+
+    return PostViewDto.mapToView(rawPost);
+  }
+
+  async getAllPostsWithOptionalBlogId(dto: {
+    queryParams: getPostsQueryParams;
+    userId: number | null;
+    blogId?: number;
+  }): Promise<PaginatedViewDto<PostViewDto[]>> {
+    const filter = dto.blogId
+      ? 'p.blogId = :blogId AND p.deletedAt IS NULL'
+      : 'p.deletedAt IS NULL';
+
+    const param = dto.blogId ? { blogId: dto.blogId } : {};
+
+    try {
+      const rawPostsPromise: Promise<PostWithBlogNameRaw[]> = this.dataSource
+        .getRepository(Post)
+        .createQueryBuilder('p')
+        .select([
+          'p.id as id',
+          'p."blogId" as "blogId"',
+          'p.title as title',
+          'p."shortDescription" as "shortDescription"',
+          'p.content as content',
+          'p."createdAt" as "createdAt"',
+          'p."updatedAt" as "updatedAt"',
+          'p."deletedAt" as "deletedAt"',
+          'b.name as "blogName"',
+        ])
+        .leftJoin('p.blog', 'b')
+        .where(filter, param)
+        .orderBy(
+          `"${dto.queryParams.sortBy}"`,
+          `${dto.queryParams.sortDirection}`,
+        )
+        .limit(dto.queryParams.pageSize)
+        .offset(dto.queryParams.calculateSkip())
+        .getRawMany<PostWithBlogNameRaw>();
+
+      const totalCountPromise: Promise<number> = this.dataSource
+        .getRepository(Post)
+        .createQueryBuilder('p')
+        .where(filter, param)
+        .getCount();
+
+      const [rawPosts, totalCount] = await Promise.all([
+        rawPostsPromise,
+        totalCountPromise,
+      ]);
+
+      const items = rawPosts.map(PostViewDto.mapToView);
+
+      return PaginatedViewDto.mapToView({
+        items,
+        totalCount,
+        page: dto.queryParams.pageNumber,
+        size: dto.queryParams.pageSize,
+      });
+    } catch (e) {
+      console.log(
+        `GET query repository, getAllPosts : ${JSON.stringify(e, null, 2)}`,
+      );
+      throw new Error(`some error`);
+    }
+  }
+
+  /* Example: raw SQL query to fetch all posts with blog name and extended likes info.
+  Supports optional blogId filter, pagination, and sorting.
 
   async getAllPostsWithOptionalBlogId(dto: {
     queryParams: getPostsQueryParams;
@@ -117,6 +216,10 @@ FROM "Posts" p;`,
       throw new Error(`some error`);
     }
   }
+   */
+
+  /*
+  Example: raw SQL query to fetch post with blog name and extended likes info.
 
   async findPostByIdOrNotFoundFail(
     postId: number,
@@ -189,4 +292,5 @@ WHERE p.id = $2
 
     return PostViewDto.mapToView(result[0]);
   }
+   */
 }
