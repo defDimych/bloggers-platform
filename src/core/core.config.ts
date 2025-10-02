@@ -33,6 +33,18 @@ export class CoreConfig {
   })
   postgresPassword: string;
 
+  @IsBoolean({
+    message:
+      'Set Env variable DB_AUTOSYNC to enable/disable dangerous for most environments, example: true, available values: [true, false, 0, 1, enabled, disabled]',
+  })
+  dbAutosync: boolean;
+
+  @IsBoolean({
+    message:
+      'Set Env variable DB_LOGGING_LEVEL to enable/disable, example: true, available values: [true, false, 0, 1, enabled, disabled]',
+  })
+  dbLoggingLevel: boolean;
+
   @IsNumber({}, { message: 'Set valid Env variable PORT, example: 3000' })
   @Min(1, { message: 'Set Env variable PORT, example: 3000' })
   port: number;
@@ -62,6 +74,14 @@ export class CoreConfig {
     this.postgresUserName = this.configService.get('POSTGRES_USERNAME');
     this.postgresPassword = this.configService.get('POSTGRES_PASSWORD');
     this.port = Number(this.configService.get('PORT'));
+
+    this.dbLoggingLevel = configValidationUtility.convertToBoolean(
+      this.configService.get('DB_LOGGING_LEVEL'),
+    ) as boolean;
+
+    this.dbAutosync = configValidationUtility.convertToBoolean(
+      this.configService.get('DB_AUTOSYNC'),
+    ) as boolean;
 
     this.includeTestingModule = configValidationUtility.convertToBoolean(
       this.configService.get('INCLUDE_TESTING_MODULE'),
