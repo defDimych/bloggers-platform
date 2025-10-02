@@ -64,7 +64,7 @@ export class PostsController {
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {
     await this.postsService.checkPostExistsOrThrow(postId);
 
-    return this.commentsQueryRepository.getAllCommentsForPost({
+    return this.commentsQueryRepository.findAllCommentsForPost({
       queryParams: query,
       userId: userId,
       postId: postId,
@@ -86,7 +86,7 @@ export class PostsController {
       }),
     );
 
-    return this.commentsQueryRepository.getCommentByIdOrNotFoundFail({
+    return this.commentsQueryRepository.findCommentByIdOrNotFoundFail({
       commentId,
       userId: Number(user.userId),
     });

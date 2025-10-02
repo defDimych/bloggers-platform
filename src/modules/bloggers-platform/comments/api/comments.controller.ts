@@ -38,7 +38,7 @@ export class CommentsController {
     @Param('id', IdValidationTransformationPipe) id: number,
     @OptionalUserIdFromRequest() userId: number | null,
   ): Promise<CommentViewDto> {
-    return this.commentsQueryRepository.getCommentByIdOrNotFoundFail({
+    return this.commentsQueryRepository.findCommentByIdOrNotFoundFail({
       commentId: id,
       userId: userId,
     });

@@ -37,6 +37,7 @@ import { BlogsService } from './blogs/application/services/blogs.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Blog } from './blogs/entities/blog.entity';
 import { Post } from './posts/entities/post.entity';
+import { Comment } from './comments/entities/comment.entity';
 
 const useCases = [
   CreateBlogUseCase,
@@ -70,7 +71,7 @@ const queryRepository = [
   imports: [
     AuthModule,
     UserAccountsModule,
-    TypeOrmModule.forFeature([Blog, Post]),
+    TypeOrmModule.forFeature([Blog, Post, Comment]),
   ],
   controllers: [
     BlogsController,

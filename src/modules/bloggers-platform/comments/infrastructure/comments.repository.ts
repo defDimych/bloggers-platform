@@ -1,12 +1,22 @@
-import { CommentDocument } from '../domain/comment.entity';
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
 import { CommentDbModel } from './types/comment-db.types';
+import { Comment } from '../entities/comment.entity';
 
 @Injectable()
 export class CommentsRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Comment)
+    private readonly commentsRepo: Repository<Comment>,
+  ) {}
+
+  async findById(id: number): Promise<Comment | null> {
+    return this.commentsRepo.findOne({
+      where: { id, deletedAt: IsNull() },
+    });
+  }
 
   async findCommentById(id: number): Promise<CommentDbModel | null> {
     const result = await this.dataSource.query<CommentDbModel[]>(
@@ -22,46 +32,7 @@ export class CommentsRepository {
     return result.length === 1 ? result[0] : null;
   }
 
-  async createComment(dto: {
-    userId: number;
-    postId: number;
-    content: string;
-  }): Promise<number> {
-    const result = await this.dataSource.query<{ id: number }[]>(
-      `
-  INSERT INTO "Comments" ("userId", "postId", content)
-  VALUES ($1, $2, $3)
-  RETURNING id
-  `,
-      [dto.userId, dto.postId, dto.content],
-    );
-
-    return result[0].id;
-  }
-
-  async updateComment(id: number, content: string): Promise<void> {
-    await this.dataSource.query(
-      `
-  UPDATE "Comments"
-  SET content = $1
-  WHERE id = $2
-    AND "deletedAt" IS NULL;
-  `,
-      [content, id],
-    );
-  }
-
-  async makeDeleted(id: number): Promise<void> {
-    await this.dataSource.query(
-      `
-      UPDATE "Comments"
-      SET "deletedAt" = NOW()
-      WHERE id = $1;`,
-      [id],
-    );
-  }
-
-  async save(comment: CommentDocument): Promise<void> {
-    await comment.save();
+  async save(comment: Comment): Promise<void> {
+    await this.commentsRepo.save(comment);
   }
 }

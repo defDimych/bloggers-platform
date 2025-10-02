@@ -15,9 +15,7 @@ export class UpdateCommentUseCase
   constructor(private commentsRepository: CommentsRepository) {}
 
   async execute({ dto }: UpdateCommentCommand): Promise<void> {
-    const comment = await this.commentsRepository.findCommentById(
-      dto.commentId,
-    );
+    const comment = await this.commentsRepository.findById(dto.commentId);
 
     if (!comment) {
       throw new DomainException({
@@ -33,6 +31,8 @@ export class UpdateCommentUseCase
       });
     }
 
-    await this.commentsRepository.updateComment(comment.id, dto.content);
+    comment.updateContent(dto.content);
+
+    await this.commentsRepository.save(comment);
   }
 }

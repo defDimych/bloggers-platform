@@ -1,5 +1,6 @@
 import { LikeStatus } from '../../../common/types/like-status.enum';
 import { CommentWithUserLoginAndLikesInfo } from '../../infrastructure/types/comment-db.types';
+import { CommentWithUserLoginRaw } from '../../infrastructure/query/comment-with-user-login-raw.type';
 
 type CommentatorInfo = {
   userId: string;
@@ -18,6 +19,25 @@ export class CommentViewDto {
   commentatorInfo: CommentatorInfo;
   createdAt: string;
   likesInfo: LikesInfo;
+
+  static mapToViewWithDefaultLikesInfo = (raw: CommentWithUserLoginRaw) => {
+    const viewDto = new CommentViewDto();
+
+    viewDto.id = raw.id.toString();
+    viewDto.content = raw.content;
+    viewDto.commentatorInfo = {
+      userId: raw.userId.toString(),
+      userLogin: raw.userLogin,
+    };
+    viewDto.createdAt = raw.createdAt.toISOString();
+    viewDto.likesInfo = {
+      likesCount: 0,
+      dislikesCount: 0,
+      myStatus: LikeStatus.None,
+    };
+
+    return viewDto;
+  };
 
   static mapToView = (
     comment: CommentWithUserLoginAndLikesInfo,

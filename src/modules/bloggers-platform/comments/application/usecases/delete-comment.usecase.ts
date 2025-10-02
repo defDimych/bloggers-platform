@@ -15,9 +15,7 @@ export class DeleteCommentUseCase
   constructor(private commentsRepository: CommentsRepository) {}
 
   async execute({ dto }: DeleteCommentCommand): Promise<void> {
-    const comment = await this.commentsRepository.findCommentById(
-      dto.commentId,
-    );
+    const comment = await this.commentsRepository.findById(dto.commentId);
 
     if (!comment) {
       throw new DomainException({
@@ -33,6 +31,8 @@ export class DeleteCommentUseCase
       });
     }
 
-    await this.commentsRepository.makeDeleted(comment.id);
+    comment.makeDeleted();
+
+    await this.commentsRepository.save(comment);
   }
 }

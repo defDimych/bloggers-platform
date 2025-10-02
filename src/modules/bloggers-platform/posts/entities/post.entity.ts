@@ -1,8 +1,9 @@
 import { BaseEntity } from '../../../../core/entities/base.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { Blog } from '../../blogs/entities/blog.entity';
 import { CreatePostEntityDto } from './dto/create-post.entity-dto';
 import { UpdatePostEntityDto } from './dto/update-post.entity-dto';
+import { Comment } from '../../comments/entities/comment.entity';
 
 export const titleConstraints = {
   minLength: 2,
@@ -21,6 +22,9 @@ export const contentConstraints = {
 export class Post extends BaseEntity {
   @ManyToOne(() => Blog, (blog) => blog.posts)
   blog: Blog;
+
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments: Comment[];
 
   @Column()
   blogId: number;
