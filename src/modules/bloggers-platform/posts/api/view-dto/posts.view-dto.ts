@@ -1,5 +1,5 @@
 import { LikeStatus } from '../../../common/types/like-status.enum';
-import { PostWithBlogNameRaw } from '../../infrastructure/query/post-with-blog-name-raw.type';
+import { PostWithBlogNameAndExtendedLikesInfoRaw } from '../../infrastructure/query/post-with-blog-name-raw.type';
 
 type LikeInfo = {
   userId: string;
@@ -24,7 +24,9 @@ export class PostViewDto {
   createdAt: string;
   extendedLikesInfo: ExtendedLikesInfo;
 
-  static mapToView = (raw: PostWithBlogNameRaw): PostViewDto => {
+  static mapToView = (
+    raw: PostWithBlogNameAndExtendedLikesInfoRaw,
+  ): PostViewDto => {
     const viewDto = new PostViewDto();
 
     viewDto.id = raw.id.toString();
@@ -35,10 +37,18 @@ export class PostViewDto {
     viewDto.blogName = raw.blogName;
     viewDto.createdAt = raw.createdAt.toISOString();
     viewDto.extendedLikesInfo = {
-      likesCount: 0,
-      dislikesCount: 0,
-      myStatus: LikeStatus.None,
-      newestLikes: [],
+      likesCount: raw.likesCount,
+      dislikesCount: raw.dislikesCount,
+      myStatus: raw.myStatus ? raw.myStatus : LikeStatus.None,
+      newestLikes: raw.newestLikes
+        ? raw.newestLikes.map((l) => {
+            return {
+              userId: l.userId.toString(),
+              login: l.login,
+              addedAt: l.addedAt,
+            };
+          })
+        : [],
     };
 
     return viewDto;

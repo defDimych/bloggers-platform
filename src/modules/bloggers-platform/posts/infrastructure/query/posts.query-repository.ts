@@ -3,21 +3,95 @@ import { Injectable } from '@nestjs/common';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { DataSource, SelectQueryBuilder } from 'typeorm';
 import { Post } from '../../entities/post.entity';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { getPostsQueryParams } from '../../api/input-dto/get-posts-query-params.input-dto';
-import { PostWithBlogNameRaw } from './post-with-blog-name-raw.type';
+import { PostWithBlogNameAndExtendedLikesInfoRaw } from './post-with-blog-name-raw.type';
+import { LikeStatus } from '../../../common/types/like-status.enum';
+import { PostLike } from '../../../likes/entities/post-like.entity';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
+  private buildLikesCountSubquery() {
+    return (sq: SelectQueryBuilder<PostLike>) => {
+      return sq
+        .select('COUNT(*) ::int')
+        .from(PostLike, 'pl')
+        .where('pl."postId" = p.id')
+        .andWhere(`pl.status = '${LikeStatus.Like}'`);
+    };
+  }
+
+  private buildDislikesCountSubquery() {
+    return (sq: SelectQueryBuilder<PostLike>) => {
+      return sq
+        .select('COUNT(*) ::int')
+        .from(PostLike, 'pl')
+        .where('pl."postId" = p.id')
+        .andWhere(`pl.status = '${LikeStatus.Dislike}'`);
+    };
+  }
+
+  private buildMyStatusSubquery(userId: number) {
+    return (sq: SelectQueryBuilder<PostLike>) => {
+      return sq
+        .select('pl.status')
+        .from(PostLike, 'pl')
+        .where('pl."postId" = p.id')
+        .andWhere('pl."userId" = :userId', { userId });
+    };
+  }
+
+  private buildPostLikesWithRowNumberSubquery() {
+    return this.dataSource
+      .getRepository(PostLike)
+      .createQueryBuilder('pl')
+      .select([
+        'pl."userId" as "userId"',
+        'pl."postId" as "postId"',
+        'pl."createdAt" as "createdAt"',
+        'pl.status as status',
+        'u.login as "userLogin"',
+        'ROW_NUMBER() OVER(PARTITION BY pl."postId" ORDER BY pl."createdAt" DESC) AS "rowNumber"',
+      ])
+      .leftJoin('pl.user', 'u');
+  }
+
+  private buildNewestLikesSubquery() {
+    return (sq: SelectQueryBuilder<any>) => {
+      return sq
+        .select(
+          `
+          jsonb_agg(
+            json_build_object(
+              'addedAt', "createdAt",
+              'userId', "userId",
+              'login', "userLogin"
+            )
+          )
+        `,
+        )
+        .from(
+          `(${this.buildPostLikesWithRowNumberSubquery().getQuery()})`,
+          'numberedPostLikes',
+        )
+        .where('"numberedPostLikes"."postId" = p.id')
+        .andWhere(`"numberedPostLikes".status = '${LikeStatus.Like}'`)
+        .andWhere('"numberedPostLikes"."rowNumber" BETWEEN :from AND :to', {
+          from: 1,
+          to: 3,
+        });
+    };
+  }
+
   async findPostByIdOrNotFoundFail(
     postId: number,
     userId?: number | null,
   ): Promise<PostViewDto> {
-    const rawPost = await this.dataSource
+    const builder = this.dataSource
       .getRepository(Post)
       .createQueryBuilder('p')
       .select([
@@ -31,10 +105,21 @@ export class PostsQueryRepository {
         'p."deletedAt" as "deletedAt"',
         'b.name as "blogName"',
       ])
+      .addSelect(this.buildLikesCountSubquery(), 'likesCount')
+      .addSelect(this.buildDislikesCountSubquery(), 'dislikesCount')
+      .addSelect(this.buildNewestLikesSubquery(), 'newestLikes');
+
+    if (userId) {
+      builder.addSelect(this.buildMyStatusSubquery(userId), 'myStatus');
+    }
+
+    builder
       .leftJoin('p.blog', 'b')
       .where('p.id = :postId', { postId })
-      .andWhere('p.deletedAt IS NULL')
-      .getRawOne<PostWithBlogNameRaw>();
+      .andWhere('p.deletedAt IS NULL');
+
+    const rawPost =
+      await builder.getRawOne<PostWithBlogNameAndExtendedLikesInfoRaw>();
 
     if (!rawPost) {
       throw new DomainException({
@@ -58,7 +143,7 @@ export class PostsQueryRepository {
     const param = dto.blogId ? { blogId: dto.blogId } : {};
 
     try {
-      const rawPostsPromise: Promise<PostWithBlogNameRaw[]> = this.dataSource
+      const builder = this.dataSource
         .getRepository(Post)
         .createQueryBuilder('p')
         .select([
@@ -72,6 +157,15 @@ export class PostsQueryRepository {
           'p."deletedAt" as "deletedAt"',
           'b.name as "blogName"',
         ])
+        .addSelect(this.buildLikesCountSubquery(), 'likesCount')
+        .addSelect(this.buildDislikesCountSubquery(), 'dislikesCount')
+        .addSelect(this.buildNewestLikesSubquery(), 'newestLikes');
+
+      if (dto.userId) {
+        builder.addSelect(this.buildMyStatusSubquery(dto.userId), 'myStatus');
+      }
+
+      builder
         .leftJoin('p.blog', 'b')
         .where(filter, param)
         .orderBy(
@@ -79,8 +173,10 @@ export class PostsQueryRepository {
           `${dto.queryParams.sortDirection}`,
         )
         .limit(dto.queryParams.pageSize)
-        .offset(dto.queryParams.calculateSkip())
-        .getRawMany<PostWithBlogNameRaw>();
+        .offset(dto.queryParams.calculateSkip());
+
+      const rawPostsPromise =
+        builder.getRawMany<PostWithBlogNameAndExtendedLikesInfoRaw>();
 
       const totalCountPromise: Promise<number> = this.dataSource
         .getRepository(Post)

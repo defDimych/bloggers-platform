@@ -3,7 +3,7 @@ import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentsRepository } from '../../../../comments/infrastructure/comments.repository';
 import { DomainException } from '../../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../../core/exceptions/domain-exception-codes';
-import { CommentLikeRepository } from '../../../infrastructure/comment-like.repository';
+import { CommentsLikesRepository } from '../../../infrastructure/comments-likes.repository';
 import { CreateCommentLikeCommand } from './create-comment-like.usecase';
 
 export class UpdateCommentLikeStatusCommand {
@@ -16,13 +16,11 @@ export class UpdateCommentLikeStatusUseCase
 {
   constructor(
     private commentsRepository: CommentsRepository,
-    private commentLikeRepository: CommentLikeRepository,
+    private commentsLikesRepository: CommentsLikesRepository,
     private commandBus: CommandBus,
   ) {}
   async execute({ dto }: UpdateCommentLikeStatusCommand): Promise<void> {
-    const comment = await this.commentsRepository.findCommentById(
-      dto.commentId,
-    );
+    const comment = await this.commentsRepository.findById(dto.commentId);
 
     if (!comment) {
       throw new DomainException({
@@ -31,7 +29,7 @@ export class UpdateCommentLikeStatusUseCase
       });
     }
 
-    const like = await this.commentLikeRepository.findCommentLike({
+    const like = await this.commentsLikesRepository.findLike({
       commentId: comment.id,
       userId: Number(dto.userId),
     });
@@ -45,9 +43,8 @@ export class UpdateCommentLikeStatusUseCase
       return;
     }
 
-    await this.commentLikeRepository.updateCommentLikeStatus({
-      likeId: like.id,
-      likeStatus: dto.likeStatus,
-    });
+    like.updateLikeStatus(dto.likeStatus);
+
+    await this.commentsLikesRepository.save(like);
   }
 }

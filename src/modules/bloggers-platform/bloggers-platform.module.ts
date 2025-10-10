@@ -22,7 +22,7 @@ import { CommentsQueryRepository } from './comments/infrastructure/query/comment
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
 import { CommentsController } from './comments/api/comments.controller';
 import { UpdateCommentLikeStatusUseCase } from './likes/application/usecases/comments/update-comment-like-status.usecase';
-import { CommentLikeRepository } from './likes/infrastructure/comment-like.repository';
+import { CommentsLikesRepository } from './likes/infrastructure/comments-likes.repository';
 import { CreateCommentLikeUseCase } from './likes/application/usecases/comments/create-comment-like.usecase';
 import { UpdateCommentUseCase } from './comments/application/usecases/update-comment.usecase';
 import { TryExtractUserIdMiddleware } from './common/middleware/try-extract-user-id.middleware';
@@ -30,7 +30,7 @@ import { AuthModule } from '../auth/auth.module';
 import { PostsService } from './posts/application/posts.service';
 import { DeleteCommentUseCase } from './comments/application/usecases/delete-comment.usecase';
 import { UpdatePostLikeStatusUseCase } from './likes/application/usecases/posts/update-post-like-status.usecase';
-import { PostLikeRepository } from './likes/infrastructure/post-like.repository';
+import { PostsLikesRepository } from './likes/infrastructure/posts-likes.repository';
 import { CreatePostLikeUseCase } from './likes/application/usecases/posts/create-post-like.usecase';
 import { SuperAdminBlogsController } from './blogs/api/super-admin-blogs.controller';
 import { BlogsService } from './blogs/application/services/blogs.service';
@@ -38,6 +38,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Blog } from './blogs/entities/blog.entity';
 import { Post } from './posts/entities/post.entity';
 import { Comment } from './comments/entities/comment.entity';
+import { CommentLike } from './likes/entities/comment-like.entity';
+import { PostLike } from './likes/entities/post-like.entity';
 
 const useCases = [
   CreateBlogUseCase,
@@ -58,8 +60,8 @@ const repository = [
   BlogsRepository,
   PostsRepository,
   CommentsRepository,
-  CommentLikeRepository,
-  PostLikeRepository,
+  CommentsLikesRepository,
+  PostsLikesRepository,
 ];
 const queryRepository = [
   BlogsQueryRepository,
@@ -71,7 +73,7 @@ const queryRepository = [
   imports: [
     AuthModule,
     UserAccountsModule,
-    TypeOrmModule.forFeature([Blog, Post, Comment]),
+    TypeOrmModule.forFeature([Blog, Post, Comment, CommentLike, PostLike]),
   ],
   controllers: [
     BlogsController,

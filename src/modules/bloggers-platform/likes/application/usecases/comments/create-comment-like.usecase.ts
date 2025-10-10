@@ -1,6 +1,7 @@
 import { CreateCommentLikeDto } from './dto/create-comment-like.dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CommentLikeRepository } from '../../../infrastructure/comment-like.repository';
+import { CommentsLikesRepository } from '../../../infrastructure/comments-likes.repository';
+import { CommentLike } from '../../../entities/comment-like.entity';
 
 export class CreateCommentLikeCommand {
   constructor(public dto: CreateCommentLikeDto) {}
@@ -10,13 +11,15 @@ export class CreateCommentLikeCommand {
 export class CreateCommentLikeUseCase
   implements ICommandHandler<CreateCommentLikeCommand>
 {
-  constructor(private commentLikeRepository: CommentLikeRepository) {}
+  constructor(private commentsLikesRepository: CommentsLikesRepository) {}
 
   async execute({ dto }: CreateCommentLikeCommand): Promise<void> {
-    await this.commentLikeRepository.createCommentLike({
-      commentId: dto.commentId,
+    const commentLike = CommentLike.create({
       userId: Number(dto.userId),
+      commentId: dto.commentId,
       likeStatus: dto.likeStatus,
     });
+
+    await this.commentsLikesRepository.save(commentLike);
   }
 }

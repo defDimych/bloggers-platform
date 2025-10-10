@@ -1,6 +1,6 @@
 import { LikeStatus } from '../../../common/types/like-status.enum';
 import { CommentWithUserLoginAndLikesInfo } from '../../infrastructure/types/comment-db.types';
-import { CommentWithUserLoginRaw } from '../../infrastructure/query/comment-with-user-login-raw.type';
+import { CommentWithUserLoginWithLikesInfoRaw } from '../../infrastructure/query/comment-with-user-login-with-likes-info-raw.type';
 
 type CommentatorInfo = {
   userId: string;
@@ -20,7 +20,9 @@ export class CommentViewDto {
   createdAt: string;
   likesInfo: LikesInfo;
 
-  static mapToViewWithDefaultLikesInfo = (raw: CommentWithUserLoginRaw) => {
+  static mapToViewWithDefaultLikesInfo = (
+    raw: CommentWithUserLoginWithLikesInfoRaw,
+  ) => {
     const viewDto = new CommentViewDto();
 
     viewDto.id = raw.id.toString();
@@ -31,30 +33,9 @@ export class CommentViewDto {
     };
     viewDto.createdAt = raw.createdAt.toISOString();
     viewDto.likesInfo = {
-      likesCount: 0,
-      dislikesCount: 0,
-      myStatus: LikeStatus.None,
-    };
-
-    return viewDto;
-  };
-
-  static mapToView = (
-    comment: CommentWithUserLoginAndLikesInfo,
-  ): CommentViewDto => {
-    const viewDto = new CommentViewDto();
-
-    viewDto.id = comment.id.toString();
-    viewDto.content = comment.content;
-    viewDto.commentatorInfo = {
-      userId: comment.userId.toString(),
-      userLogin: comment.userLogin,
-    };
-    viewDto.createdAt = comment.createdAt;
-    viewDto.likesInfo = {
-      likesCount: Number(comment.likesCount),
-      dislikesCount: Number(comment.dislikesCount),
-      myStatus: comment.myStatus,
+      likesCount: raw.likesCount,
+      dislikesCount: raw.dislikesCount,
+      myStatus: raw.myStatus ? raw.myStatus : LikeStatus.None,
     };
 
     return viewDto;

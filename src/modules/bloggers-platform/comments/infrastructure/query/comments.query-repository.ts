@@ -3,21 +3,53 @@ import { DomainException } from '../../../../../core/exceptions/domain-exception
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { CommentViewDto } from '../../api/view-dto/comments.view-dto';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { DataSource, SelectQueryBuilder } from 'typeorm';
 import { Comment } from '../../entities/comment.entity';
-import { CommentWithUserLoginRaw } from './comment-with-user-login-raw.type';
+import { CommentWithUserLoginWithLikesInfoRaw } from './comment-with-user-login-with-likes-info-raw.type';
 import { GetCommentsQueryParams } from '../../../posts/api/input-dto/get-comments-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
+import { CommentLike } from '../../../likes/entities/comment-like.entity';
+import { LikeStatus } from '../../../common/types/like-status.enum';
 
 @Injectable()
 export class CommentsQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
+  private buildLikesCountSubquery() {
+    return (sq: SelectQueryBuilder<CommentLike>) => {
+      return sq
+        .select('COUNT(*) ::int')
+        .from(CommentLike, 'cl')
+        .where('cl."commentId" = c.id')
+        .andWhere(`cl.status = '${LikeStatus.Like}'`);
+    };
+  }
+
+  private buildDislikesCountSubquery() {
+    return (sq: SelectQueryBuilder<CommentLike>) => {
+      return sq
+        .select('COUNT(*) ::int')
+        .from(CommentLike, 'cl')
+        .where('cl."commentId" = c.id')
+        .andWhere(`cl.status = '${LikeStatus.Dislike}'`);
+    };
+  }
+
+  private buildMyStatusSubquery(userId: number) {
+    return (sq: SelectQueryBuilder<CommentLike>) => {
+      return sq
+        .select('cl.status')
+        .from(CommentLike, 'cl')
+        .where('cl."commentId" = c.id')
+        .andWhere('cl."userId" = :userId', { userId });
+    };
+  }
+
   async findCommentByIdOrNotFoundFail(dto: {
     commentId: number;
     userId: number | null;
   }): Promise<CommentViewDto> {
-    const comment = await this.dataSource
+    const builder = this.dataSource
       .getRepository(Comment)
       .createQueryBuilder('c')
       .select([
@@ -30,11 +62,21 @@ export class CommentsQueryRepository {
         'c."deletedAt" as "deletedAt"',
         'u.login as "userLogin"',
       ])
+      .addSelect(this.buildLikesCountSubquery(), 'likesCount')
+      .addSelect(this.buildDislikesCountSubquery(), 'dislikesCount');
+
+    if (dto.userId) {
+      builder.addSelect(this.buildMyStatusSubquery(dto.userId), 'myStatus');
+    }
+
+    builder
       .leftJoin('c.user', 'u')
       .where('c.id = :commentId AND c."deletedAt" IS NULL', {
         commentId: dto.commentId,
-      })
-      .getRawOne<CommentWithUserLoginRaw>();
+      });
+
+    const comment =
+      await builder.getRawOne<CommentWithUserLoginWithLikesInfoRaw>();
 
     if (!comment) {
       throw new DomainException({
@@ -55,7 +97,7 @@ export class CommentsQueryRepository {
     const param = { postId: dto.postId };
 
     try {
-      const rawCommentsPromise = this.dataSource
+      const builder = this.dataSource
         .getRepository(Comment)
         .createQueryBuilder('c')
         .select([
@@ -68,6 +110,14 @@ export class CommentsQueryRepository {
           'c."deletedAt" as "deletedAt"',
           'u.login as "userLogin"',
         ])
+        .addSelect(this.buildLikesCountSubquery(), 'likesCount')
+        .addSelect(this.buildDislikesCountSubquery(), 'dislikesCount');
+
+      if (dto.userId) {
+        builder.addSelect(this.buildMyStatusSubquery(dto.userId), 'myStatus');
+      }
+
+      builder
         .leftJoin('c.user', 'u')
         .where(filter, param)
         .orderBy(
@@ -75,8 +125,10 @@ export class CommentsQueryRepository {
           `${dto.queryParams.sortDirection}`,
         )
         .limit(dto.queryParams.pageSize)
-        .offset(dto.queryParams.calculateSkip())
-        .getRawMany<CommentWithUserLoginRaw>();
+        .offset(dto.queryParams.calculateSkip());
+
+      const rawCommentsPromise =
+        builder.getRawMany<CommentWithUserLoginWithLikesInfoRaw>();
 
       const totalCountPromise: Promise<number> = this.dataSource
         .getRepository(Comment)

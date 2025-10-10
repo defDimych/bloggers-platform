@@ -8,7 +8,7 @@ export class PostsService {
   constructor(private postsRepository: PostsRepository) {}
 
   async checkPostExistsOrThrow(postId: number): Promise<void> {
-    const post = await this.postsRepository.findPostById(postId);
+    const post = await this.postsRepository.findById(postId);
 
     if (!post) {
       throw new DomainException({

@@ -1,3 +1,16 @@
+type LikeInfoDb = {
+  userId: number;
+  login: string;
+  addedAt: string;
+};
+
+type ExtendedLikesInfoDb = {
+  likesCount: number;
+  dislikesCount: number;
+  myStatus?: string;
+  newestLikes: LikeInfoDb[] | null;
+};
+
 export type PostWithBlogNameRaw = {
   id: number;
   createdAt: Date;
@@ -9,3 +22,6 @@ export type PostWithBlogNameRaw = {
   content: string;
   blogName: string;
 };
+
+export type PostWithBlogNameAndExtendedLikesInfoRaw = PostWithBlogNameRaw &
+  ExtendedLikesInfoDb;

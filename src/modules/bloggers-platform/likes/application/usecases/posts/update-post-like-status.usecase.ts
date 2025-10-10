@@ -3,7 +3,7 @@ import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../../../posts/infrastructure/posts.repository';
 import { DomainException } from '../../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../../core/exceptions/domain-exception-codes';
-import { PostLikeRepository } from '../../../infrastructure/post-like.repository';
+import { PostsLikesRepository } from '../../../infrastructure/posts-likes.repository';
 import { CreatePostLikeCommand } from './create-post-like.usecase';
 
 export class UpdatePostLikeStatusCommand {
@@ -16,12 +16,12 @@ export class UpdatePostLikeStatusUseCase
 {
   constructor(
     private postsRepository: PostsRepository,
-    private postLikeRepository: PostLikeRepository,
+    private postsLikesRepository: PostsLikesRepository,
     private commandBus: CommandBus,
   ) {}
 
   async execute({ dto }: UpdatePostLikeStatusCommand): Promise<void> {
-    const post = await this.postsRepository.findPostById(dto.postId);
+    const post = await this.postsRepository.findById(dto.postId);
 
     if (!post) {
       throw new DomainException({
@@ -30,7 +30,7 @@ export class UpdatePostLikeStatusUseCase
       });
     }
 
-    const like = await this.postLikeRepository.findPostLike({
+    const like = await this.postsLikesRepository.findLike({
       postId: dto.postId,
       userId: Number(dto.userId),
     });
@@ -44,9 +44,8 @@ export class UpdatePostLikeStatusUseCase
       return;
     }
 
-    await this.postLikeRepository.updatePostLikeStatus({
-      likeId: like.id,
-      likeStatus: dto.likeStatus,
-    });
+    like.updateLikeStatus(dto.likeStatus);
+
+    await this.postsLikesRepository.save(like);
   }
 }

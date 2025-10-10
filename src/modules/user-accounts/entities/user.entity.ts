@@ -5,6 +5,8 @@ import { EmailConfirmation } from './email-confirmation.entity';
 import { PasswordRecovery } from './password-recovery.entity';
 import { Session } from '../../auth/entities/session.entity';
 import { Comment } from '../../bloggers-platform/comments/entities/comment.entity';
+import { CommentLike } from '../../bloggers-platform/likes/entities/comment-like.entity';
+import { PostLike } from '../../bloggers-platform/likes/entities/post-like.entity';
 
 export const loginConstraints = {
   minLength: 3,
@@ -56,6 +58,12 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[];
+
+  @OneToMany(() => CommentLike, (commentLike) => commentLike.user)
+  commentLikes: CommentLike[];
+
+  @OneToMany(() => PostLike, (postLike) => postLike.user)
+  postLikes: PostLike[];
 
   static create(dto: CreateUserEntityDto): User {
     const user = new this();

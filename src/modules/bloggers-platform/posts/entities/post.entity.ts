@@ -4,6 +4,7 @@ import { Blog } from '../../blogs/entities/blog.entity';
 import { CreatePostEntityDto } from './dto/create-post.entity-dto';
 import { UpdatePostEntityDto } from './dto/update-post.entity-dto';
 import { Comment } from '../../comments/entities/comment.entity';
+import { PostLike } from '../../likes/entities/post-like.entity';
 
 export const titleConstraints = {
   minLength: 2,
@@ -25,6 +26,9 @@ export class Post extends BaseEntity {
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];
+
+  @OneToMany(() => PostLike, (postLike) => postLike.post)
+  postLikes: PostLike[];
 
   @Column()
   blogId: number;
