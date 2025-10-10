@@ -1,0 +1,9 @@
+SELECT "p"."id" as id, p."blogId" as "blogId", "p"."title" as title, p."shortDescription" as "shortDescription", "p"."content" as content, p."createdAt" as "createdAt", p."updatedAt" as "updatedAt", p."deletedAt" as "deletedAt", "b"."name" as "blogName", (SELECT COUNT(*) ::int FROM "PostsLikes" "pl" WHERE pl."postId" = "p"."id" AND "pl"."status" = 'Like') AS "likesCount", (SELECT COUNT(*) ::int FROM "PostsLikes" "pl" WHERE pl."postId" = "p"."id" AND "pl"."status" = 'Dislike') AS "dislikesCount", (SELECT 
+          jsonb_agg(
+            json_build_object(
+              'addedAt', "createdAt",
+              'userId', "userId",
+              'login', "userLogin"
+            )
+          )
+         FROM (SELECT pl."userId" as "userId", pl."postId" as "postId", pl."createdAt" as "createdAt", "pl"."status" as status, "u"."login" as "userLogin", ROW_NUMBER() OVER(PARTITION BY pl."postId" ORDER BY pl."createdAt" DESC) AS "rowNumber" FROM "PostsLikes" "pl" LEFT JOIN "Users" "u" ON "u"."id"="pl"."userId") "numberedPostLikes" WHERE "numberedPostLikes"."postId" = "p"."id" AND "numberedPostLikes".status = 'Like' AND "numberedPostLikes"."rowNumber" BETWEEN $1 AND $2) AS "newestLikes", (SELECT "pl"."status" AS "pl_status" FROM "PostsLikes" "pl" WHERE pl."postId" = "p"."id" AND pl."userId" = $3) AS "myStatus" FROM "Posts" "p" LEFT JOIN "Blogs" "b" ON "b"."id"="p"."blogId" WHERE "p"."id" = $4 AND "p"."deletedAt" IS NULL
