@@ -33,9 +33,8 @@ import { RefreshTokensCommand } from '../application/usecases/refresh-tokens.use
 import { ExtractExtendedUserFromRequest } from '../guards/decorators/param/extract-extended-user-from-request.decorator';
 import { LogoutUserCommand } from '../application/usecases/logout-user.usecase';
 import { ConfirmEmailCodeDto } from '../dto/confirm-email-code.dto';
-import { SkipThrottle, ThrottlerGuard } from '@nestjs/throttler';
 
-@UseGuards(ThrottlerGuard)
+// @UseGuards(ThrottlerGuard)
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -77,7 +76,7 @@ export class AuthController {
     };
   }
 
-  @SkipThrottle()
+  // @SkipThrottle()
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtRefreshAuthGuard)
@@ -87,7 +86,7 @@ export class AuthController {
     return this.commandBus.execute(new LogoutUserCommand(user.deviceId));
   }
 
-  @SkipThrottle()
+  // @SkipThrottle()
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshAuthGuard)

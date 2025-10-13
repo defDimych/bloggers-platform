@@ -1,5 +1,4 @@
 import { LikeStatus } from '../../../common/types/like-status.enum';
-import { CommentWithUserLoginAndLikesInfo } from '../../infrastructure/types/comment-db.types';
 import { CommentWithUserLoginWithLikesInfoRaw } from '../../infrastructure/query/comment-with-user-login-with-likes-info-raw.type';
 
 type CommentatorInfo = {
