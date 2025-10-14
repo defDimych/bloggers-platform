@@ -1,10 +1,10 @@
-import { BaseEntity } from '../../../core/entities/base.entity';
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { User } from './user.entity';
 import { add } from 'date-fns';
+import { NumericBaseEntity } from '../../../core/entities/numeric-base.entity';
 
 @Entity({ name: 'PasswordRecoveries' })
-export class PasswordRecovery extends BaseEntity {
+export class PasswordRecovery extends NumericBaseEntity {
   @OneToOne(() => User, (user) => user.recovery)
   @JoinColumn()
   user: User;

@@ -1,9 +1,9 @@
-import { BaseEntity } from '../../../../core/entities/base.entity';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { Post } from '../../posts/entities/post.entity';
 import { User } from '../../../user-accounts/entities/user.entity';
 import { CreateCommentEntityDto } from './dto/create-comment.entity-dto';
 import { CommentLike } from '../../likes/entities/comment-like.entity';
+import { NumericBaseEntity } from '../../../../core/entities/numeric-base.entity';
 
 export const contentConstraints = {
   minLength: 20,
@@ -11,7 +11,7 @@ export const contentConstraints = {
 };
 
 @Entity({ name: 'Comments' })
-export class Comment extends BaseEntity {
+export class Comment extends NumericBaseEntity {
   @ManyToOne(() => Post, (post) => post.comments)
   post: Post;
 

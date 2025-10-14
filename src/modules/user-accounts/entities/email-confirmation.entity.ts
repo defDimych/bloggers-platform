@@ -1,10 +1,10 @@
-import { BaseEntity } from '../../../core/entities/base.entity';
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { User } from './user.entity';
 import { add } from 'date-fns';
+import { NumericBaseEntity } from '../../../core/entities/numeric-base.entity';
 
 @Entity({ name: 'EmailConfirmations' })
-export class EmailConfirmation extends BaseEntity {
+export class EmailConfirmation extends NumericBaseEntity {
   @OneToOne(() => User, (user) => user.confirmation)
   @JoinColumn()
   user: User;

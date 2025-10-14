@@ -1,12 +1,12 @@
-import { BaseEntity } from '../../../../core/entities/base.entity';
 import { Column, Entity, ManyToOne } from 'typeorm';
 import { Comment } from '../../comments/entities/comment.entity';
 import { User } from '../../../user-accounts/entities/user.entity';
 import { LikeStatus } from '../../common/types/like-status.enum';
 import { CreateCommentLikeEntityDto } from './dto/create-comment-like.entity-dto';
+import { NumericBaseEntity } from '../../../../core/entities/numeric-base.entity';
 
 @Entity({ name: 'CommentsLikes' })
-export class CommentLike extends BaseEntity {
+export class CommentLike extends NumericBaseEntity {
   @ManyToOne(() => Comment, (comment) => comment.commentLikes)
   comment: Comment;
 

@@ -1,8 +1,8 @@
 import { Column, Entity, OneToMany } from 'typeorm';
-import { BaseEntity } from '../../../../core/entities/base.entity';
 import { CreateBlogEntityDto } from './dto/create-blog.entity-dto';
 import { UpdateBlogEntityDto } from './dto/update-blog.entity-dto';
 import { Post } from '../../posts/entities/post.entity';
+import { NumericBaseEntity } from '../../../../core/entities/numeric-base.entity';
 
 export const nameConstraints = {
   maxLength: 15,
@@ -16,7 +16,7 @@ export const websiteUrlConstraints = {
 };
 
 @Entity({ name: 'Blogs' })
-export class Blog extends BaseEntity {
+export class Blog extends NumericBaseEntity {
   @Column({
     type: 'varchar',
     length: nameConstraints.maxLength,

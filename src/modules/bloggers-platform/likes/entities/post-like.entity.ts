@@ -1,12 +1,12 @@
 import { Column, Entity, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../../../../core/entities/base.entity';
 import { User } from '../../../user-accounts/entities/user.entity';
 import { LikeStatus } from '../../common/types/like-status.enum';
 import { Post } from '../../posts/entities/post.entity';
 import { CreatePostLikeEntityDto } from './dto/create-post-like.entity-dto';
+import { NumericBaseEntity } from '../../../../core/entities/numeric-base.entity';
 
 @Entity({ name: 'PostsLikes' })
-export class PostLike extends BaseEntity {
+export class PostLike extends NumericBaseEntity {
   @ManyToOne(() => Post, (post) => post.postLikes)
   post: Post;
 

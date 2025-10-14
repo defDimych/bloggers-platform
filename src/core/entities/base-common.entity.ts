@@ -1,14 +1,6 @@
-import {
-  Column,
-  CreateDateColumn,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-export abstract class BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export abstract class BaseCommonEntity {
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;
 

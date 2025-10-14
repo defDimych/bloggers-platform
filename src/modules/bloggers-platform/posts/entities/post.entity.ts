@@ -1,10 +1,10 @@
-import { BaseEntity } from '../../../../core/entities/base.entity';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { Blog } from '../../blogs/entities/blog.entity';
 import { CreatePostEntityDto } from './dto/create-post.entity-dto';
 import { UpdatePostEntityDto } from './dto/update-post.entity-dto';
 import { Comment } from '../../comments/entities/comment.entity';
 import { PostLike } from '../../likes/entities/post-like.entity';
+import { NumericBaseEntity } from '../../../../core/entities/numeric-base.entity';
 
 export const titleConstraints = {
   minLength: 2,
@@ -20,7 +20,7 @@ export const contentConstraints = {
 };
 
 @Entity({ name: 'Posts' })
-export class Post extends BaseEntity {
+export class Post extends NumericBaseEntity {
   @ManyToOne(() => Blog, (blog) => blog.posts)
   blog: Blog;
 

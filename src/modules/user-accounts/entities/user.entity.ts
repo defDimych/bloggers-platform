@@ -1,4 +1,3 @@
-import { BaseEntity } from '../../../core/entities/base.entity';
 import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { CreateUserEntityDto } from './dto/create-user.entity-dto';
 import { EmailConfirmation } from './email-confirmation.entity';
@@ -7,6 +6,7 @@ import { Session } from '../../auth/entities/session.entity';
 import { Comment } from '../../bloggers-platform/comments/entities/comment.entity';
 import { CommentLike } from '../../bloggers-platform/likes/entities/comment-like.entity';
 import { PostLike } from '../../bloggers-platform/likes/entities/post-like.entity';
+import { NumericBaseEntity } from '../../../core/entities/numeric-base.entity';
 
 export const loginConstraints = {
   minLength: 3,
@@ -24,7 +24,7 @@ export const passwordConstraints = {
 };
 
 @Entity({ name: 'Users' })
-export class User extends BaseEntity {
+export class User extends NumericBaseEntity {
   @Column({
     type: 'varchar',
     length: loginConstraints.maxLength,
