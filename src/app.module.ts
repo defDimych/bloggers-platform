@@ -15,6 +15,7 @@ import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exc
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { QuizGameModule } from './modules/quiz-game/quiz-game.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { DataSource } from 'typeorm';
     BloggersPlatformModule,
     UserAccountsModule,
     CoreModule,
+    QuizGameModule,
   ],
   controllers: [AppController],
   providers: [
