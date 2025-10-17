@@ -26,4 +26,16 @@ export class Question extends UuidBaseEntity {
 
     return question;
   }
+
+  updateBodyAndCorrectAnswers(dto: {
+    body: string;
+    correctAnswers: string[];
+  }): void {
+    this.body = dto.body;
+    this.correctAnswers = dto.correctAnswers;
+  }
+
+  makePublished(isPublished: boolean): void {
+    this.published = isPublished;
+  }
 }

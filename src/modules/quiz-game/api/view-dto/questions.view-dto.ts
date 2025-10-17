@@ -8,7 +8,7 @@ export class QuestionsViewDto {
   createdAt: string;
   updatedAt: string;
 
-  static mapToView(question: Question): QuestionsViewDto {
+  static mapToView = (question: Question): QuestionsViewDto => {
     const viewDto = new this();
 
     viewDto.id = question.id;
@@ -19,5 +19,5 @@ export class QuestionsViewDto {
     viewDto.updatedAt = question.updatedAt.toISOString();
 
     return viewDto;
-  }
+  };
 }
