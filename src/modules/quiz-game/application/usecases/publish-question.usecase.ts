@@ -24,6 +24,19 @@ export class PublishQuestionUseCase
       });
     }
 
+    if (!question.correctAnswers.length) {
+      throw new DomainException({
+        message: 'Validation failed',
+        code: DomainExceptionCode.BadRequest,
+        extensions: [
+          {
+            message: "question doesn't have correct answers",
+            key: 'correctAnswers',
+          },
+        ],
+      });
+    }
+
     question.makePublished(dto.published);
 
     await this.questionsRepository.save(question);
