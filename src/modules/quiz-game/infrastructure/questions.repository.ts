@@ -19,6 +19,16 @@ export class QuestionsRepository {
     });
   }
 
+  async findFiveRandom(): Promise<Question[]> {
+    return this.questionsRepo
+      .createQueryBuilder('q')
+      .where('q.published = :isPublished', { isPublished: true })
+      .andWhere('q."deletedAt" IS NULL')
+      .orderBy('RANDOM()')
+      .limit(5)
+      .getMany();
+  }
+
   async save(question: Question): Promise<void> {
     await this.questionsRepo.save(question);
   }

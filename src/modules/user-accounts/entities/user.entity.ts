@@ -7,6 +7,7 @@ import { Comment } from '../../bloggers-platform/comments/entities/comment.entit
 import { CommentLike } from '../../bloggers-platform/likes/entities/comment-like.entity';
 import { PostLike } from '../../bloggers-platform/likes/entities/post-like.entity';
 import { NumericBaseEntity } from '../../../core/entities/numeric-base.entity';
+import { Player } from '../../quiz-game/quiz-game/entities/player.entity';
 
 export const loginConstraints = {
   minLength: 3,
@@ -64,6 +65,9 @@ export class User extends NumericBaseEntity {
 
   @OneToMany(() => PostLike, (postLike) => postLike.user)
   postLikes: PostLike[];
+
+  @OneToMany(() => Player, (player) => player.user)
+  players: Player[];
 
   static create(dto: CreateUserEntityDto): User {
     const user = new this();

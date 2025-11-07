@@ -8,17 +8,37 @@ import { QuestionsQueryRepository } from './infrastructure/query/questions.query
 import { DeleteQuestionUseCase } from './application/usecases/delete-question.usecase';
 import { UpdateQuestionUseCase } from './application/usecases/update-question.usecase';
 import { PublishQuestionUseCase } from './application/usecases/publish-question.usecase';
+import { PairQuizGameController } from './quiz-game/api/pair-quiz-game.controller';
+import { ConnectionToGameUseCase } from './quiz-game/application/usecases/connection-to-game.usecase';
+import { GamesRepository } from './quiz-game/infrastructure/games.repository';
+import { Game } from './quiz-game/entities/game.entity';
+import { Player } from './quiz-game/entities/player.entity';
+import { GamesQueryRepository } from './quiz-game/infrastructure/query/games.query-repository';
+import { PlayersRepository } from './quiz-game/infrastructure/players.repository';
+import { GameQuestion } from './quiz-game/entities/game-question.entity';
+import { GameQuestionRepository } from './quiz-game/infrastructure/game-question.repository';
+import { GamesService } from './quiz-game/application/games.service';
+
+const useCases = [
+  ConnectionToGameUseCase,
+  CreateQuestionUseCase,
+  DeleteQuestionUseCase,
+  UpdateQuestionUseCase,
+  PublishQuestionUseCase,
+];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Question])],
-  controllers: [SuperAdminQuizQuestionsController],
+  imports: [TypeOrmModule.forFeature([Question, Game, Player, GameQuestion])],
+  controllers: [SuperAdminQuizQuestionsController, PairQuizGameController],
   providers: [
+    ...useCases,
     QuestionsRepository,
     QuestionsQueryRepository,
-    CreateQuestionUseCase,
-    DeleteQuestionUseCase,
-    UpdateQuestionUseCase,
-    PublishQuestionUseCase,
+    GamesRepository,
+    GamesQueryRepository,
+    PlayersRepository,
+    GameQuestionRepository,
+    GamesService,
   ],
 })
 export class QuizGameModule {}

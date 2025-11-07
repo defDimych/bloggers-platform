@@ -23,6 +23,13 @@ export class DeleteQuestionUseCase
       });
     }
 
+    if (question.published) {
+      throw new DomainException({
+        message: 'Published questions cannot be deleted',
+        code: DomainExceptionCode.Forbidden,
+      });
+    }
+
     question.makeDeleted();
 
     await this.questionsRepository.save(question);
