@@ -1,26 +1,6 @@
 import { GameStatus } from '../../common/game-status.enum';
-
-export enum AnswerStatus {
-  Correct = 'Correct',
-  Incorrect = 'Incorrect',
-}
-
-type AnswerInfo = {
-  questionId: string;
-  answerStatus: AnswerStatus;
-  addedAt: string;
-};
-
-type PlayerInfo = {
-  id: string;
-  login: string;
-};
-
-type PlayerProgress = {
-  answers: AnswerInfo[] | [];
-  player: PlayerInfo;
-  score: number;
-};
+import { Game } from '../../entities/game.entity';
+import { PlayerProgressViewDto } from './player-progress.view-dto';
 
 type QuestionInfo = {
   id: string;
@@ -29,13 +9,33 @@ type QuestionInfo = {
 
 export class GameViewDto {
   id: string;
-  firstPlayerProgress: PlayerProgress;
-  secondPlayerProgress: PlayerProgress | null;
+  firstPlayerProgress: PlayerProgressViewDto;
+  secondPlayerProgress: PlayerProgressViewDto | null;
   questions: QuestionInfo[] | null;
   status: GameStatus;
   pairCreatedDate: string;
   startGameDate: string | null;
   finishGameDate: string | null;
 
-  static mapToView() {}
+  static mapToView(game: Game): GameViewDto {
+    const dto = new this();
+
+    dto.id = game.id;
+    dto.firstPlayerProgress = PlayerProgressViewDto.mapToView(game.firstPlayer);
+    dto.secondPlayerProgress = game.secondPlayer
+      ? PlayerProgressViewDto.mapToView(game.secondPlayer)
+      : null;
+    dto.questions = game.gameQuestions.length
+      ? game.gameQuestions.map((q) => ({
+          id: q.question.id,
+          body: q.question.body,
+        }))
+      : null;
+    dto.status = game.status;
+    dto.pairCreatedDate = game.createdAt.toISOString();
+    dto.startGameDate = game.startedAt ? game.startedAt.toISOString() : null;
+    dto.finishGameDate = game.finishedAt ? game.finishedAt.toISOString() : null;
+
+    return dto;
+  }
 }

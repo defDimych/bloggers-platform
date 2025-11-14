@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { UuidBaseEntity } from '../../../core/entities/uuid-base.entity';
 import { GameQuestion } from '../quiz-game/entities/game-question.entity';
+import { Answer } from '../quiz-game/entities/answer.entity';
 
 export const bodyConstraints = {
   minLength: 10,
@@ -20,6 +21,9 @@ export class Question extends UuidBaseEntity {
 
   @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.question)
   gameQuestions: GameQuestion[];
+
+  @OneToMany(() => Answer, (answer) => answer.question)
+  answers: Answer[];
 
   static create(dto: { body: string; correctAnswers: string[] }): Question {
     const question = new this();

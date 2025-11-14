@@ -1,14 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import { Game } from '../../entities/game.entity';
 import { GameViewDto } from '../../api/view-dto/games.view-dto';
+import { GameStatus } from '../../common/game-status.enum';
+import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 
 @Injectable()
 export class GamesQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async findById(dto: { id: string }): Promise<GameViewDto> {
+  async findGame(dto: { id?: string; userId?: string }): Promise<GameViewDto> {
+    const where: any[] = [];
+
+    if (dto.id) {
+      where.push({
+        id: dto.id,
+      });
+    }
+
+    if (dto.userId) {
+      const userId = Number(dto.userId);
+
+      where.push([
+        {
+          status: In([GameStatus.PendingSecondPlayer, GameStatus.Active]),
+          firstPlayer: { userId },
+        },
+        {
+          status: In([GameStatus.PendingSecondPlayer, GameStatus.Active]),
+          secondPlayer: { userId },
+        },
+      ]);
+    }
+
     const game = await this.dataSource.getRepository(Game).findOne({
       select: {
         id: true,
@@ -30,13 +56,14 @@ export class GamesQueryRepository {
           question: true,
         },
       },
-      where: {
-        id: dto.id,
-      },
+      where,
     });
 
     if (!game) {
-      throw new Error(`Game by id:${dto.id} not found!`);
+      throw new DomainException({
+        message: `Game not found!`,
+        code: DomainExceptionCode.NotFound,
+      });
     }
 
     return GameViewDto.mapToView(game);

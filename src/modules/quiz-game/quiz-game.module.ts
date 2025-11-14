@@ -18,6 +18,7 @@ import { PlayersRepository } from './quiz-game/infrastructure/players.repository
 import { GameQuestion } from './quiz-game/entities/game-question.entity';
 import { GameQuestionRepository } from './quiz-game/infrastructure/game-question.repository';
 import { GamesService } from './quiz-game/application/games.service';
+import { Answer } from './quiz-game/entities/answer.entity';
 
 const useCases = [
   ConnectionToGameUseCase,
@@ -28,7 +29,9 @@ const useCases = [
 ];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Question, Game, Player, GameQuestion])],
+  imports: [
+    TypeOrmModule.forFeature([Question, Game, Player, GameQuestion, Answer]),
+  ],
   controllers: [SuperAdminQuizQuestionsController, PairQuizGameController],
   providers: [
     ...useCases,

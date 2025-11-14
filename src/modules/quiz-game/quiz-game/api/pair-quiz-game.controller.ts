@@ -15,6 +15,7 @@ import { ConnectionToGameCommand } from '../application/usecases/connection-to-g
 import { GamesQueryRepository } from '../infrastructure/query/games.query-repository';
 import { CustomParseUUIDPipe } from '../../../../core/pipes/custom-parse-uuid.pipe';
 import { GamesService } from '../application/games.service';
+import { GameViewDto } from './view-dto/games.view-dto';
 
 @Controller('pair-game-quiz/pairs')
 @UseGuards(JwtAuthGuard)
@@ -26,27 +27,38 @@ export class PairQuizGameController {
   ) {}
 
   @Get(':id')
-  async getGameById(
+  async getGameInAnyStatus(
     @ExtractUserFromRequest() user: UserContextDto,
     @Param('id', CustomParseUUIDPipe) id: string,
-  ) {
+  ): Promise<GameViewDto> {
     await this.gamesService.validateGameAccess({
       gameId: id,
       userId: user.userId,
     });
 
-    return this.gamesQueryRepository.findById({ id });
+    return this.gamesQueryRepository.findGame({ id });
+  }
+
+  @Get('my-current')
+  async getGameInActiveOrPendingStatus(
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<GameViewDto> {
+    return this.gamesQueryRepository.findGame({
+      userId: user.userId,
+    });
   }
 
   @Post('connection')
   @HttpCode(HttpStatus.OK)
-  async connectionToGame(@ExtractUserFromRequest() user: UserContextDto) {
+  async connectionToGame(
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<GameViewDto> {
     const gameId = await this.commandBus.execute(
       new ConnectionToGameCommand({
         userId: user.userId,
       }),
     );
 
-    return this.gamesQueryRepository.findById({ id: gameId });
+    return this.gamesQueryRepository.findGame({ id: gameId });
   }
 }

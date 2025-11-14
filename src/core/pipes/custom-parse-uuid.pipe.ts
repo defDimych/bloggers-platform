@@ -18,9 +18,14 @@ export class CustomParseUUIDPipe
       return await super.transform(value, metadata);
     } catch (e) {
       if (e instanceof BadRequestException) {
+        const field = metadata.data ?? 'unknownField';
+
         throw new DomainException({
-          code: DomainExceptionCode.NotFound,
+          code: DomainExceptionCode.BadRequest,
           message: 'Validation failed',
+          extensions: [
+            { message: `${field} has invalid UUID format`, key: field },
+          ],
         });
       }
       throw e;

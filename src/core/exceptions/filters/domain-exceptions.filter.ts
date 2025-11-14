@@ -17,10 +17,7 @@ export class DomainHttpExceptionsFilter implements ExceptionFilter {
 
     const status = this.mapToHttpStatus(exception.code);
 
-    if (
-      exception.code === DomainExceptionCode.ValidationError ||
-      exception.code === DomainExceptionCode.BadRequest
-    ) {
+    if (status === 400) {
       const responseBody = this.buildResponseBody(exception);
 
       response.status(status).json(responseBody);
