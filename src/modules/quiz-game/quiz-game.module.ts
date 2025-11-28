@@ -19,13 +19,24 @@ import { GameQuestion } from './quiz-game/entities/game-question.entity';
 import { GameQuestionRepository } from './quiz-game/infrastructure/game-question.repository';
 import { GamesService } from './quiz-game/application/games.service';
 import { Answer } from './quiz-game/entities/answer.entity';
+import { ProcessingAnswerUseCase } from './quiz-game/application/usecases/processing-answer.usecase';
+import { AnswersRepository } from './quiz-game/infrastructure/answers.repository';
 
 const useCases = [
+  ProcessingAnswerUseCase,
   ConnectionToGameUseCase,
   CreateQuestionUseCase,
   DeleteQuestionUseCase,
   UpdateQuestionUseCase,
   PublishQuestionUseCase,
+];
+
+const repositories = [
+  AnswersRepository,
+  QuestionsRepository,
+  GamesRepository,
+  PlayersRepository,
+  GameQuestionRepository,
 ];
 
 @Module({
@@ -35,12 +46,9 @@ const useCases = [
   controllers: [SuperAdminQuizQuestionsController, PairQuizGameController],
   providers: [
     ...useCases,
-    QuestionsRepository,
+    ...repositories,
     QuestionsQueryRepository,
-    GamesRepository,
     GamesQueryRepository,
-    PlayersRepository,
-    GameQuestionRepository,
     GamesService,
   ],
 })

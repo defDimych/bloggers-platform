@@ -10,10 +10,10 @@ export class Player extends UuidBaseEntity {
   score: number;
 
   @OneToOne(() => Game, (game) => game.firstPlayer)
-  gameAsFirstPlayer: Game;
+  gameAsFirstPlayer: Game | null;
 
   @OneToOne(() => Game, (game) => game.secondPlayer)
-  gameAsSecondPlayer: Game;
+  gameAsSecondPlayer: Game | null;
 
   @ManyToOne(() => User, (user) => user.players)
   user: User;
@@ -24,11 +24,24 @@ export class Player extends UuidBaseEntity {
   @OneToMany(() => Answer, (answer) => answer.player)
   answers: Answer[];
 
+  get activeGame(): Game {
+    const game = this.gameAsFirstPlayer ?? this.gameAsSecondPlayer;
+
+    if (!game) {
+      throw new Error('Player does not belong to any game');
+    }
+    return game;
+  }
+
   static create(userId: number): Player {
     const player = new this();
 
     player.userId = userId;
 
     return player;
+  }
+
+  incrementScore() {
+    this.score += 1;
   }
 }

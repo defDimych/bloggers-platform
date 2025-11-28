@@ -1,9 +1,5 @@
 import { Player } from '../../entities/player.entity';
-
-export enum AnswerStatus {
-  Correct = 'Correct',
-  Incorrect = 'Incorrect',
-}
+import { AnswerStatus } from '../../common/answer-status.enum';
 
 type AnswerInfo = {
   questionId: string;

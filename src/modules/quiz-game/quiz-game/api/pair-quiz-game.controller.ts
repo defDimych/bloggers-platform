@@ -16,6 +16,7 @@ import { GamesQueryRepository } from '../infrastructure/query/games.query-reposi
 import { CustomParseUUIDPipe } from '../../../../core/pipes/custom-parse-uuid.pipe';
 import { GamesService } from '../application/games.service';
 import { GameViewDto } from './view-dto/games.view-dto';
+import { ProcessingAnswerCommand } from '../application/usecases/processing-answer.usecase';
 
 @Controller('pair-game-quiz/pairs')
 @UseGuards(JwtAuthGuard)
@@ -60,5 +61,18 @@ export class PairQuizGameController {
     );
 
     return this.gamesQueryRepository.findGame({ id: gameId });
+  }
+
+  @Post('my-current/answers')
+  async processingAnswer(
+    @Body('answer') answer: string,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ) {
+    return this.commandBus.execute(
+      new ProcessingAnswerCommand({
+        answer,
+        userId: user.userId,
+      }),
+    );
   }
 }
