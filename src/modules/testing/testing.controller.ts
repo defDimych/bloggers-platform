@@ -13,11 +13,13 @@ export class TestingController {
       `SELECT table_name FROM information_schema.tables WHERE table_schema='public';`,
     );
 
-    const promises = tables.map((table) => {
-      return this.dataSource.query(
-        `TRUNCATE TABLE "${table.table_name}" CASCADE;`,
-      );
-    });
+    const promises = tables
+      .filter((t) => t.table_name !== 'migrations')
+      .map((t) => {
+        return this.dataSource.query(
+          `TRUNCATE TABLE "${t.table_name}" CASCADE;`,
+        );
+      });
     await Promise.all(promises);
 
     return {
