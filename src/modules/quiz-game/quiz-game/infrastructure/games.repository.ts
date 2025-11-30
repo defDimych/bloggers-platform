@@ -10,6 +10,32 @@ export class GamesRepository {
     @InjectRepository(Game) private readonly gamesRepo: Repository<Game>,
   ) {}
 
+  async findActiveWithRelationsByUserId(userId: number): Promise<Game | null> {
+    return this.gamesRepo
+      .createQueryBuilder('g')
+      .leftJoinAndSelect('g.firstPlayer', 'p1')
+      .leftJoinAndSelect('p1.answers', 'p1a')
+      .leftJoinAndSelect('g.secondPlayer', 'p2')
+      .leftJoinAndSelect('p2.answers', 'p2a')
+      .leftJoinAndSelect('g.gameQuestions', 'gq')
+      .leftJoinAndSelect('gq.question', 'q')
+      .where('g.status = :active', { active: GameStatus.Active })
+      .andWhere('(p1.userId = :userId OR p2.userId = :userId)', { userId })
+      .orderBy('gq.id', 'ASC')
+      .getOne();
+  }
+
+  async findActiveByUserId(userId: number): Promise<Game | null> {
+    return this.gamesRepo.findOne({
+      where: [
+        { status: GameStatus.Active, firstPlayer: { userId } },
+        { status: GameStatus.Active, secondPlayer: { userId } },
+        { status: GameStatus.PendingSecondPlayer, firstPlayer: { userId } },
+      ],
+      relations: ['firstPlayer', 'secondPlayer'],
+    });
+  }
+
   async findWithPendingSecondPlayer(): Promise<Game | null> {
     return this.gamesRepo.findOneBy({
       status: GameStatus.PendingSecondPlayer,

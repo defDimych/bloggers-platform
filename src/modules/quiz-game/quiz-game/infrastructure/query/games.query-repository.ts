@@ -57,7 +57,24 @@ export class GamesQueryRepository {
         },
       },
       where,
+      order: {
+        firstPlayer: {
+          answers: {
+            createdAt: 'ASC',
+          },
+        },
+        secondPlayer: {
+          answers: {
+            createdAt: 'ASC',
+          },
+        },
+        gameQuestions: {
+          id: 'ASC',
+        },
+      },
     });
+
+    console.log(game);
 
     if (!game) {
       throw new DomainException({

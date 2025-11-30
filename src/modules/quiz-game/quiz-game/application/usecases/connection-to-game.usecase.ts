@@ -8,6 +8,7 @@ import { DomainExceptionCode } from '../../../../../core/exceptions/domain-excep
 import { QuestionsRepository } from '../../../infrastructure/questions.repository';
 import { GameQuestion } from '../../entities/game-question.entity';
 import { GameQuestionRepository } from '../../infrastructure/game-question.repository';
+import { GAME_QUESTIONS_LIMIT } from '../../common/constants/game-questions-limit';
 
 export class ConnectionToGameCommand extends Command<string> {
   constructor(public dto: { userId: string }) {
@@ -15,6 +16,7 @@ export class ConnectionToGameCommand extends Command<string> {
   }
 }
 
+// TODO: обернуть в транзакцию, для целостности данных
 @CommandHandler(ConnectionToGameCommand)
 export class ConnectionToGameUseCase
   implements ICommandHandler<ConnectionToGameCommand, string>
@@ -27,56 +29,64 @@ export class ConnectionToGameUseCase
   ) {}
 
   async execute({ dto }: ConnectionToGameCommand): Promise<string> {
-    const foundGame = await this.gamesRepository.findWithPendingSecondPlayer();
+    const userId = Number(dto.userId);
 
-    if (!foundGame) {
-      const player = Player.create(Number(dto.userId));
-      const savedPlayer = await this.playersRepository.save(player);
+    // 1) Проверяем существующую активную игру
+    const activeGame = await this.gamesRepository.findActiveByUserId(userId);
 
-      const game = Game.create(savedPlayer.id);
-      const savedGame = await this.gamesRepository.save(game);
-
-      return savedGame.id;
-    }
-
-    const foundPlayer = await this.playersRepository.findByGameIdAndUserId({
-      gameId: foundGame.id,
-      userId: Number(dto.userId),
-    });
-
-    if (foundPlayer) {
+    if (activeGame) {
       throw new DomainException({
-        message: 'You are already participating in the current pair!',
+        message: 'Sorry, you are already a member of an active couple!',
         code: DomainExceptionCode.Forbidden,
       });
     }
 
-    const player = Player.create(Number(dto.userId));
-    const savedPlayer = await this.playersRepository.save(player);
+    // 2) Создание игрока
+    const savedPlayer = await this.playersRepository.save(
+      Player.create(userId),
+    );
 
-    foundGame.addSecondPlayer(savedPlayer.id);
+    // 3) Поиск игры в ожидании второго игрока
+    const pendingGame =
+      await this.gamesRepository.findWithPendingSecondPlayer();
 
-    const randomQuestions = await this.questionsRepository.findFiveRandom();
+    // 4.1) Если нет игры в статусе ожидания - создание игры с firstPlayer
+    if (!pendingGame) {
+      const newGame = await this.gamesRepository.save(
+        Game.create(savedPlayer.id),
+      );
 
-    if (randomQuestions.length < 5) {
+      return newGame.id;
+    }
+
+    // 4.2) Если есть, добавление второго игрока
+    pendingGame.addSecondPlayer(savedPlayer.id);
+
+    // 5) Загрузка пять рандомных вопросов
+    const questions = await this.questionsRepository.findFiveRandom();
+
+    if (questions.length < GAME_QUESTIONS_LIMIT) {
       throw new Error(
         'Cannot start the game — at least 5 questions are required',
       );
     }
 
-    for (const question of randomQuestions) {
-      const gameQuestion = GameQuestion.create({
-        gameId: foundGame.id,
-        questionId: question.id,
-      });
+    // 6) Создание GameQuestions
+    const promises: Promise<void>[] = questions.map((q) =>
+      this.gameQuestionRepository.save(
+        GameQuestion.create({
+          gameId: pendingGame.id,
+          questionId: q.id,
+        }),
+      ),
+    );
 
-      await this.gameQuestionRepository.save(gameQuestion);
-    }
+    await Promise.all(promises);
 
-    foundGame.switchGameStatusToActiveAndStartGame();
+    // 7) Старт игры
+    pendingGame.switchGameStatusToActiveAndStartGame();
+    await this.gamesRepository.save(pendingGame);
 
-    await this.gamesRepository.save(foundGame);
-
-    return foundGame.id;
+    return pendingGame.id;
   }
 }

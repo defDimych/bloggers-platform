@@ -21,6 +21,7 @@ import { GamesService } from './quiz-game/application/games.service';
 import { Answer } from './quiz-game/entities/answer.entity';
 import { ProcessingAnswerUseCase } from './quiz-game/application/usecases/processing-answer.usecase';
 import { AnswersRepository } from './quiz-game/infrastructure/answers.repository';
+import { AnswersQueryRepository } from './quiz-game/infrastructure/query/answers.query-repository';
 
 const useCases = [
   ProcessingAnswerUseCase,
@@ -37,6 +38,9 @@ const repositories = [
   GamesRepository,
   PlayersRepository,
   GameQuestionRepository,
+  AnswersQueryRepository,
+  QuestionsQueryRepository,
+  GamesQueryRepository,
 ];
 
 @Module({
@@ -44,12 +48,6 @@ const repositories = [
     TypeOrmModule.forFeature([Question, Game, Player, GameQuestion, Answer]),
   ],
   controllers: [SuperAdminQuizQuestionsController, PairQuizGameController],
-  providers: [
-    ...useCases,
-    ...repositories,
-    QuestionsQueryRepository,
-    GamesQueryRepository,
-    GamesService,
-  ],
+  providers: [...useCases, ...repositories, GamesService],
 })
 export class QuizGameModule {}

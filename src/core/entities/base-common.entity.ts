@@ -4,8 +4,8 @@ export abstract class BaseCommonEntity {
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @UpdateDateColumn({ type: 'timestamp with time zone', nullable: true })
+  updatedAt: Date | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   deletedAt: Date | null;

@@ -52,4 +52,8 @@ export class Game extends UuidBaseEntity {
     this.status = GameStatus.Active;
     this.startedAt = new Date();
   }
+
+  switchGameStatusToFinished(): void {
+    this.finishedAt = new Date();
+  }
 }

@@ -1,10 +1,12 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
-import { PlayersRepository } from '../../infrastructure/players.repository';
 import { AnswerStatus } from '../../common/answer-status.enum';
 import { Answer } from '../../entities/answer.entity';
 import { AnswersRepository } from '../../infrastructure/answers.repository';
+import { GamesRepository } from '../../infrastructure/games.repository';
+import { PlayersRepository } from '../../infrastructure/players.repository';
+import { GAME_QUESTIONS_LIMIT } from '../../common/constants/game-questions-limit';
 
 export class ProcessingAnswerCommand extends Command<string> {
   constructor(public dto: { answer: string; userId: string }) {
@@ -17,55 +19,93 @@ export class ProcessingAnswerUseCase
   implements ICommandHandler<ProcessingAnswerCommand, string>
 {
   constructor(
-    private playersRepository: PlayersRepository,
+    private gamesRepository: GamesRepository,
     private answersRepository: AnswersRepository,
+    private playersRepository: PlayersRepository,
   ) {}
 
   async execute({ dto }: ProcessingAnswerCommand): Promise<string> {
     const userId = Number(dto.userId);
 
-    const player =
-      await this.playersRepository.findActivePlayerByUserId(userId);
+    const game =
+      await this.gamesRepository.findActiveWithRelationsByUserId(userId);
 
-    console.log(player);
-
-    if (!player) {
+    if (!game) {
       throw new DomainException({
         message: "Sorry, you don't have an active pair at the moment.",
         code: DomainExceptionCode.Forbidden,
       });
     }
 
-    if (player.answers.length === 5) {
+    const currentPlayer =
+      game.firstPlayer.userId === userId
+        ? game.firstPlayer
+        : game.secondPlayer!;
+
+    if (currentPlayer.answers.length === GAME_QUESTIONS_LIMIT) {
       throw new DomainException({
         message: "Sorry, but you've already answered all the questions.",
         code: DomainExceptionCode.Forbidden,
       });
     }
 
-    const game = player.activeGame;
-
-    console.log(game);
-
-    const currentQuestion = game.gameQuestions[player.answers.length];
+    const currentQuestion = game.gameQuestions[currentPlayer.answers.length];
     const answerStatus = currentQuestion.question.correctAnswers.includes(
       dto.answer,
     )
       ? AnswerStatus.Correct
       : AnswerStatus.Incorrect;
 
+    // save player
     if (answerStatus === AnswerStatus.Correct) {
-      player.incrementScore();
+      currentPlayer.incrementScore();
+      await this.playersRepository.save(currentPlayer);
     }
 
     const answer = Answer.create({
       questionId: currentQuestion.question.id,
-      playerId: player.id,
+      playerId: currentPlayer.id,
       status: answerStatus,
     });
 
-    await this.answersRepository.save(answer);
+    const savedAnswer = await this.answersRepository.save(answer);
 
-    return answer.id;
+    const opponentPlayer =
+      game.firstPlayer.userId !== userId
+        ? game.firstPlayer
+        : game.secondPlayer!;
+
+    if (
+      opponentPlayer.answers.length === GAME_QUESTIONS_LIMIT &&
+      currentPlayer.answers.length + 1 === GAME_QUESTIONS_LIMIT
+    ) {
+      const opponentHasCorrectAnswer = opponentPlayer.answers.some(
+        (a) => a.status === AnswerStatus.Correct,
+      );
+      const currentPlayerHasCorrectAnswer = currentPlayer.answers.some(
+        (a) => a.status === AnswerStatus.Correct,
+      );
+
+      const opponentLastAnswerDate = opponentPlayer.answers.at(-1)!.createdAt;
+
+      if (
+        opponentLastAnswerDate > savedAnswer.createdAt &&
+        opponentHasCorrectAnswer
+      ) {
+        opponentPlayer.incrementScore();
+        await this.playersRepository.save(opponentPlayer);
+      } else if (
+        opponentLastAnswerDate < savedAnswer.createdAt &&
+        (currentPlayerHasCorrectAnswer || answerStatus === AnswerStatus.Correct)
+      ) {
+        currentPlayer.incrementScore();
+        await this.playersRepository.save(currentPlayer);
+      }
+
+      game.switchGameStatusToFinished();
+      await this.gamesRepository.save(game);
+    }
+
+    return savedAnswer.id;
   }
 }

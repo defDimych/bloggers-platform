@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -13,10 +14,12 @@ import { UserContextDto } from '../../../auth/guards/dto/user-context.dto';
 import { CommandBus } from '@nestjs/cqrs';
 import { ConnectionToGameCommand } from '../application/usecases/connection-to-game.usecase';
 import { GamesQueryRepository } from '../infrastructure/query/games.query-repository';
-import { CustomParseUUIDPipe } from '../../../../core/pipes/custom-parse-uuid.pipe';
 import { GamesService } from '../application/games.service';
 import { GameViewDto } from './view-dto/games.view-dto';
 import { ProcessingAnswerCommand } from '../application/usecases/processing-answer.usecase';
+import { AnswersQueryRepository } from '../infrastructure/query/answers.query-repository';
+import { AnswersViewDto } from './view-dto/answers.view-dto';
+import { CustomParseUUIDPipe } from '../../../../core/pipes/custom-parse-uuid.pipe';
 
 @Controller('pair-game-quiz/pairs')
 @UseGuards(JwtAuthGuard)
@@ -25,7 +28,17 @@ export class PairQuizGameController {
     private commandBus: CommandBus,
     private gamesQueryRepository: GamesQueryRepository,
     private gamesService: GamesService,
+    private answersQueryRepository: AnswersQueryRepository,
   ) {}
+
+  @Get('my-current')
+  async getGameInActiveOrPendingStatus(
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<GameViewDto> {
+    return this.gamesQueryRepository.findGame({
+      userId: user.userId,
+    });
+  }
 
   @Get(':id')
   async getGameInAnyStatus(
@@ -38,15 +51,6 @@ export class PairQuizGameController {
     });
 
     return this.gamesQueryRepository.findGame({ id });
-  }
-
-  @Get('my-current')
-  async getGameInActiveOrPendingStatus(
-    @ExtractUserFromRequest() user: UserContextDto,
-  ): Promise<GameViewDto> {
-    return this.gamesQueryRepository.findGame({
-      userId: user.userId,
-    });
   }
 
   @Post('connection')
@@ -67,12 +71,14 @@ export class PairQuizGameController {
   async processingAnswer(
     @Body('answer') answer: string,
     @ExtractUserFromRequest() user: UserContextDto,
-  ) {
-    return this.commandBus.execute(
+  ): Promise<AnswersViewDto> {
+    const answerId = await this.commandBus.execute(
       new ProcessingAnswerCommand({
         answer,
         userId: user.userId,
       }),
     );
+
+    return this.answersQueryRepository.findById(answerId);
   }
 }
