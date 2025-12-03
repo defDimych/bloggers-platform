@@ -29,7 +29,7 @@ export class PlayerProgressViewDto {
       : [];
 
     dto.player = {
-      id: player.id,
+      id: player.userId.toString(),
       login: player.user.login,
     };
 

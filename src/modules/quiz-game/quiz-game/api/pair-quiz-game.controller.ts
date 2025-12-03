@@ -19,7 +19,7 @@ import { GameViewDto } from './view-dto/games.view-dto';
 import { ProcessingAnswerCommand } from '../application/usecases/processing-answer.usecase';
 import { AnswersQueryRepository } from '../infrastructure/query/answers.query-repository';
 import { AnswersViewDto } from './view-dto/answers.view-dto';
-import { CustomParseUUIDPipe } from '../../../../core/pipes/custom-parse-uuid.pipe';
+import { IdValidationTransformationPipe } from '../../../../core/pipes/id-validation-transformation.pipe';
 
 @Controller('pair-game-quiz/pairs')
 @UseGuards(JwtAuthGuard)
@@ -43,7 +43,7 @@ export class PairQuizGameController {
   @Get(':id')
   async getGameInAnyStatus(
     @ExtractUserFromRequest() user: UserContextDto,
-    @Param('id', CustomParseUUIDPipe) id: string,
+    @Param('id', IdValidationTransformationPipe) id: number,
   ): Promise<GameViewDto> {
     await this.gamesService.validateGameAccess({
       gameId: id,
@@ -68,6 +68,7 @@ export class PairQuizGameController {
   }
 
   @Post('my-current/answers')
+  @HttpCode(HttpStatus.OK)
   async processingAnswer(
     @Body('answer') answer: string,
     @ExtractUserFromRequest() user: UserContextDto,

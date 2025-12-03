@@ -11,7 +11,7 @@ import { DomainExceptionCode } from '../../../../../core/exceptions/domain-excep
 export class GamesQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async findGame(dto: { id?: string; userId?: string }): Promise<GameViewDto> {
+  async findGame(dto: { id?: number; userId?: string }): Promise<GameViewDto> {
     const where: any[] = [];
 
     if (dto.id) {

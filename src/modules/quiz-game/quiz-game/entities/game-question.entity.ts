@@ -11,7 +11,7 @@ export class GameQuestion {
   game: Game;
 
   @Column()
-  gameId: string;
+  gameId: number;
 
   @ManyToOne(() => Question, (question) => question.gameQuestions)
   question: Question;
@@ -19,7 +19,7 @@ export class GameQuestion {
   @Column()
   questionId: string;
 
-  static create(dto: { gameId: string; questionId: string }): GameQuestion {
+  static create(dto: { gameId: number; questionId: string }): GameQuestion {
     const gameQuestion = new this();
 
     gameQuestion.gameId = dto.gameId;

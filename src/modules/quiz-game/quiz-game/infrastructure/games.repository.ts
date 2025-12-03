@@ -14,8 +14,10 @@ export class GamesRepository {
     return this.gamesRepo
       .createQueryBuilder('g')
       .leftJoinAndSelect('g.firstPlayer', 'p1')
+      .addSelect(['p1.id', 'p1.userId'])
       .leftJoinAndSelect('p1.answers', 'p1a')
       .leftJoinAndSelect('g.secondPlayer', 'p2')
+      .addSelect(['p2.id', 'p2.userId'])
       .leftJoinAndSelect('p2.answers', 'p2a')
       .leftJoinAndSelect('g.gameQuestions', 'gq')
       .leftJoinAndSelect('gq.question', 'q')
@@ -42,7 +44,7 @@ export class GamesRepository {
     });
   }
 
-  async findByIdWithPairPlayers(id: string): Promise<Game | null> {
+  async findByIdWithPairPlayers(id: number): Promise<Game | null> {
     return this.gamesRepo.findOne({
       where: { id },
       relations: {

@@ -56,7 +56,6 @@ export class ProcessingAnswerUseCase
       ? AnswerStatus.Correct
       : AnswerStatus.Incorrect;
 
-    // save player
     if (answerStatus === AnswerStatus.Correct) {
       currentPlayer.incrementScore();
       await this.playersRepository.save(currentPlayer);
@@ -82,24 +81,13 @@ export class ProcessingAnswerUseCase
       const opponentHasCorrectAnswer = opponentPlayer.answers.some(
         (a) => a.status === AnswerStatus.Correct,
       );
-      const currentPlayerHasCorrectAnswer = currentPlayer.answers.some(
-        (a) => a.status === AnswerStatus.Correct,
-      );
 
-      const opponentLastAnswerDate = opponentPlayer.answers.at(-1)!.createdAt;
-
-      if (
-        opponentLastAnswerDate > savedAnswer.createdAt &&
-        opponentHasCorrectAnswer
-      ) {
+      if (opponentHasCorrectAnswer) {
         opponentPlayer.incrementScore();
-        await this.playersRepository.save(opponentPlayer);
-      } else if (
-        opponentLastAnswerDate < savedAnswer.createdAt &&
-        (currentPlayerHasCorrectAnswer || answerStatus === AnswerStatus.Correct)
-      ) {
-        currentPlayer.incrementScore();
-        await this.playersRepository.save(currentPlayer);
+        await this.playersRepository.updateScore({
+          playerId: opponentPlayer.id,
+          score: opponentPlayer.score,
+        });
       }
 
       game.switchGameStatusToFinished();

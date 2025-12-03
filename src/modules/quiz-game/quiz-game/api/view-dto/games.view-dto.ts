@@ -20,7 +20,7 @@ export class GameViewDto {
   static mapToView(game: Game): GameViewDto {
     const dto = new this();
 
-    dto.id = game.id;
+    dto.id = game.id.toString();
     dto.firstPlayerProgress = PlayerProgressViewDto.mapToView(game.firstPlayer);
     dto.secondPlayerProgress = game.secondPlayer
       ? PlayerProgressViewDto.mapToView(game.secondPlayer)

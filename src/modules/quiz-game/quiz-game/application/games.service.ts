@@ -8,7 +8,7 @@ export class GamesService {
   constructor(private gamesRepository: GamesRepository) {}
 
   async validateGameAccess(dto: {
-    gameId: string;
+    gameId: number;
     userId: string;
   }): Promise<void> {
     const game = await this.gamesRepository.findByIdWithPairPlayers(dto.gameId);

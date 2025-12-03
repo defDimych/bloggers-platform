@@ -1,11 +1,11 @@
-import { UuidBaseEntity } from '../../../../core/entities/uuid-base.entity';
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { GameStatus } from '../common/game-status.enum';
 import { Player } from './player.entity';
 import { GameQuestion } from './game-question.entity';
+import { NumericBaseEntity } from '../../../../core/entities/numeric-base.entity';
 
 @Entity({ name: 'Games' })
-export class Game extends UuidBaseEntity {
+export class Game extends NumericBaseEntity {
   @Column({
     type: 'enum',
     enum: GameStatus,
@@ -54,6 +54,7 @@ export class Game extends UuidBaseEntity {
   }
 
   switchGameStatusToFinished(): void {
+    this.status = GameStatus.Finished;
     this.finishedAt = new Date();
   }
 }

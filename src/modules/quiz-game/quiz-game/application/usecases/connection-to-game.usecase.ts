@@ -10,7 +10,7 @@ import { GameQuestion } from '../../entities/game-question.entity';
 import { GameQuestionRepository } from '../../infrastructure/game-question.repository';
 import { GAME_QUESTIONS_LIMIT } from '../../common/constants/game-questions-limit';
 
-export class ConnectionToGameCommand extends Command<string> {
+export class ConnectionToGameCommand extends Command<number> {
   constructor(public dto: { userId: string }) {
     super();
   }
@@ -19,7 +19,7 @@ export class ConnectionToGameCommand extends Command<string> {
 // TODO: обернуть в транзакцию, для целостности данных
 @CommandHandler(ConnectionToGameCommand)
 export class ConnectionToGameUseCase
-  implements ICommandHandler<ConnectionToGameCommand, string>
+  implements ICommandHandler<ConnectionToGameCommand, number>
 {
   constructor(
     private gamesRepository: GamesRepository,
@@ -28,7 +28,7 @@ export class ConnectionToGameUseCase
     private gameQuestionRepository: GameQuestionRepository,
   ) {}
 
-  async execute({ dto }: ConnectionToGameCommand): Promise<string> {
+  async execute({ dto }: ConnectionToGameCommand): Promise<number> {
     const userId = Number(dto.userId);
 
     // 1) Проверяем существующую активную игру
