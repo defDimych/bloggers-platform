@@ -1,6 +1,7 @@
 import { GameStatus } from '../../common/game-status.enum';
 import { Game } from '../../entities/game.entity';
 import { PlayerProgressViewDto } from './player-progress.view-dto';
+import { GameRawType } from '../../infrastructure/query/game-raw.type';
 
 type QuestionInfo = {
   id: string;
@@ -38,4 +39,66 @@ export class GameViewDto {
 
     return dto;
   }
+
+  // TODO: зарефакторить маппинг
+  static mapRawToView = (gameRaw: GameRawType): GameViewDto => {
+    const dto = new this();
+
+    dto.id = gameRaw.gameId.toString();
+    dto.firstPlayerProgress = {
+      answers: gameRaw.firstPlayerAnswers
+        ? gameRaw.firstPlayerAnswers.map((a) => ({
+            questionId: a.questionId,
+            answerStatus: a.answerStatus,
+            addedAt: a.addedAt.toISOString(),
+          }))
+        : [],
+
+      player: {
+        id: gameRaw.firstPlayerUserId.toString(),
+        login: gameRaw.firstPlayerLogin,
+      },
+
+      score: gameRaw.firstPlayerScore,
+    };
+
+    if (gameRaw.gameStatus === GameStatus.PendingSecondPlayer) {
+      dto.secondPlayerProgress = null;
+    } else {
+      dto.secondPlayerProgress = {
+        answers: gameRaw.secondPlayerAnswers
+          ? gameRaw.secondPlayerAnswers.map((a) => ({
+              questionId: a.questionId,
+              answerStatus: a.answerStatus,
+              addedAt: a.addedAt.toISOString(),
+            }))
+          : [],
+
+        player: {
+          id: gameRaw.secondPlayerUserId!.toString(),
+          login: gameRaw.secondPlayerLogin!,
+        },
+
+        score: gameRaw.secondPlayerScore!,
+      };
+    }
+
+    dto.questions = gameRaw.gameQuestions
+      ? gameRaw.gameQuestions.map((q) => ({
+          id: q.questionId,
+          body: q.body,
+        }))
+      : null;
+
+    dto.status = gameRaw.gameStatus;
+    dto.pairCreatedDate = gameRaw.createdAt.toISOString();
+    dto.startGameDate = gameRaw.startedAt
+      ? gameRaw.startedAt.toISOString()
+      : null;
+    dto.finishGameDate = gameRaw.finishedAt
+      ? gameRaw.finishedAt.toISOString()
+      : null;
+
+    return dto;
+  };
 }

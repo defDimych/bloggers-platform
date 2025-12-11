@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../../auth/guards/bearer/jwt-auth.guard';
@@ -20,8 +21,10 @@ import { ProcessingAnswerCommand } from '../application/usecases/processing-answ
 import { AnswersQueryRepository } from '../infrastructure/query/answers.query-repository';
 import { AnswersViewDto } from './view-dto/answers.view-dto';
 import { IdValidationTransformationPipe } from '../../../../core/pipes/id-validation-transformation.pipe';
+import { GetGamesQueryParams } from './input-dto/get-games-query-params.input-dto';
+import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 
-@Controller('pair-game-quiz/pairs')
+@Controller('pair-game-quiz')
 @UseGuards(JwtAuthGuard)
 export class PairQuizGameController {
   constructor(
@@ -31,7 +34,21 @@ export class PairQuizGameController {
     private answersQueryRepository: AnswersQueryRepository,
   ) {}
 
-  @Get('my-current')
+  @Get('pairs/my')
+  async getAll(
+    @ExtractUserFromRequest() user: UserContextDto,
+    @Query() query: GetGamesQueryParams,
+  ): Promise<PaginatedViewDto<GameViewDto[]>> {
+    return this.gamesQueryRepository.findAll({
+      queryParams: query,
+      userId: user.userId,
+    });
+  }
+
+  @Get('users/my-statistic')
+  async getStatistic(@ExtractUserFromRequest() user: UserContextDto) {}
+
+  @Get('pairs/my-current')
   async getGameInActiveOrPendingStatus(
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<GameViewDto> {
@@ -40,7 +57,7 @@ export class PairQuizGameController {
     });
   }
 
-  @Get(':id')
+  @Get('pairs/:id')
   async getGameInAnyStatus(
     @ExtractUserFromRequest() user: UserContextDto,
     @Param('id', IdValidationTransformationPipe) id: number,
@@ -53,7 +70,7 @@ export class PairQuizGameController {
     return this.gamesQueryRepository.findGame({ id });
   }
 
-  @Post('connection')
+  @Post('pairs/connection')
   @HttpCode(HttpStatus.OK)
   async connectionToGame(
     @ExtractUserFromRequest() user: UserContextDto,
@@ -67,7 +84,7 @@ export class PairQuizGameController {
     return this.gamesQueryRepository.findGame({ id: gameId });
   }
 
-  @Post('my-current/answers')
+  @Post('pairs/my-current/answers')
   @HttpCode(HttpStatus.OK)
   async processingAnswer(
     @Body('answer') answer: string,
