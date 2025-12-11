@@ -5,6 +5,6 @@ enum PostsSortBy {
   CreatedAt = 'createdAt',
   BlogName = 'blogName',
 }
-export class getPostsQueryParams extends BaseQueryParams {
+export class GetPostsQueryParams extends BaseQueryParams {
   sortBy = PostsSortBy.CreatedAt;
 }

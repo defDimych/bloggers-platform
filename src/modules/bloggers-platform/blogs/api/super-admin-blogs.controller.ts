@@ -17,7 +17,7 @@ import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { BlogViewDto } from './view-dto/blogs.view-dto';
 import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
 import { IdValidationTransformationPipe } from '../../../../core/pipes/id-validation-transformation.pipe';
-import { getPostsQueryParams } from '../../posts/api/input-dto/get-posts-query-params.input-dto';
+import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts-query-params.input-dto';
 import { OptionalUserIdFromRequest } from '../../common/decorators/param/optional-user-id-from-request';
 import { PostViewDto } from '../../posts/api/view-dto/posts.view-dto';
 import { PostsQueryRepository } from '../../posts/infrastructure/query/posts.query-repository';
@@ -54,7 +54,7 @@ export class SuperAdminBlogsController {
   @Get('/:blogId/posts')
   async getPostsForBlog(
     @Param('blogId', IdValidationTransformationPipe) blogId: number,
-    @Query() query: getPostsQueryParams,
+    @Query() query: GetPostsQueryParams,
     @OptionalUserIdFromRequest() userId: number | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
     await this.blogsService.blogIsExistsOrThrow(blogId);

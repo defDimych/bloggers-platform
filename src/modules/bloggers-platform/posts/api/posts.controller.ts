@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
 import { PostViewDto } from './view-dto/posts.view-dto';
-import { getPostsQueryParams } from './input-dto/get-posts-query-params.input-dto';
+import { GetPostsQueryParams } from './input-dto/get-posts-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateCommentInputDto } from '../../comments/api/input-dto/create-comment.input-dto';
@@ -47,7 +47,7 @@ export class PostsController {
 
   @Get()
   async getPosts(
-    @Query() query: getPostsQueryParams,
+    @Query() query: GetPostsQueryParams,
     @OptionalUserIdFromRequest() userId: number | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
     return this.postsQueryRepository.getAllPostsWithOptionalBlogId({

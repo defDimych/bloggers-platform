@@ -6,7 +6,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, SelectQueryBuilder } from 'typeorm';
 import { Post } from '../../entities/post.entity';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
-import { getPostsQueryParams } from '../../api/input-dto/get-posts-query-params.input-dto';
+import { GetPostsQueryParams } from '../../api/input-dto/get-posts-query-params.input-dto';
 import { PostWithBlogNameAndExtendedLikesInfoRaw } from './post-with-blog-name-raw.type';
 import { LikeStatus } from '../../../common/types/like-status.enum';
 import { PostLike } from '../../../likes/entities/post-like.entity';
@@ -132,7 +132,7 @@ export class PostsQueryRepository {
   }
 
   async getAllPostsWithOptionalBlogId(dto: {
-    queryParams: getPostsQueryParams;
+    queryParams: GetPostsQueryParams;
     userId: number | null;
     blogId?: number;
   }): Promise<PaginatedViewDto<PostViewDto[]>> {
