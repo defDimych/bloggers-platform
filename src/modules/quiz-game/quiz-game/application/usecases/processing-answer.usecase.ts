@@ -7,6 +7,7 @@ import { AnswersRepository } from '../../infrastructure/answers.repository';
 import { GamesRepository } from '../../infrastructure/games.repository';
 import { PlayersRepository } from '../../infrastructure/players.repository';
 import { GAME_QUESTIONS_LIMIT } from '../../common/constants/game-questions-limit';
+import { GamesStatsService } from '../games-stats.service';
 
 export class ProcessingAnswerCommand extends Command<string> {
   constructor(public dto: { answer: string; userId: string }) {
@@ -22,6 +23,7 @@ export class ProcessingAnswerUseCase
     private gamesRepository: GamesRepository,
     private answersRepository: AnswersRepository,
     private playersRepository: PlayersRepository,
+    private gamesStatsService: GamesStatsService,
   ) {}
 
   async execute({ dto }: ProcessingAnswerCommand): Promise<string> {
@@ -91,6 +93,11 @@ export class ProcessingAnswerUseCase
       }
 
       game.switchGameStatusToFinished();
+
+      await this.gamesStatsService.recordStatistic({
+        currentPlayer,
+        opponentPlayer,
+      });
       await this.gamesRepository.save(game);
     }
 

@@ -23,6 +23,8 @@ import { AnswersViewDto } from './view-dto/answers.view-dto';
 import { IdValidationTransformationPipe } from '../../../../core/pipes/id-validation-transformation.pipe';
 import { GetGamesQueryParams } from './input-dto/get-games-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
+import { GamesStatsQueryRepository } from '../infrastructure/query/games-stats.query-repository';
+import { GamesStatsViewDto } from './view-dto/games-stats.view-dto';
 
 @Controller('pair-game-quiz')
 @UseGuards(JwtAuthGuard)
@@ -32,6 +34,7 @@ export class PairQuizGameController {
     private gamesQueryRepository: GamesQueryRepository,
     private gamesService: GamesService,
     private answersQueryRepository: AnswersQueryRepository,
+    private gamesStatsQueryRepository: GamesStatsQueryRepository,
   ) {}
 
   @Get('pairs/my')
@@ -46,7 +49,13 @@ export class PairQuizGameController {
   }
 
   @Get('users/my-statistic')
-  async getStatistic(@ExtractUserFromRequest() user: UserContextDto) {}
+  async getStatistic(
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<GamesStatsViewDto> {
+    return this.gamesStatsQueryRepository.getMyStatistic({
+      userId: user.userId,
+    });
+  }
 
   @Get('pairs/my-current')
   async getGameInActiveOrPendingStatus(
