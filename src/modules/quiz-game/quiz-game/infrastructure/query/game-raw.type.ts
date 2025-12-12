@@ -4,7 +4,7 @@ import { AnswerStatus } from '../../common/answer-status.enum';
 type AnswerType = {
   questionId: string;
   answerStatus: AnswerStatus;
-  addedAt: Date;
+  addedAt: string;
 };
 
 type QuestionType = {

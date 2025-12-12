@@ -50,7 +50,7 @@ export class GameViewDto {
         ? gameRaw.firstPlayerAnswers.map((a) => ({
             questionId: a.questionId,
             answerStatus: a.answerStatus,
-            addedAt: a.addedAt.toISOString(),
+            addedAt: new Date(a.addedAt).toISOString(),
           }))
         : [],
 
@@ -70,7 +70,7 @@ export class GameViewDto {
           ? gameRaw.secondPlayerAnswers.map((a) => ({
               questionId: a.questionId,
               answerStatus: a.answerStatus,
-              addedAt: a.addedAt.toISOString(),
+              addedAt: new Date(a.addedAt).toISOString(),
             }))
           : [],
 

@@ -114,7 +114,7 @@ export class GamesQueryRepository {
         .offset(dto.queryParams.calculateSkip());
 
       if (dto.queryParams.sortBy !== GamesSortBy.PairCreatedDate) {
-        builder.addOrderBy(`g."${GamesSortBy.PairCreatedDate}"`, 'DESC');
+        builder.addOrderBy(`g."createdAt"`, 'DESC');
       }
 
       const [rawGames, totalCount] = await Promise.all([
