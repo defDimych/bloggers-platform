@@ -66,6 +66,9 @@ export class GamesStatsService {
     stats.incrementScore(gainedScore);
     stats.incrementGamesCount();
 
+    const avgScores = this.roundSmart(stats.sumScore / stats.gamesCount);
+    stats.updateAvgScores(avgScores);
+
     await this.gamesStatsRepository.save(stats);
   }
 
@@ -94,5 +97,15 @@ export class GamesStatsService {
         stats.drawsCount++;
         break;
     }
+  }
+
+  private roundSmart(value: number): number {
+    const fixed = value.toFixed(2);
+
+    if (fixed.endsWith('00')) {
+      return parseInt(fixed, 10);
+    }
+
+    return parseFloat(fixed);
   }
 }

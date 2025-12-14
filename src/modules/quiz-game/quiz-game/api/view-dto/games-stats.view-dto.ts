@@ -1,4 +1,4 @@
-import { StatsRawType } from '../../infrastructure/query/stats-raw.type';
+import { GamesStats } from '../../entities/game-stats.entity';
 
 export class GamesStatsViewDto {
   sumScore: number;
@@ -8,18 +8,15 @@ export class GamesStatsViewDto {
   lossesCount: number;
   drawsCount: number;
 
-  static mapToView(
-    statsRaw: StatsRawType,
-    avgScores: number,
-  ): GamesStatsViewDto {
+  static mapToView(stats: GamesStats): GamesStatsViewDto {
     const viewDto = new this();
 
-    viewDto.sumScore = statsRaw.sumScore;
-    viewDto.avgScores = avgScores;
-    viewDto.gamesCount = statsRaw.gamesCount;
-    viewDto.winsCount = statsRaw.winsCount;
-    viewDto.lossesCount = statsRaw.lossesCount;
-    viewDto.drawsCount = statsRaw.drawsCount;
+    viewDto.sumScore = stats.sumScore;
+    viewDto.avgScores = Number(stats.avgScores);
+    viewDto.gamesCount = stats.gamesCount;
+    viewDto.winsCount = stats.winsCount;
+    viewDto.lossesCount = stats.lossesCount;
+    viewDto.drawsCount = stats.drawsCount;
 
     return viewDto;
   }

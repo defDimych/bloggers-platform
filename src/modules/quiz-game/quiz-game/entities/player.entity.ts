@@ -10,10 +10,10 @@ export class Player extends UuidBaseEntity {
   score: number;
 
   @OneToOne(() => Game, (game) => game.firstPlayer)
-  gameAsFirstPlayer: Game | null;
+  gameAsFirstPlayer: Game;
 
   @OneToOne(() => Game, (game) => game.secondPlayer)
-  gameAsSecondPlayer: Game | null;
+  gameAsSecondPlayer: Game;
 
   @ManyToOne(() => User, (user) => user.players)
   user: User;

@@ -1,7 +1,7 @@
 import { GameStatus } from '../../common/game-status.enum';
 import { Game } from '../../entities/game.entity';
 import { PlayerProgressViewDto } from './player-progress.view-dto';
-import { GameRawType } from '../../infrastructure/query/game-raw.type';
+import { GameRawType } from '../../infrastructure/query/types/game-raw.type';
 
 type QuestionInfo = {
   id: string;

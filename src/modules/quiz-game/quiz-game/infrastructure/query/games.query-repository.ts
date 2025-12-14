@@ -12,7 +12,7 @@ import {
 } from '../../api/input-dto/get-games-query-params.input-dto';
 import { Answer } from '../../entities/answer.entity';
 import { GameQuestion } from '../../entities/game-question.entity';
-import { GameRawType } from './game-raw.type';
+import { GameRawType } from './types/game-raw.type';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 
 @Injectable()

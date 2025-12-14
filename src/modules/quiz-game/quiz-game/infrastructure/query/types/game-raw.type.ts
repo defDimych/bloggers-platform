@@ -1,5 +1,5 @@
-import { GameStatus } from '../../common/game-status.enum';
-import { AnswerStatus } from '../../common/answer-status.enum';
+import { GameStatus } from '../../../common/game-status.enum';
+import { AnswerStatus } from '../../../common/answer-status.enum';
 
 type AnswerType = {
   questionId: string;

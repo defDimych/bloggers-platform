@@ -16,6 +16,10 @@ export class GamesStats {
   @Column({ type: 'integer' })
   sumScore: number;
 
+  // При получении из БД тип string. Причина: чтобы не терять точность
+  @Column({ type: 'numeric' })
+  avgScores: number | string;
+
   @Column({ type: 'integer' })
   winsCount: number;
 
@@ -31,6 +35,7 @@ export class GamesStats {
     gamesStats.userId = userId;
     gamesStats.gamesCount = 0;
     gamesStats.sumScore = 0;
+    gamesStats.avgScores = 0;
     gamesStats.winsCount = 0;
     gamesStats.lossesCount = 0;
     gamesStats.drawsCount = 0;
@@ -44,5 +49,9 @@ export class GamesStats {
 
   incrementGamesCount() {
     this.gamesCount += 1;
+  }
+
+  updateAvgScores(avgScores: number) {
+    this.avgScores = avgScores;
   }
 }
