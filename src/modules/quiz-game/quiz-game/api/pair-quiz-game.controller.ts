@@ -25,6 +25,8 @@ import { GetGamesQueryParams } from './input-dto/get-games-query-params.input-dt
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { GamesStatsQueryRepository } from '../infrastructure/query/games-stats.query-repository';
 import { GamesStatsViewDto } from './view-dto/games-stats.view-dto';
+import { Public } from '../../../auth/guards/decorators/public.decorator';
+import { GetUsersTopQueryParams } from './input-dto/get-users-top-query-params.input-dto';
 
 @Controller('pair-game-quiz')
 @UseGuards(JwtAuthGuard)
@@ -46,6 +48,14 @@ export class PairQuizGameController {
       queryParams: query,
       userId: user.userId,
     });
+  }
+
+  @Public()
+  @Get('users/top')
+  async getUsersTop(
+    @Query() query: GetUsersTopQueryParams,
+  ): Promise<PaginatedViewDto<GamesStatsViewDto[]>> {
+    return this.gamesStatsQueryRepository.getUsersTop(query);
   }
 
   @Get('users/my-statistic')
