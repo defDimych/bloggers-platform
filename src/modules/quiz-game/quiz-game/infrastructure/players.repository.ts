@@ -9,6 +9,17 @@ export class PlayersRepository {
     @InjectRepository(Player) private readonly playersRepo: Repository<Player>,
   ) {}
 
+  async findByIdWithAnswers(playerId: string): Promise<Player | null> {
+    return this.playersRepo.findOne({
+      where: {
+        id: playerId,
+      },
+      relations: {
+        answers: true,
+      },
+    });
+  }
+
   async updateScore(dto: { playerId: string; score: number }): Promise<void> {
     await this.playersRepo.update(dto.playerId, { score: dto.score });
   }

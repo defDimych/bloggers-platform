@@ -7,7 +7,9 @@ import { AnswersRepository } from '../../infrastructure/answers.repository';
 import { GamesRepository } from '../../infrastructure/games.repository';
 import { PlayersRepository } from '../../infrastructure/players.repository';
 import { GAME_QUESTIONS_LIMIT } from '../../common/constants/game-questions-limit';
-import { GamesStatsService } from '../games-stats.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { GamesService } from '../games.service';
 
 export class ProcessingAnswerCommand extends Command<string> {
   constructor(public dto: { answer: string; userId: string }) {
@@ -20,10 +22,11 @@ export class ProcessingAnswerUseCase
   implements ICommandHandler<ProcessingAnswerCommand, string>
 {
   constructor(
+    @InjectQueue('finish-game-queue') private finishQueue: Queue,
     private gamesRepository: GamesRepository,
     private answersRepository: AnswersRepository,
     private playersRepository: PlayersRepository,
-    private gamesStatsService: GamesStatsService,
+    private gamesService: GamesService,
   ) {}
 
   async execute({ dto }: ProcessingAnswerCommand): Promise<string> {
@@ -76,29 +79,28 @@ export class ProcessingAnswerUseCase
         ? game.firstPlayer
         : game.secondPlayer!;
 
+    const currentPlayerWithAnswers =
+      await this.playersRepository.findByIdWithAnswers(currentPlayer.id);
+
     if (
       opponentPlayer.answers.length === GAME_QUESTIONS_LIMIT &&
-      currentPlayer.answers.length + 1 === GAME_QUESTIONS_LIMIT
+      currentPlayerWithAnswers!.answers.length === GAME_QUESTIONS_LIMIT
     ) {
-      const opponentHasCorrectAnswer = opponentPlayer.answers.some(
-        (a) => a.status === AnswerStatus.Correct,
-      );
-
-      if (opponentHasCorrectAnswer) {
-        opponentPlayer.incrementScore();
-        await this.playersRepository.updateScore({
-          playerId: opponentPlayer.id,
-          score: opponentPlayer.score,
-        });
-      }
-
       game.switchGameStatusToFinished();
 
-      await this.gamesStatsService.recordStatistic({
+      await this.gamesRepository.save(game);
+      await this.gamesService.processGameResult({
         currentPlayer,
         opponentPlayer,
       });
-      await this.gamesRepository.save(game);
+    }
+
+    if (currentPlayerWithAnswers!.answers.length === GAME_QUESTIONS_LIMIT) {
+      await this.finishQueue.add(
+        'finish-game-if-timeout',
+        { opponentUserId: opponentPlayer.userId },
+        { delay: 10_000 },
+      );
     }
 
     return savedAnswer.id;

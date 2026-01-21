@@ -2,10 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { GamesRepository } from '../infrastructure/games.repository';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { Player } from '../entities/player.entity';
+import { AnswerStatus } from '../common/answer-status.enum';
+import { PlayersRepository } from '../infrastructure/players.repository';
+import { GamesStatsService } from './games-stats.service';
 
 @Injectable()
 export class GamesService {
-  constructor(private gamesRepository: GamesRepository) {}
+  constructor(
+    private gamesRepository: GamesRepository,
+    private playersRepository: PlayersRepository,
+    private gamesStatsService: GamesStatsService,
+  ) {}
 
   async validateGameAccess(dto: {
     gameId: number;
@@ -38,5 +46,30 @@ export class GamesService {
         code: DomainExceptionCode.Forbidden,
       });
     }
+  }
+
+  async processGameResult(dto: {
+    currentPlayer: Player;
+    opponentPlayer: Player;
+  }): Promise<void> {
+    const { currentPlayer, opponentPlayer } = dto;
+
+    const hasCorrectAnswer = opponentPlayer.answers.some(
+      (a) => a.status === AnswerStatus.Correct,
+    );
+
+    if (hasCorrectAnswer) {
+      opponentPlayer.incrementScore();
+
+      await this.playersRepository.updateScore({
+        playerId: opponentPlayer.id,
+        score: opponentPlayer.score,
+      });
+    }
+
+    await this.gamesStatsService.recordStatistic({
+      currentPlayer,
+      opponentPlayer,
+    });
   }
 }

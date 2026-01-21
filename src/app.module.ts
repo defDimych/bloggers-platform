@@ -16,9 +16,16 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { QuizGameModule } from './modules/quiz-game/quiz-game.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
+    BullModule.forRoot({
+      connection: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
     CqrsModule.forRoot(),
     configModule,
     ThrottlerModule.forRootAsync({

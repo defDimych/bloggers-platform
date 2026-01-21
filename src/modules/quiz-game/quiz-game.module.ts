@@ -26,6 +26,8 @@ import { GamesStats } from './quiz-game/entities/game-stats.entity';
 import { GamesStatsRepository } from './quiz-game/infrastructure/games-stats.repository';
 import { GamesStatsService } from './quiz-game/application/games-stats.service';
 import { GamesStatsQueryRepository } from './quiz-game/infrastructure/query/games-stats.query-repository';
+import { BullModule } from '@nestjs/bullmq';
+import { FinishGameProcessor } from './quiz-game/infrastructure/queues/finish-game/finish-game.processor';
 
 const useCases = [
   ProcessingAnswerUseCase,
@@ -51,6 +53,9 @@ const repositories = [
 
 @Module({
   imports: [
+    BullModule.registerQueue({
+      name: 'finish-game-queue',
+    }),
     TypeOrmModule.forFeature([
       Question,
       Game,
@@ -61,6 +66,12 @@ const repositories = [
     ]),
   ],
   controllers: [SuperAdminQuizQuestionsController, PairQuizGameController],
-  providers: [...useCases, ...repositories, GamesService, GamesStatsService],
+  providers: [
+    ...useCases,
+    ...repositories,
+    GamesService,
+    GamesStatsService,
+    FinishGameProcessor,
+  ],
 })
 export class QuizGameModule {}

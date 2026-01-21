@@ -18,12 +18,13 @@
     "test:cov": "cross-env NODE_ENV=testing jest --coverage",
     "test:debug": "NODE_ENV=testing node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "cross-env NODE_ENV=testing jest --config ./test/jest-e2e.json",
-    "generate-migration": "cross-env NODE_ENV=development pnpm apply-migrations && cross-env NODE_ENV=development typeorm-ts-node-commonjs migration:generate -d ./src/migrations-data-source.ts" ,
+    "generate-migration": "cross-env NODE_ENV=development pnpm apply-migrations && cross-env NODE_ENV=development typeorm-ts-node-commonjs migration:generate -d ./src/migrations-data-source.ts",
     "apply-migrations": "cross-env NODE_ENV=development typeorm-ts-node-commonjs migration:run -d ./src/migrations-data-source.ts",
     "revert-migration": "cross-env NODE_ENV=development typeorm-ts-node-commonjs migration:revert -d ./src/migrations-data-source.ts"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
+    "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.1",
@@ -36,6 +37,7 @@
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/typeorm": "^11.0.0",
     "bcrypt": "^5.1.1",
+    "bullmq": "^5.66.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.7",
