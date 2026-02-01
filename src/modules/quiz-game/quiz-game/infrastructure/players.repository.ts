@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Player } from '../entities/player.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
+import { BaseRepository } from '../../../../infrastructure/repositories/base.repository';
 
 @Injectable()
-export class PlayersRepository {
+export class PlayersRepository extends BaseRepository<Player> {
   constructor(
     @InjectRepository(Player) private readonly playersRepo: Repository<Player>,
-  ) {}
+  ) {
+    super(playersRepo);
+  }
 
   async findByIdWithAnswers(playerId: string): Promise<Player | null> {
     return this.playersRepo.findOne({
@@ -24,7 +27,8 @@ export class PlayersRepository {
     await this.playersRepo.update(dto.playerId, { score: dto.score });
   }
 
-  async save(player: Player): Promise<Player> {
-    return this.playersRepo.save(player);
+  async save(player: Player, entityManager?: EntityManager): Promise<Player> {
+    const repo = this.getRepository(entityManager);
+    return repo.save(player);
   }
 }

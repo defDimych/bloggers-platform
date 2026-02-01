@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Game } from '../entities/game.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { GameStatus } from '../common/game-status.enum';
+import { BaseRepository } from '../../../../infrastructure/repositories/base.repository';
 
 @Injectable()
-export class GamesRepository {
+export class GamesRepository extends BaseRepository<Game> {
   constructor(
     @InjectRepository(Game) private readonly gamesRepo: Repository<Game>,
-  ) {}
+  ) {
+    super(gamesRepo);
+  }
 
   async findActiveWithRelationsByUserId(userId: number): Promise<Game | null> {
     return this.gamesRepo
@@ -27,8 +30,13 @@ export class GamesRepository {
       .getOne();
   }
 
-  async findActiveByUserId(userId: number): Promise<Game | null> {
-    return this.gamesRepo.findOne({
+  async findActiveByUserId(
+    userId: number,
+    entityManager?: EntityManager,
+  ): Promise<Game | null> {
+    const repo = this.getRepository(entityManager);
+
+    return repo.findOne({
       where: [
         { status: GameStatus.Active, firstPlayer: { userId } },
         { status: GameStatus.Active, secondPlayer: { userId } },
@@ -38,10 +46,16 @@ export class GamesRepository {
     });
   }
 
-  async findWithPendingSecondPlayer(): Promise<Game | null> {
-    return this.gamesRepo.findOneBy({
-      status: GameStatus.PendingSecondPlayer,
-    });
+  async findWithPendingSecondPlayer(
+    entityManager?: EntityManager,
+  ): Promise<Game | null> {
+    const repo = this.getRepository(entityManager);
+
+    return repo
+      .createQueryBuilder('g')
+      .setLock('pessimistic_write')
+      .where('g.status = :status', { status: GameStatus.PendingSecondPlayer })
+      .getOne();
   }
 
   async findByIdWithPairPlayers(id: number): Promise<Game | null> {
@@ -54,7 +68,8 @@ export class GamesRepository {
     });
   }
 
-  async save(game: Game): Promise<Game> {
-    return this.gamesRepo.save(game);
+  async save(game: Game, entityManager?: EntityManager): Promise<Game> {
+    const repo = this.getRepository(entityManager);
+    return repo.save(game);
   }
 }
